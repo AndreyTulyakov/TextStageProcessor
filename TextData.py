@@ -10,10 +10,10 @@ class TextData:
         self.original_sentences = []
         # Разделенные по словам предложения
         self.tokenized_sentences = []
-        # Нормализованные предложения
-        self.normalized_sentences = []
         # Предложения без стоп-слов
         self.no_stop_words_sentences = []
+        # Нормализованные предложения
+        self.normalized_sentences = []
         # Предложения с преобразованным регистром (заглавные буквы только для имён)
         self.register_pass_centences = []
         # Словарь [слово:частота] по всему тексту

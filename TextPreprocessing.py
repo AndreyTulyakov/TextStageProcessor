@@ -93,6 +93,79 @@ def removeStopWordsFromSentences(sentences, morph):
             i = i + 1
     return sentences
 
+def removeStopWordsInTexts(texts, morph):
+    for text in texts:
+        text.no_stop_words_sentences = removeStopWordsFromSentences(text.tokenized_sentences, morph)
+
+    log_string = "Удаление стоп-слов:\n"
+
+    for text in texts:
+        log_string = log_string + '\nText:' + text.filename + '\n'
+        for sentence in text.no_stop_words_sentences:
+            for word in sentence:
+                log_string = log_string + ' ' + word
+            log_string = log_string + '\n'
+    return texts, log_string
+
+
+def normalizeTexts(texts, morph):
+    log_string = "Нормализация:\n"
+    for text in texts:
+        log_string = log_string + '\nText:' + text.filename + '\n'
+        for sentence in text.no_stop_words_sentences:
+            current_sentence = []
+            for word in sentence:
+                if(wordPersonDetector(word, morph) == False):
+                    result = morph.parse(word)[0] # По умолчанию берем наиболее достоверный разбора слова
+                    #current_sentence.append(word)
+                    current_sentence.append(result.normal_form)
+                    log_string = log_string + ' ' + result.normal_form
+                else:
+                    current_sentence.append(word)
+                    log_string = log_string + ' ' + word
+            log_string = log_string + '\n'
+            text.normalized_sentences.append(current_sentence)
+    return texts, log_string
+
+
+def fixRegisterInTexts(texts, morph):
+    log_string = "Приведение регистра:\n"
+    for text in texts:
+        log_string = log_string + '\nText:' + text.filename + '\n'
+        for sentence in text.normalized_sentences:
+            current_sentence = []
+            for word in sentence:
+                if(wordPersonDetector(word, morph) == True):
+                    current_sentence.append(word.capitalize())
+                else:
+                    current_sentence.append(word.lower())
+                log_string = log_string + ' ' + current_sentence[-1]
+            text.register_pass_centences.append(current_sentence)
+            log_string = log_string + '\n'
+    return texts, log_string
+
+def calculateWordsFrequencyInTexts(texts):
+
+    for text in texts:
+        for sentense in text.register_pass_centences:
+            for word in sentense:
+                if word.isalpha():
+                    text.word_frequency[word] = text.word_frequency.get(word, 0) + 1
+
+        # Сортируем слова по частоте
+        text.sorted_word_frequency = sorted(text.word_frequency.items(), key= lambda x: x[1], reverse=True)
+
+    log_string = 'Расчет частотной таблицы слов.\n'
+
+    for text in texts:
+        log_string = log_string + '\nText:' + text.filename + '\n'
+        log_string = log_string + "Слово;Кол-во упоминаний\n"
+        for key, value in text.sorted_word_frequency:
+            log_string = log_string + key + ';' + str(value) + '\n'
+
+    return texts, log_string
+
+
 # Проверяет является ли слово местоимением-существительным (Он, Она и тд.)
 def wordPersonNPRODetector(word, morph):
     results = morph.parse(word)
@@ -185,7 +258,6 @@ def calculateWordsIDF(texts, ):
             inverse_document_frequency = math.log10(pre_idx)
             idf_data[word] = inverse_document_frequency
     return idf_data
-
 
 # Вычисляет TF*IDF для каждого слова каждого текста и записывает в text.words_tf_idf[word]
 def calculateTFIDF(texts, idf_word_data):
