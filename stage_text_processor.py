@@ -15,9 +15,10 @@ from mpl_toolkits.mplot3d import Axes3D
 # Считывает имена всех .txt файлов из входной директории
 
 # Для корректного отображение шрифтов на графиках в Windows
-font = {'family': 'Verdana',
-        'weight': 'normal'}
-rc('font', **font)
+if(os.name != 'posix'):
+    font = {'family': 'Verdana',
+            'weight': 'normal'}
+    rc('font', **font)
 
 input_dir_name = "input_files"
 
