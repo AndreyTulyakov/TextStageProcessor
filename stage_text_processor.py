@@ -23,8 +23,10 @@ if(os.name != 'posix'):
 # Получаем экземпляр анализатора (10-20мб)
 morph = pymorphy2.MorphAnalyzer()
 
+configurations = readConfigurationFile("configuration.cfg")
+
 # Загружаем предложения из нескольких файлов
-texts = loadInputFiles("input_files")
+texts = loadInputFiles(configurations["input_files_directory"])
 
 # Разделяем предложения на слова
 texts = tokenizeTextData(texts)
@@ -70,8 +72,7 @@ u, S, v, s = divideSingular(lsa_matrix)
 nu, ns, nv = cutSingularValue(u, S, v, s)
 
 # Создание матрицы СЛОВО / ЧастотаСловаВ(Док1), ЧастотаСловаВ(Док1), ...
-need_words = True
-need_words = False
+need_words = configurations["enable_words_output_in_lsa"]!="0";
 
 viewLSAGraphics2D(plt, nu, nv, need_words, all_idf_word_keys, texts)
 viewLSAGraphics3D(plt, nu, nv, need_words, all_idf_word_keys, texts)

@@ -43,24 +43,24 @@ def divideSingular(matrix):
 
 def cutSingularValue(u, S, v, s):
     # Если сингулярный переход менее 2 измерений то не имеет смысла анализировать.
-    if(S.shape[0] == 0):
+    if(s.shape[0] == 0):
         print("Сингулярный переход отсутствует. Добавьте документов или слов.")
         exit(0)
 
-    if(S.shape[0] == 1):
+    if(s.shape[0] == 1):
         print("Сингулярный переход имеет размерность 1. Добавьте документов или слов.")
         exit(0)
 
-    if(S.shape[0] == 2):
+    if(s.shape[0] == 2):
         print("Сингулярный переход имеет размерность 2. 3D Проекция будет отключена.")
         singular_minimal_transfer = 2
 
-    if(S.shape[0] == 3):
+    if(s.shape[0] == 3):
         print("Сингулярный переход имеет размерность 3.")
         singular_minimal_transfer = 3
 
-    if(S.shape[0] > 3):
-        print("Сингулярный переход имеет размерность " + str(S.shape[0]) + ". Уменьшение до 3...")
+    if(s.shape[0] > 3):
+        print("Сингулярный переход имеет размерность " + str(s.shape[0]) + ". Уменьшение до 3...")
         singular_minimal_transfer = 3
 
     nu = u[0:,0:(singular_minimal_transfer)]

@@ -9,6 +9,19 @@ from pymorphy2 import tokenizers
 
 from TextData import TextData
 
+def readConfigurationFile(filename):
+    with codecs.open(filename, 'r', "utf-8") as text_file:
+        data = text_file.read()
+        lines = data.split("\n")
+        result = dict()
+        for line in lines:
+            line = line.strip()
+            if(line.startswith("#") == False):
+                keyvalue = line.split("=")
+                if(len(keyvalue) == 2):
+                    result[keyvalue[0]]=keyvalue[1]
+        return result
+
 
 
 # Читает текст из файла и возвращает список предложений (без запятых)
