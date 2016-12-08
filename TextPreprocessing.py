@@ -63,6 +63,14 @@ def wordPersonDetector(word, morph):
                 or 'Surn' in result.tag
                 or 'Patr' in result.tag):
             if(result.score >= 0.05):
+                return True, results
+
+    return False, results
+
+def wordSurnameDetector(word, results):
+    for result in results:
+        if('Surn' in result.tag):
+            if(result.score >= 0.05):
                 return True
     return False
 
@@ -115,12 +123,14 @@ def normalizeTexts(texts, morph):
         for sentence in text.no_stop_words_sentences:
             current_sentence = []
             for word in sentence:
-                if(wordPersonDetector(word, morph) == False):
-                    result = morph.parse(word)[0] # По умолчанию берем наиболее достоверный разбора слова
+                isPerson, results = wordPersonDetector(word, morph)
+                if(isPerson == False or (isPerson and wordSurnameDetector(word, results))):
+                    result = results[0] # По умолчанию берем наиболее достоверный разбора слова
                     #current_sentence.append(word)
                     current_sentence.append(result.normal_form)
                     log_string = log_string + ' ' + result.normal_form
                 else:
+
                     current_sentence.append(word)
                     log_string = log_string + ' ' + word
             log_string = log_string + '\n'

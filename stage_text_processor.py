@@ -64,7 +64,6 @@ removeTFIDFWordsWithMiniamlMultiplier(texts , 0.05)
 log_string = writeWordTFIDFToString(texts, idf_word_data)
 writeStringToFile(log_string.replace('\n ', '\n'), 'output_stage_7.csv')
 
-
 print("7) Латентно-семантический анализ")
 lsa_matrix, all_idf_word_keys = CreateLSAMatrix(texts, idf_word_data)
 u, S, v, s = divideSingular(lsa_matrix)
@@ -72,7 +71,7 @@ nu, ns, nv = cutSingularValue(u, S, v, s)
 
 # Создание матрицы СЛОВО / ЧастотаСловаВ(Док1), ЧастотаСловаВ(Док1), ...
 need_words = True
-#need_words = False
+need_words = False
 
 viewLSAGraphics2D(plt, nu, nv, need_words, all_idf_word_keys, texts)
 viewLSAGraphics3D(plt, nu, nv, need_words, all_idf_word_keys, texts)
