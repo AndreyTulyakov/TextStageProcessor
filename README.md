@@ -7,6 +7,11 @@ Open source project for text mining process exploration.
  - matplotlib
  - pymorphy2
  - numpy
+ 
+ - pyqt5
+ - lapack
+ - scipy
+ - sclearn
 
 ### По вопросам
 > Andrew Tulyakov (mhyhre@gmail.com)
