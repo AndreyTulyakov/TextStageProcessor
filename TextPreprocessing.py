@@ -4,7 +4,7 @@
 import os
 import codecs
 import math
-
+import pymorphy2
 from pymorphy2 import tokenizers 
 
 from TextData import TextData
@@ -40,7 +40,7 @@ def loadInputFiles(input_dir_name):
     input_filenames = []
     for filename in os.listdir(input_dir_name):
         if filename.endswith(".txt"):
-            input_filenames.append(filename);
+            input_filenames.append(filename)
 
     texts = []
     for filename in input_filenames:
@@ -49,6 +49,23 @@ def loadInputFiles(input_dir_name):
         texts.append(text_data)
 
     return texts
+
+def loadInputFilesFromList(filenames):
+    texts = []
+    for filename in filenames:
+        text_data = TextData(filename[filename.rfind('/')+1:])
+
+        with codecs.open(filename, 'r', "utf-8") as text_file:
+            data=text_file.read().replace('\n', ' ')
+            sentences = data.split('.')
+            for i in range(len(sentences)):
+                sentences[i] = sentences[i].strip().replace(',', '')
+            text_data.original_sentences = sentences
+
+        texts.append(text_data)
+
+    return texts
+
 
 def tokenizeTextData(texts):
     # Переводим предложения в списки слов (tokenized_sentence)
@@ -94,7 +111,7 @@ def removeStopWordsFromSentences(sentences, morph):
         while i < len(sentence):
             current_word = sentence[i]
 
-            if(len(current_word) < 3):
+            if(len(current_word) < 4):
                  sentence.pop(i)
                  i = i - 1
             else:
@@ -317,3 +334,43 @@ def removeTFIDFWordsWithMiniamlMultiplier(texts , min_mult):
             if(tfidf < minimal_value):
                 text.words_tf_idf.pop(word)
                 text.word_frequency.pop(word)
+
+
+
+
+
+def makePreprocessing(filenames, morph, configurations):
+
+    log_string = ""
+
+    # Загружаем предложения из нескольких файлов
+    texts = loadInputFiles(configurations.get("input_files_directory","input_files"))
+    output_dir = configurations.get("output_files_directory", "output_files") + "/" 
+
+    # Разделяем предложения на слова
+    texts = tokenizeTextData(texts)
+
+    print('Этап препроцессинга:')
+
+    # Удаление стоп-слов из предложения (частицы, прилагательные и тд)
+    print('1) Удаление стоп-слов.')
+    texts, log_string = removeStopWordsInTexts(texts, morph)
+    writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_1.txt')
+
+    # Переводим обычное предложение в нормализованное (каждое слово)
+    print('2) Нормализация.')
+    texts, log_string = normalizeTexts(texts, morph)
+    writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_2.txt')
+
+    # Приведение регистра (все слова с маленькой буквы за исключением ФИО)
+    print('3) Приведение регистра.')
+    texts, log_string = fixRegisterInTexts(texts, morph)
+    writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_3.txt')
+
+    # Подсчет частоты слов в тексте
+    print('4) Расчет частотной таблицы слов.')
+    texts, log_string = calculateWordsFrequencyInTexts(texts)
+    writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_4.csv')
+
+    return texts
+

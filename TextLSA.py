@@ -4,7 +4,14 @@
 import numpy as np
 import math
 
+
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+
 from TextData import TextData
+
+from TextPreprocessing import *
 
 # Реализация латентно семантического анализа. LSA
 
@@ -22,21 +29,29 @@ def CreateLSAMatrix(texts, idf_word_data):
     all_idf_word_keys = list(all_idf_word_list.keys())
     print("TOTAL WORDS:" + str(len(all_idf_word_list)))
     words_count = len(all_idf_word_keys)
+
     lsa_matrix = np.zeros(shape=(words_count,all_documents_count))
 
     for t in range(len(texts)):
         for i in range(len(all_idf_word_keys)):
+
             current_word = all_idf_word_keys[i]
             word_frequency_in_current_text = texts[t].word_frequency.get(current_word, 0)
-            lsa_matrix[i][t] = math.sqrt(text.words_tf_idf.get(current_word,0.001)*word_frequency_in_current_text)
+
+            lsa_matrix[i][t] = text.words_tf_idf.get(current_word, 0.0)*math.sqrt(word_frequency_in_current_text*10.0)
+            #lsx_matrix[i][t] = text.words_tf_idf.get(current_word, 0.0)
+
+    print("LSA:")
+    print(lsa_matrix)
 
     return lsa_matrix, all_idf_word_keys
 
 
 # Сингулярное разложение на a = u, s, v (S - восстановленный до диагональной матрицы вектор)
 def divideSingular(matrix):
-    u,s,v = np.linalg.svd(matrix, True)
+    u,s,v = np.linalg.svd(matrix, full_matrices = True)
     S = np.zeros((u.shape[0], v.shape[0]), dtype=complex)
+    print("Сингулярный переход:" + str(s))
     S[:v.shape[0], :v.shape[1]] = np.diag(s)
     return u, S, v, s
 
@@ -126,3 +141,39 @@ def viewLSAGraphics3D(plt, nu, nv, need_words, all_idf_word_keys, texts):
 
 
     plt.show() #Показать график
+
+
+
+
+def makeLSA(filenames, morph, configurations):
+
+    texts = makePreprocessing(filenames, morph, configurations)
+    output_dir = configurations.get("output_files_directory", "output_files") + "/clasterization/" 
+
+    print('6) Вычисление модели TF*IDF.')
+    idf_word_data = calculateWordsIDF(texts, )
+    sorted_IDF = sorted(idf_word_data.items(), key=lambda x: x[1], reverse=False)
+    calculateTFIDF(texts, idf_word_data)
+
+    log_string = writeWordTFIDFToString(texts, idf_word_data)
+    writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_6.csv')
+
+    # Вырезаем из TF-IDF % худших слов
+    removeTFIDFWordsWithMiniamlMultiplier(texts , 0.05)
+
+    log_string = writeWordTFIDFToString(texts, idf_word_data)
+    writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_7.csv')
+
+    print("7) Латентно-семантический анализ")
+    lsa_matrix, all_idf_word_keys = CreateLSAMatrix(texts, idf_word_data)
+    u, S, v, s = divideSingular(lsa_matrix)
+    nu, ns, nv = cutSingularValue(u, S, v, s)
+
+    # Создание матрицы СЛОВО / ЧастотаСловаВ(Док1), ЧастотаСловаВ(Док1), ...
+    need_words = configurations["enable_words_output_in_lsa"] != "0";
+
+    viewLSAGraphics2D(plt, nu, nv, need_words, all_idf_word_keys, texts)
+    viewLSAGraphics3D(plt, nu, nv, need_words, all_idf_word_keys, texts)
+
+
+
