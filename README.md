@@ -5,11 +5,11 @@ Open source project for text mining process exploration.
 
 ## Установка на Window
 Наиболее простой вариант:
-1) Если в системе имеется Python3, то удалить его. (Если вы не собираетесь его использовать далее)
-2) Установить пакет Anakonda. (https://www.continuum.io/downloads)
-3) Установить библиотеку pymorphy2 с помощью команды: python -m pip install pymorphy2
+ - Если в системе имеется Python3, то удалить его. (Если вы не собираетесь его использовать далее)
+ - Установить пакет Anakonda. (https://www.continuum.io/downloads)
+ - Установить библиотеку pymorphy2 с помощью команды: python -m pip install pymorphy2
 
-В общем случае для использования программы необходимо установить библиотеки:
+В случае использования чистого языка Python 3 необходимо установить библиотеки:
  - matplotlib
  - pymorphy2
  - numpy
