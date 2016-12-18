@@ -7,7 +7,8 @@ import math
 import pymorphy2
 from pymorphy2 import tokenizers 
 
-from TextData import TextData
+from sources.TextData import TextData
+
 
 def readConfigurationFile(filename):
     with codecs.open(filename, 'r', "utf-8") as text_file:

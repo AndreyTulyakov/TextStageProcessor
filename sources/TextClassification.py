@@ -26,7 +26,7 @@ class DialogConfigClassification(QDialog):
 
     def __init__(self, filenames, morph, configurations, parent):
         super().__init__()
-        uic.loadUi('program/DialogConfigClassification.ui', self)
+        uic.loadUi('sources/DialogConfigClassification.ui', self)
 
         self.filenames = filenames
         self.morph = morph

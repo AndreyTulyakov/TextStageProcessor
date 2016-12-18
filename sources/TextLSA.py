@@ -11,9 +11,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
-from TextData import TextData
-
-from TextPreprocessing import *
+from sources.TextData import TextData
+from sources.TextPreprocessing import *
 
 # Реализация латентно семантического анализа. LSA
 
@@ -146,7 +145,7 @@ class DialogConfigLSA(QDialog):
 
     def __init__(self, filenames, morph, configurations, parent):
         super().__init__()
-        uic.loadUi('program/DialogConfigLSA.ui', self)
+        uic.loadUi('sources/DialogConfigLSA.ui', self)
 
         self.filenames = filenames
         self.morph = morph

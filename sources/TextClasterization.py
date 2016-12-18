@@ -10,9 +10,10 @@ from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
 from PyQt5 import QtCore, QtGui, uic
 
 
-from TextData import TextData
+from sources.TextData import TextData
+from sources.TextPreprocessing import *
 
-from TextPreprocessing import *
+
 
 
 def sim(D, i, j):
@@ -155,7 +156,7 @@ class DialogConfigClasterization(QDialog):
 
     def __init__(self, filenames, morph, configurations, parent):
         super().__init__()
-        uic.loadUi('program/DialogConfigClasterization.ui', self)
+        uic.loadUi('sources/DialogConfigClasterization.ui', self)
 
         self.filenames = filenames
         self.morph = morph
@@ -175,7 +176,8 @@ class DialogConfigClasterization(QDialog):
 
         texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
         output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/" 
-
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         # Нахождение матрицы весов
 
         t_all = dict()

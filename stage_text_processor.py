@@ -11,11 +11,11 @@ from PyQt5.QtGui import QIcon
 from PyQt5 import QtCore
 
 
-from TextData import TextData
-from TextPreprocessing import *
-from TextClasterization import *
-from TextClassification import *
-from TextLSA import *
+from sources.TextData import TextData
+from sources.TextPreprocessing import *
+from sources.TextClasterization import *
+from sources.TextClassification import *
+from sources.TextLSA import *
 
 
 # Для корректного отображение шрифтов на графиках в Windows
