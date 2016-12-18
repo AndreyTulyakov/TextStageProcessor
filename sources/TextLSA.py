@@ -4,6 +4,8 @@
 import numpy as np
 import math
 
+from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
+from PyQt5 import QtCore, QtGui, uic
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -86,15 +88,13 @@ def cutSingularValue(u, S, v, s):
 
 
 def viewLSAGraphics2D(plt, nu, nv, need_words, all_idf_word_keys, texts):
-    plt.plot(nu[0],nu[1],'go') #Построение графика
-    plt.plot(nv[0],nv[1],'go') #Построение графика
+    plt.plot(nu[0],nu[1],'go')
+    plt.plot(nv[0],nv[1],'go')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.title('LSA 2D')
+    plt.grid(True)
 
-    plt.xlabel('x') #Метка по оси x в формате TeX
-    plt.ylabel('y') #Метка по оси y в формате TeX
-    plt.title('LSA 2D') #Заголовок в формате TeX
-    plt.grid(True) #Сетка
-
-    #====================================================================================
     min_value = 0.1
 
     if(need_words):
@@ -105,7 +105,7 @@ def viewLSAGraphics2D(plt, nu, nv, need_words, all_idf_word_keys, texts):
     for i in range(len(texts)):
             plt.annotate(str(texts[i].filename), xy=(nv[0][i],nv[1][i]), textcoords='data')
 
-    plt.show() #Показать график
+    plt.show()
 
 
 def viewLSAGraphics3D(plt, nu, nv, need_words, all_idf_word_keys, texts):
@@ -119,17 +119,16 @@ def viewLSAGraphics3D(plt, nu, nv, need_words, all_idf_word_keys, texts):
     nuxx = []
     nuxy = []
     nuxz = []
+
     for i in range(len(nu[0])):
         if(abs(nu[0][i])>min_value or abs(nu[1][i])>min_value or abs(nu[2][i])>min_value):
             nuxx.append(nu[0][i])
             nuxy.append(nu[1][i])
             nuxz.append(nu[2][i])
 
-
     if(need_words):
        ax.scatter(nuxx,nuxy,nuxz, c='r')#, marker='o')
     ax.scatter(nv[0],nv[1],nv[2], c='b', marker='^')
-
 
     for i in range(len(texts)):
            ax.text(nv[0][i], nv[1][i], nv[2][i], str(texts[i].filename), None)
@@ -139,41 +138,77 @@ def viewLSAGraphics3D(plt, nu, nv, need_words, all_idf_word_keys, texts):
            if(abs(nu[0][i])>min_value or abs(nu[1][i])>min_value or abs(nu[2][i])>min_value):
                ax.text(nuxx[i],nuxy[i],nuxz[i], str(all_idf_word_keys[i]), None)
 
-
-    plt.show() #Показать график
-
+    plt.show()
 
 
 
-def makeLSA(filenames, morph, configurations):
+class DialogConfigLSA(QDialog):
 
-    texts = makePreprocessing(filenames, morph, configurations)
-    output_dir = configurations.get("output_files_directory", "output_files") + "/clasterization/" 
+    def __init__(self, filenames, morph, configurations, parent):
+        super().__init__()
+        uic.loadUi('program/DialogConfigLSA.ui', self)
 
-    print('6) Вычисление модели TF*IDF.')
-    idf_word_data = calculateWordsIDF(texts, )
-    sorted_IDF = sorted(idf_word_data.items(), key=lambda x: x[1], reverse=False)
-    calculateTFIDF(texts, idf_word_data)
+        self.filenames = filenames
+        self.morph = morph
+        self.configurations = configurations
+        self.parent = parent
 
-    log_string = writeWordTFIDFToString(texts, idf_word_data)
-    writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_6.csv')
+        self.nu = []
+        self.ns = []
+        self.nv = []
+        self.all_idf_word_keys = []
+        self.texts = []
 
-    # Вырезаем из TF-IDF % худших слов
-    removeTFIDFWordsWithMiniamlMultiplier(texts , 0.05)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
-    log_string = writeWordTFIDFToString(texts, idf_word_data)
-    writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_7.csv')
+        self.buttonMakeLSA.clicked.connect(self.makeLSA)
+        self.button2DView.clicked.connect(self.make2DView)
+        self.button3DView.clicked.connect(self.make3DView)
 
-    print("7) Латентно-семантический анализ")
-    lsa_matrix, all_idf_word_keys = CreateLSAMatrix(texts, idf_word_data)
-    u, S, v, s = divideSingular(lsa_matrix)
-    nu, ns, nv = cutSingularValue(u, S, v, s)
-
-    # Создание матрицы СЛОВО / ЧастотаСловаВ(Док1), ЧастотаСловаВ(Док1), ...
-    need_words = configurations["enable_words_output_in_lsa"] != "0";
-
-    viewLSAGraphics2D(plt, nu, nv, need_words, all_idf_word_keys, texts)
-    viewLSAGraphics3D(plt, nu, nv, need_words, all_idf_word_keys, texts)
+        self.textEdit.setText("")
 
 
+    def makeLSA(self):
+        self.textEdit.setText("")
+        self.configurations["minimal_word_size"] = self.spinBoxMinimalWordsLen.value()
 
+        self.texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
+        output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/" 
+
+        self.repaint()
+        self.textEdit.append('Этап ЛСА:\n')
+        self.textEdit.append('1) Вычисление показателей TF*IDF.\n')
+        self.repaint()
+        idf_word_data = calculateWordsIDF(self.texts)
+        sorted_IDF = sorted(idf_word_data.items(), key=lambda x: x[1], reverse=False)
+        calculateTFIDF(self.texts, idf_word_data)
+
+        log_string = writeWordTFIDFToString(self.texts, idf_word_data)
+        writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_6.csv')
+
+        # Вырезаем из TF-IDF % худших слов
+        removeTFIDFWordsWithMiniamlMultiplier(self.texts , self.spinBoxCutPercent.value()/100.0)
+
+        log_string = writeWordTFIDFToString(self.texts, idf_word_data)
+        writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_7.csv')
+
+        self.textEdit.append('2) Латентно-семантический анализ.\n')
+        self.repaint()
+        lsa_matrix, self.all_idf_word_keys = CreateLSAMatrix(self.texts, idf_word_data)
+        u, S, v, s = divideSingular(lsa_matrix)
+        self.nu, self.ns, self.nv = cutSingularValue(u, S, v, s)
+
+        self.button2DView.setEnabled(True)
+        self.button3DView.setEnabled(True)
+
+        self.textEdit.append('Успешно завершено.')
+
+        QMessageBox.information(self, "Внимание", "Латентно-семантический анализ завершен!")
+
+    def make2DView(self):
+        need_words = self.checkBoxShowWords.isChecked();
+        viewLSAGraphics2D(plt, self.nu, self.nv, need_words, self.all_idf_word_keys, self.texts)
+
+    def make3DView(self):
+        need_words = self.checkBoxShowWords.isChecked();
+        viewLSAGraphics3D(plt, self.nu, self.nv, need_words, self.all_idf_word_keys, self.texts)

@@ -31,35 +31,6 @@ output_dir = configurations.get("output_files_directory", "output_files") + "/"
 # Получаем экземпляр анализатора (10-20мб)
 morph = pymorphy2.MorphAnalyzer()
 
-class ProcessPlanSelectionWindow(QDialog):
-
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-
-
-    def initUI(self):  
-        okButton = QPushButton("OK")
-        cancelButton = QPushButton("Cancel")
-
-        okButton.clicked.connect(self.accept)
-        cancelButton.clicked.connect(self.reject)
-
-        hbox = QHBoxLayout()
-        hbox.addStretch(1)
-        hbox.addWidget(okButton)
-        hbox.addWidget(cancelButton)
-
-        vbox = QVBoxLayout()
-        vbox.addStretch(1)
-        vbox.addLayout(hbox)
-
-        self.setLayout(vbox)
-
-        self.setGeometry(300, 300, 400, 300)
-        self.setWindowTitle('Выбор процесса')
-
-
 # Класс главного окна
 class MainWindow(QMainWindow):
     
@@ -105,61 +76,35 @@ class MainWindow(QMainWindow):
         else:
             return None
 
-
     def clasterization(self):
         print("Кластеризация")
         filenames = self.getFilenamesFromUserSelection()
         if(filenames != None):
-            makeClasterization(filenames, morph, configurations)
-        print("Кластеризация - завершено")
-        QMessageBox.information(self,"Внимание", "Процесс завершен!")
-
+            dialogConfigClasterization = DialogConfigClasterization(filenames, morph, configurations, self)
+            self.hide()
+            dialogConfigClasterization.destroyed.connect(self.show)
+            dialogConfigClasterization.exec_()
 
     def classification(self):
         print("Классификация")
         filenames = self.getFilenamesFromUserSelection()
         if(filenames != None):
-            makeClassification(filenames)
-        print("Классификация - завершено")
-        QMessageBox.information(self,"Внимание", "Процесс завершен!")
+            dialogConfigClassification = DialogConfigClassification(filenames, morph, configurations, self)
+            self.hide()
+            dialogConfigClassification.destroyed.connect(self.show)
+            dialogConfigClassification.exec_()
 
     def makeLSA(self):
         print("LSA")
         filenames = self.getFilenamesFromUserSelection()
         if(filenames != None):
-            makeLSA(filenames, morph, configurations)
-        print("LSA - завершено")
-        QMessageBox.information(self,"Внимание", "Процесс завершен!")
-
-
-
-    def buttonOpenClicked(self):
-        filenames, _ = QFileDialog.getOpenFileNames(self, "Открыть файлы для анализа", "", "Text Files (*.txt)", None)
-        if(len(filenames) > 0):
-            self.texts = loadInputFilesFromList(filenames)
-
-            for text in self.texts:
-                print(text.filename)
-
-            planSelectorWindow = ProcessPlanSelectionWindow()
-            planSelectorWindow.show()
-            planSelectorWindow.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-
-            result = planSelectorWindow.exec_()
-            if(result == QDialog.Accepted):
-                print("Производим анализ текстов...")
-                
-            else:
-                self.texts = []
+            dialogConfigLSA = DialogConfigLSA(filenames, morph, configurations, self)
+            self.hide()
+            dialogConfigLSA.destroyed.connect(self.show)
+            dialogConfigLSA.exec_()
 
 
 if __name__ == '__main__':
-    
     app = QApplication(sys.argv)
     ex = MainWindow()
     sys.exit(app.exec_())
-
-
-
-
-# ### ПРОГРАММА  ---------------------------------------------------------------

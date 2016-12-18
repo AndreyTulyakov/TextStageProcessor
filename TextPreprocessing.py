@@ -105,13 +105,13 @@ def wordSurnameDetector(word, results):
     return False
 
 # Удаляет СТОП-СЛОВа (Предлоги, союзы и тд.)
-def removeStopWordsFromSentences(sentences, morph):
+def removeStopWordsFromSentences(sentences, morph, minimal_word_size):
     for sentence in sentences:
         i = 0
         while i < len(sentence):
             current_word = sentence[i]
 
-            if(len(current_word) < 4):
+            if(len(current_word) < minimal_word_size):
                  sentence.pop(i)
                  i = i - 1
             else:
@@ -131,9 +131,9 @@ def removeStopWordsFromSentences(sentences, morph):
             i = i + 1
     return sentences
 
-def removeStopWordsInTexts(texts, morph):
+def removeStopWordsInTexts(texts, morph, minimal_word_size):
     for text in texts:
-        text.no_stop_words_sentences = removeStopWordsFromSentences(text.tokenized_sentences, morph)
+        text.no_stop_words_sentences = removeStopWordsFromSentences(text.tokenized_sentences, morph, minimal_word_size)
 
     log_string = "Удаление стоп-слов:\n"
 
@@ -282,7 +282,7 @@ def count_of_words_in_sentences(sentences):
     return counter
 
 # Вычисляет IDF для каждого слова каждого текста и возвращает словарик СЛОВО:IDF
-def calculateWordsIDF(texts, ):
+def calculateWordsIDF(texts):
     all_documents_count = len(texts);
     idf_data = dict()
     for text in texts:
@@ -339,7 +339,7 @@ def removeTFIDFWordsWithMiniamlMultiplier(texts , min_mult):
 
 
 
-def makePreprocessing(filenames, morph, configurations):
+def makePreprocessing(filenames, morph, configurations, additional_output):
 
     log_string = ""
 
@@ -350,25 +350,26 @@ def makePreprocessing(filenames, morph, configurations):
     # Разделяем предложения на слова
     texts = tokenizeTextData(texts)
 
-    print('Этап препроцессинга:')
+    additional_output.append('Этап препроцессинга:\n')
 
     # Удаление стоп-слов из предложения (частицы, прилагательные и тд)
-    print('1) Удаление стоп-слов.')
-    texts, log_string = removeStopWordsInTexts(texts, morph)
+    additional_output.append('1) Удаление стоп-слов.\n')
+    minimal_word_size = configurations.get("minimal_word_size", 3)
+    texts, log_string = removeStopWordsInTexts(texts, morph, minimal_word_size)
     writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_1.txt')
 
     # Переводим обычное предложение в нормализованное (каждое слово)
-    print('2) Нормализация.')
+    additional_output.append('2) Нормализация.\n')
     texts, log_string = normalizeTexts(texts, morph)
     writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_2.txt')
 
     # Приведение регистра (все слова с маленькой буквы за исключением ФИО)
-    print('3) Приведение регистра.')
+    additional_output.append('3) Приведение регистра.\n')
     texts, log_string = fixRegisterInTexts(texts, morph)
     writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_3.txt')
 
     # Подсчет частоты слов в тексте
-    print('4) Расчет частотной таблицы слов.')
+    additional_output.append('4) Расчет частотной таблицы слов.\n')
     texts, log_string = calculateWordsFrequencyInTexts(texts)
     writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_4.csv')
 
