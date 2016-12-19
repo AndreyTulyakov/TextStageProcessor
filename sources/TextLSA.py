@@ -170,9 +170,10 @@ class DialogConfigLSA(QDialog):
     def makeLSA(self):
         self.textEdit.setText("")
         self.configurations["minimal_word_size"] = self.spinBoxMinimalWordsLen.value()
-
+        self.configurations["cut_ADJ"] = self.checkBoxPrilag.isChecked()
+        
         self.texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
-        output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/" 
+        output_dir = self.configurations.get("output_files_directory", "output_files")
 
         self.repaint()
         self.textEdit.append('Этап ЛСА:\n')
@@ -183,13 +184,13 @@ class DialogConfigLSA(QDialog):
         calculateTFIDF(self.texts, idf_word_data)
 
         log_string = writeWordTFIDFToString(self.texts, idf_word_data)
-        writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_6.csv')
+        writeStringToFile(log_string.replace('\n ', '\n'), output_dir + '/output_stage_6.csv')
 
         # Вырезаем из TF-IDF % худших слов
         removeTFIDFWordsWithMiniamlMultiplier(self.texts , self.spinBoxCutPercent.value()/100.0)
 
         log_string = writeWordTFIDFToString(self.texts, idf_word_data)
-        writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_7.csv')
+        writeStringToFile(log_string.replace('\n ', '\n'), output_dir + '/output_stage_7.csv')
 
         self.textEdit.append('2) Латентно-семантический анализ.\n')
         self.repaint()

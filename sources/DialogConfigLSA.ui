@@ -77,6 +77,13 @@
     </layout>
    </item>
    <item>
+    <widget class="QCheckBox" name="checkBoxPrilag">
+     <property name="text">
+      <string>Не использовать прилагательные.</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QTextEdit" name="textEdit">
      <property name="readOnly">
       <bool>true</bool>

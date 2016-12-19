@@ -37,6 +37,18 @@ def readSentencesFromInputText(filename, input_dir_name):
     return None
 
 # Загружает из директории input_dir_name все txt файлы в список объектов TextData
+def loadInputFilesFromList(input_files_list):
+    print(input_files_list)
+
+    texts = []
+    for filename in input_files_list:
+        text_data = TextData(filename)
+        text_data.original_sentences = readSentencesFromInputText(filename, input_dir_name)
+        texts.append(text_data)
+
+    return texts
+
+# Загружает из директории input_dir_name все txt файлы в список объектов TextData
 def loadInputFiles(input_dir_name):
     input_filenames = []
     for filename in os.listdir(input_dir_name):
@@ -106,7 +118,10 @@ def wordSurnameDetector(word, results):
     return False
 
 # Удаляет СТОП-СЛОВа (Предлоги, союзы и тд.)
-def removeStopWordsFromSentences(sentences, morph, minimal_word_size):
+def removeStopWordsFromSentences(sentences, morph, configurations):
+
+    minimal_word_size = configurations.get("minimal_word_size", 3)
+    cut_ADJ = configurations.get("cut_ADJ", False)
     for sentence in sentences:
         i = 0
         while i < len(sentence):
@@ -118,8 +133,8 @@ def removeStopWordsFromSentences(sentences, morph, minimal_word_size):
             else:
                 results = morph.parse(current_word)
                 for result in results:
-                    if(result.tag.POS == 'ADJF'
-                        or result.tag.POS == 'ADJS'
+                    if((cut_ADJ and (result.tag.POS == 'ADJF'
+                        or result.tag.POS == 'ADJS'))
                         or result.tag.POS == 'PREP'
                         or result.tag.POS == 'ADVB'
                         or result.tag.POS == 'COMP'
@@ -132,9 +147,9 @@ def removeStopWordsFromSentences(sentences, morph, minimal_word_size):
             i = i + 1
     return sentences
 
-def removeStopWordsInTexts(texts, morph, minimal_word_size):
+def removeStopWordsInTexts(texts, morph, configurations):
     for text in texts:
-        text.no_stop_words_sentences = removeStopWordsFromSentences(text.tokenized_sentences, morph, minimal_word_size)
+        text.no_stop_words_sentences = removeStopWordsFromSentences(text.tokenized_sentences, morph, configurations)
 
     log_string = "Удаление стоп-слов:\n"
 
@@ -345,7 +360,7 @@ def makePreprocessing(filenames, morph, configurations, additional_output):
     log_string = ""
 
     # Загружаем предложения из нескольких файлов
-    texts = loadInputFiles(configurations.get("input_files_directory","input_files"))
+    texts = loadInputFilesFromList(filenames)
     output_dir = configurations.get("output_files_directory", "output_files") + "/" 
 
     # Разделяем предложения на слова
@@ -355,8 +370,8 @@ def makePreprocessing(filenames, morph, configurations, additional_output):
 
     # Удаление стоп-слов из предложения (частицы, прилагательные и тд)
     additional_output.append('1) Удаление стоп-слов.\n')
-    minimal_word_size = configurations.get("minimal_word_size", 3)
-    texts, log_string = removeStopWordsInTexts(texts, morph, minimal_word_size)
+
+    texts, log_string = removeStopWordsInTexts(texts, morph, configurations)
     writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_1.txt')
 
     # Переводим обычное предложение в нормализованное (каждое слово)

@@ -27,6 +27,8 @@ if(os.name != 'posix'):
 
 configurations = readConfigurationFile("configuration.cfg")
 output_dir = configurations.get("output_files_directory", "output_files") + "/"
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
 
 # Получаем экземпляр анализатора (10-20мб)
 morph = pymorphy2.MorphAnalyzer()
