@@ -49,6 +49,11 @@ def GetS(D):
 
     return S
 
+def indexes2DocNames(docIndexes,filenames):
+    res =[]
+    for doc in range(len(docIndexes)):
+        res[doc] = filenames[docIndexes]
+    return res
 
 def agglomerative_hierarchical_clustering(D):
     S = GetS(D)
@@ -95,7 +100,7 @@ def FindUnion(Dist, F):
                 min_i = i
                 min_j = j
 
-    return [min_i, min_j]
+    return [min_i, min_j], Dist[min_i][min_j]
 
 
 class Cluster:
@@ -149,8 +154,13 @@ def Cluster2String(clusters, cluster):
     res += '}'
     return res
 
+def Cluster2StringNames(clusters, cluster, filenames):
+    res = ''
+    clusters[cluster].sort(key=int, reverse=False)
+    for i in range(len(clusters[cluster])):
+        res += str(clusters[cluster][i] + 1) + ' = ' + os.path.basename(filenames[clusters[cluster][i]]) + '\n'
 
-
+    return res
 
 class DialogConfigClasterization(QDialog):
 
@@ -292,15 +302,18 @@ class DialogConfigClasterization(QDialog):
 
         for k in range(len(texts) - 1):
             printDist(dist, texts, self.filenames)
-            union = FindUnion(dist, F)
+            union, currDist = FindUnion(dist, F)
             firstCluster = ClusterByDoc(union[0], clusters)
             secondCluster = ClusterByDoc(union[1], clusters)
             print('found clusters = ' + str(firstCluster) + ' and ' + str(secondCluster))
             # print(str(union[0] + 1) + ' + ' + str(union[1] + 1) + ' with dist= ' + str(dist[union[0]][union[1]]))
-            result += 'step' + str(k) + ';' + Cluster2String(clusters, firstCluster) + ';+;' \
+            result += 'Step' + str(k) + '\nUnion --->;' + Cluster2String(clusters, firstCluster) + ';+;' \
                       + Cluster2String(clusters, secondCluster) + ';=;'
             UnionClusters(firstCluster, secondCluster, clusters)
-            result += Cluster2String(clusters, ClusterByDoc(union[0], clusters)) + '\n'
+            result += Cluster2String(clusters, ClusterByDoc(union[0], clusters)) + ';dist = ' + str(currDist) + '\n'
+            result += Cluster2StringNames(clusters, ClusterByDoc(union[0], clusters), self.filenames) + '\n'
+
+
             # doc2cluster[union[1]] = '{' + doc2cluster[union[1]] + ',' + doc2cluster[union[0]] + '}'
             # doc2cluster[union[0]] = ''
 
