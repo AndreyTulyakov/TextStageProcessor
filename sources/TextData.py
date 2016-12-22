@@ -22,5 +22,7 @@ class TextData:
         self.sorted_word_frequency = []
         # Счетчик слов в тексте
         self.word_count = 0
+        # Здесь можно хранить промежуточные версии предложений для вашего алгоритма
+        self.updated_sentences = []
         # Рассчитанные веса TF*IDF для каждого слова в тексте (с учетом соседних документов)
         self.words_tf_idf = dict()

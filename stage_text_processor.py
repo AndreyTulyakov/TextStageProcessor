@@ -16,6 +16,7 @@ from sources.TextPreprocessing import *
 from sources.TextClasterization import *
 from sources.TextClassification import *
 from sources.TextLSA import *
+from sources.TextDecomposeAndRuleApply import *
 
 
 # Для корректного отображение шрифтов на графиках в Windows
@@ -55,12 +56,18 @@ class MainWindow(QMainWindow):
         button_lsa.setMinimumHeight(32)
         button_lsa.clicked.connect(self.makeLSA)
 
+        button_analyze_and_rule_apply = QPushButton("Анализ и правила вывода предложений")
+        button_analyze_and_rule_apply.setMinimumHeight(32)
+        button_analyze_and_rule_apply.clicked.connect(self.analyze_and_rule_apply)
+
+
         spacer = QSpacerItem(20,40,QSizePolicy.Minimum,QSizePolicy.Expanding)
 
         vbox = QVBoxLayout()
         vbox.addWidget(button_clasterization)
         vbox.addWidget(button_classification)
         vbox.addWidget(button_lsa)
+        vbox.addWidget(button_analyze_and_rule_apply)
         vbox.addItem(spacer)
 
         widget = QWidget();
@@ -89,7 +96,7 @@ class MainWindow(QMainWindow):
 
     def classification(self):
         print("Классификация")
-        filenames = self.getFilenamesFromUserSelection()
+        filenames = self.getFilenamesFromUserSelectino()
         if(filenames != None):
             dialogConfigClassification = DialogConfigClassification(filenames, morph, configurations, self)
             self.hide()
@@ -104,6 +111,17 @@ class MainWindow(QMainWindow):
             self.hide()
             dialogConfigLSA.destroyed.connect(self.show)
             dialogConfigLSA.exec_()
+
+    def analyze_and_rule_apply(self):
+        print("Анализ и применение правил вывода")
+        filenames = self.getFilenamesFromUserSelection()
+        if(filenames != None):
+            dialogConfigDRA = DialogConfigDRA(filenames, morph, configurations, self)
+            self.hide()
+            dialogConfigDRA.destroyed.connect(self.show)
+            dialogConfigDRA.exec_()
+
+
 
 
 if __name__ == '__main__':
