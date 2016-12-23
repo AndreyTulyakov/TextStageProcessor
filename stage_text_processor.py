@@ -96,7 +96,7 @@ class MainWindow(QMainWindow):
 
     def classification(self):
         print("Классификация")
-        filenames = self.getFilenamesFromUserSelectino()
+        filenames = []
         if(filenames != None):
             dialogConfigClassification = DialogConfigClassification(filenames, morph, configurations, self)
             self.hide()

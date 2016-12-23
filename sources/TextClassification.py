@@ -3,6 +3,7 @@
 
 import os
 import re
+from sources.TextPreprocessing import *
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
@@ -16,9 +17,212 @@ from sklearn import tree
 from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
 from PyQt5 import QtCore, QtGui, uic
 
-def StrExtractNum(s):
-    m = re.search('[0-9]+', s)
-    return int(m.group(0))
+
+
+class BagOfWords(object):
+
+    
+    def __init__(self):
+        self.__number_of_words = 0
+        self.__bag_of_words = {}
+        
+    def __add__(self,other):
+
+        erg = BagOfWords()
+        sum = erg.__bag_of_words
+        for key in self.__bag_of_words:
+            sum[key] = self.__bag_of_words[key]
+            if key in other.__bag_of_words:
+                sum[key] += other.__bag_of_words[key]
+        for key in other.__bag_of_words:
+            if key not in sum:
+                sum[key] = other.__bag_of_words[key]
+        return erg
+        
+    def add_word(self,word):
+
+        self.__number_of_words += 1
+        if word in self.__bag_of_words:
+            self.__bag_of_words[word] += 1
+        else:
+            self.__bag_of_words[word] = 1
+    
+    def len(self):
+
+        return len(self.__bag_of_words)
+    
+    def Words(self):
+
+        return self.__bag_of_words.keys()
+    
+        
+    def BagOfWords(self):
+
+        return self.__bag_of_words
+        
+    def WordFreq(self,word):
+
+        if word in self.__bag_of_words:
+            return self.__bag_of_words[word]
+        else:
+            return 0
+            
+class Document(object):
+
+    _vocabulary = BagOfWords()
+ 
+    def __init__(self, vocabulary):
+        self.__name = ""
+        self.__document_class = None
+        self._words_and_freq = BagOfWords()
+        Document._vocabulary = vocabulary
+    
+    def read_document(self,filename, learn=False):
+
+        try:
+            text = open(filename,"r", encoding='utf-8').read()
+        except UnicodeDecodeError:
+            text = open(filename,"r", encoding='latin-1').read()
+        text = text.lower()
+        words = re.split("[^\wäöüÄÖÜß]*",text)
+
+        self._number_of_words = 0
+        for word in words:
+            self._words_and_freq.add_word(word)
+            if learn:
+                Document._vocabulary.add_word(word)
+
+    def __add__(self,other):
+
+        res = Document(Document._vocabulary)
+        res._words_and_freq = self._words_and_freq + other._words_and_freq    
+        return res
+    
+    def vocabulary_length(self):
+
+        return len(Document._vocabulary)
+                
+    def WordsAndFreq(self):
+
+        return self._words_and_freq.BagOfWords()
+        
+    def Words(self):
+
+        d =  self._words_and_freq.BagOfWords()
+        return d.keys()
+    
+    def WordFreq(self,word):
+
+        bow =  self._words_and_freq.BagOfWords()
+        if word in bow:
+            return bow[word]
+        else:
+            return 0
+                
+    def __and__(self, other):
+  
+        intersection = []
+        words1 = self.Words()
+        for word in other.Words():
+            if word in words1:
+                intersection += [word]
+        return intersection
+        
+class DocumentClass(Document):
+    def __init__(self, vocabulary):
+        Document.__init__(self, vocabulary)
+        self._number_of_docs = 0
+
+    def Probability(self,word):
+
+        voc_len = Document._vocabulary.len()
+        SumN = 0
+        for i in range(voc_len):
+            SumN = DocumentClass._vocabulary.WordFreq(word)
+        N = self._words_and_freq.WordFreq(word)
+        erg = 1 + N
+        erg /= voc_len + SumN
+        return erg
+
+    def __add__(self,other):
+
+        res = DocumentClass(self._vocabulary)
+        res._words_and_freq = self._words_and_freq + other._words_and_freq 
+ 
+        return res
+
+    def SetNumberOfDocs(self, number):
+        self._number_of_docs = number
+    
+    def NumberOfDocuments(self):
+        return self._number_of_docs
+
+class Pool(object):
+    def __init__(self):
+        self.__document_classes = {}
+        self.__vocabulary = BagOfWords()
+            
+    def sum_words_in_class(self, dclass):
+
+        sum = 0
+        for word in self.__vocabulary.Words():
+            WaF = self.__document_classes[dclass].WordsAndFreq()
+            if word in WaF:
+                sum +=  WaF[word]
+        return sum
+    
+    def learn(self, directory, dclass_name):
+
+        x = DocumentClass(self.__vocabulary)
+        dir = os.listdir(directory)
+        for file in dir:
+            d = Document(self.__vocabulary)
+            print(directory + "/" + file)
+            d.read_document(directory + "/" +  file, learn = True)
+            x = x + d
+        self.__document_classes[dclass_name] = x
+        x.SetNumberOfDocs(len(dir))
+
+    
+    def Probability(self, doc, dclass = ""):
+
+        if dclass:
+            sum_dclass = self.sum_words_in_class(dclass)
+            prob = 0
+        
+            d = Document(self.__vocabulary)
+            d.read_document(doc)
+
+            for j in self.__document_classes:
+                sum_j = self.sum_words_in_class(j)
+                prod = 1
+                for i in d.Words():
+                    wf_dclass = 1 + self.__document_classes[dclass].WordFreq(i)
+                    wf = 1 + self.__document_classes[j].WordFreq(i)
+                    r = wf * sum_dclass / (wf_dclass * sum_j)
+                    prod *= r
+                prob += prod * self.__document_classes[j].NumberOfDocuments() / self.__document_classes[dclass].NumberOfDocuments()
+            if prob != 0:
+                return round(1 / prob, 3)
+            else:
+                return -1
+        else:
+            prob_list = []
+            for dclass in self.__document_classes:
+                prob = self.Probability(doc, dclass)
+                prob_list.append([dclass,prob])
+            prob_list.sort(key = lambda x: x[1], reverse = True)
+            return prob_list
+
+    def DocumentIntersectionWithClasses(self, doc_name):
+        res = [doc_name]
+        for dc in self.__document_classes:
+            d = Document(self.__vocabulary)
+            d.read_document(doc_name, learn=False)
+            o = self.__document_classes[dc] &  d
+            intersection_ratio = len(o) / len(d.Words())
+            res += (dc, intersection_ratio)
+        return res
 
 
 
@@ -40,97 +244,37 @@ class DialogConfigClassification(QDialog):
         self.textEdit.setText("")
 
 
+    def writeStringToFile(data_str, filename):
+        with open(filename, 'w') as out_text_file:
+            out_text_file.write(data_str)
+
     def makeClassification(self):
         self.textEdit.setText("")
-     
-        self.filenames.sort(key = StrExtractNum)      
+        base = "input_files/classification/test/"
 
-        files_all = []
-        for file in self.filenames:
-            files_all.append(open(file, 'r').read())
+        DClasses = os.listdir(base)
 
-        regex=re.compile(".*(_[a-z]).*")
-        cl1 = [m.group(1) for l in self.filenames for m in [regex.search(l)] if m]
-        targets_all = []
-        for cl in cl1:
-            targets_all.append(cl[1:])
+        p = Pool()
+        for i in DClasses:
+            p.learn(base + i, i)
 
-        n = 17
-        doc_train = files_all[:n]
-        train_target = targets_all[:n]
-        docs_test = files_all[n:]
-        test_target = targets_all[n:]  
+        log_string = "Naive Bayes:\n"
+        for i in DClasses:
+            dir = os.listdir(base + i)
+            for file in dir:
+                res = p.Probability(base + i + "/" + file)
+                str_out = i + ": " + file + ": " + str(res)
+                self.textEdit.setText(str_out)
+                log_string = log_string + str_out + '\n'
 
-
-
-
-        text_clf = Pipeline( [('vect', CountVectorizer()), ('tfidf', TfidfTransformer()), ('clf', MultinomialNB())])
-        text_clf = text_clf.fit(doc_train, train_target)
-        predicted_nb = text_clf.predict(docs_test)
-
-        text_clf_knn = Pipeline( [('vect', CountVectorizer()),('tfidf', TfidfTransformer()), ('clf', neighbors.KNeighborsClassifier())] )
-        text_clf_knn = text_clf_knn.fit(doc_train, train_target)
-        predicted_knn = text_clf_knn.predict(docs_test)
-
-
-
-        text_clf_svm = Pipeline( [('vect', CountVectorizer()), ('tfidf', TfidfTransformer()), ('clf', SGDClassifier())] )
-        #('clf', SGDClassifier(loss='hinge', penalty='l2',
-        #                      alpha=1e-3, n_iter=5, random_state=42)),
+        self.textEdit.setText(log_string)
         
-        _ = text_clf_svm.fit(doc_train, train_target)
-        predicted_svm = text_clf_svm.predict(docs_test)
 
+                
+        output_dir = self.configurations.get("output_files_directory", "output_files/")
 
-        text_clf_tr = Pipeline([('vect', CountVectorizer()),
-                             ('tfidf', TfidfTransformer()),
-                             ('clf', tree.DecisionTreeClassifier()),
-        ])
-        _ = text_clf_tr.fit(doc_train, train_target)
-        predicted_tr = text_clf_tr.predict(docs_test)
+        writeStringToFile(log_string, output_dir + 'output_naive_bayes.txt')
 
-        #print('Trained on files:')
-        #print(self.filenames[:n])
-
-        self.textEdit.append('Выборка для обучения:\n')
-        for i in range(n):
-            self.textEdit.append('   ' + self.filenames[i] + '\n')
-
-        self.textEdit.append('Выборка для тестирования:\n')
-        for i in range(n, len(self.filenames)):
-            self.textEdit.append('   ' + self.filenames[i] + '\n')
-
-        #print('Tested on files:') 
-        #print(self.filenames[n:])
-        self.textEdit.append('Алгоритм Naive Bayes:')
-        self.textEdit.append(str(predicted_nb) + '\n')
-
-        self.textEdit.append('Алгоритм K Nearest Neighbours:')
-        self.textEdit.append(str(predicted_knn) + '\n')
-
-        self.textEdit.append('Алгоритм Vector Machine:')
-        self.textEdit.append(str(predicted_svm) + '\n')
-
-        self.textEdit.append('Алгоритм Decision Trees:')
-        self.textEdit.append(str(predicted_tr) + '\n')
-
-        # print('Naive Bayes')
-        # print(predicted_nb)
-        # print('K Nearest Neighbours')
-        # print(predicted_knn)
-        # print('Support Vector Machine')
-        # print(predicted_svm)
-        # print('Decision Tree:')
-        # print(predicted_tr)
-
-
-        #from sklearn import metrics
-        #print(metrics.classification_report(test_target, predicted,
-        #    target_names=['n', 'x']))
-        #print(metrics.confusion_matrix(test_target, predicted))
-        #print(metrics.confusion_matrix(test_target, predicted_knn))
-        #print(metrics.confusion_matrix(test_target, predicted_svm))
-            
 
         self.textEdit.append('Успешно завершено.')
 
