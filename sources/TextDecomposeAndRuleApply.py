@@ -128,10 +128,8 @@ def analyzePersons(sentence, morph):
     global person_ids
 
     # Деанонимизируем ОН, ОНА, ЕГО и тд
-    print('1: ' + str(sentence))
     deanomized_sentence = deanonimizeSentence(sentence, deanon_stack, morph)
-    #print('Deadnoned: ',deanomized_sentence)
-    print('2: ' + str(deanomized_sentence))
+
     # Находим полные идентификаторы лиц, например: <Иван Васильевич>
     # Заменяем полные идентификаторы лиц кратким выражением #$1, #$2 и тд.
     personIdentificators, updated_sentence = extractFullPersonIdentificatorAndReplaceWithId(deanomized_sentence, morph)
@@ -346,7 +344,7 @@ def findActions(sentence, morph):
                 continue
 
         result = morph.parse(word)[0]
-        if(result.tag.POS == 'VERB'):
+        if(result.tag.POS == 'VERB' or result.tag.POS == 'INFN'):
             action_id = str('#ACT{0}').format(action_counter)
             action_counter = action_counter + 1
             actions[action_id] = word
@@ -356,7 +354,173 @@ def findActions(sentence, morph):
             pass
     return updated_sentence
 
+"""
+ Необходим разбор предложения:
+ Переносим события в вид функции
+ Покинул(а, с, d)
+ Заменил(a, b)
 
+ Заносим в стек преобразователя и на выходе получаем:
+ Покинул(а, с, d)
+ Вступил(b, c, d)
+
+ Восстанавливаем таблицу событий.
+"""
+def formActions(sentences, actions_grammatic):
+
+    functions_stack = []
+
+    for sentence in sentences:
+        current_function = []
+        modified_sentence = sentence[:]
+
+        print(sentence)
+
+        # Поиск функции начинается с поиска идентификаторов действий
+        for word in sentence:
+            if(word.startswith('#ACT')):
+                current_function.append(word)
+
+
+        # Если идентификаторы функции имеются то удаляем его из предложения
+        if(len(current_function)>0):
+            modified_sentence.remove(current_function[0])
+        else:
+            continue
+
+        current_gramatic = None
+        if(len(current_function)>0):
+            for action_grammatic in actions_grammatic:
+                #print('LA:', action_grammatic[0].lower(), actions[current_function[0]].lower())
+                if(action_grammatic[0].lower() == actions[current_function[0]].lower()):
+                    current_gramatic = action_grammatic[:]
+                    break;
+
+        if(current_gramatic == None):
+            print('Функция:', current_function[0], '[', actions[current_function[0]] ,'] не найдена!')
+            break
+
+        current_function[0] = actions[current_function[0]].lower()
+
+        current_gramatic.pop(0)
+        arg_counter = 0
+        for argument in current_gramatic:
+
+            if(argument == '#$'):
+                for word in modified_sentence:
+                    if(word.startswith('#$')):
+                        current_function.append(word)
+                        modified_sentence.remove(word)
+                        arg_counter = arg_counter + 1
+                        break;
+
+            if(argument == '#ESS'):
+                for word in modified_sentence:
+                    if(word.startswith('#ESS')):
+                        current_function.append(word)
+                        modified_sentence.remove(word)
+                        arg_counter = arg_counter + 1
+                        break;
+
+        if(arg_counter + 1 != len(current_function)):
+            print('Ошибка разбора #701')
+            break;
+        else:
+            if(len(current_function)> 0):
+                functions_stack.append(current_function)
+
+    return functions_stack
+
+
+
+
+def applyRules(output_rules, actions_map):
+
+    for output_rule in output_rules:
+        input_functions = output_rule[0]
+        func_index = 0
+        while func_index < (len(actions_map)-len(input_functions)+1):
+            rule_activated = True
+            for input_func_index in range(len(input_functions)):
+                if(actions_map[func_index+input_func_index][0] != input_functions[input_func_index][0]):
+                    rule_activated = False
+                    #print('Плохо', actions_map[func_index+input_func_index][0], input_functions[input_func_index][0])
+                    break;
+
+            if(rule_activated == True):
+                local_func_list = actions_map[func_index:len(input_functions)+func_index]
+                #print('Хорошо', output_rule, ' ---+---',local_func_list)
+                result = applyRule(output_rule, local_func_list)
+                #print('Хорошо2', output_rule)
+                #print('result:', result)
+                actions_map = actions_map[:func_index] + result + actions_map[func_index+len(input_functions):]
+                func_index = 0
+            else:
+                func_index = func_index + 1
+
+    return actions_map
+
+
+
+
+
+def applyRule(output_rule, target_actions):
+    func_counter = 0
+    arg_counter = 0
+    data = dict()
+
+    for input_function in output_rule[0]:
+        arg_counter = 0
+        
+        for arg in input_function:
+            if(arg_counter >= len(target_actions[func_counter])):
+                continue
+            data[arg] = target_actions[func_counter][arg_counter]
+            arg_counter = arg_counter + 1
+
+        func_counter = func_counter + 1
+
+    output_functions = []
+    for output_function_in_rule in output_rule[1]:
+
+        current_function = [output_function_in_rule[0]]
+        
+        for word in output_function_in_rule[1:]:
+            result = data.get(word)
+            if(result == None):
+                continue
+            current_function.append(result)
+
+        output_functions.append(current_function)
+
+    return output_functions
+
+
+def reconstructFunctions(functions_with_aliases):
+
+    result_func_list = []
+
+    for row in functions_with_aliases:
+        result_func = [row[0]]
+        for i in range(1, len(row)):
+            current_word = row[i]
+
+            if(current_word.startswith('#$')):
+                person_full_name = person_ids[current_word]
+                person_str_name = ''
+                for name in person_full_name:
+                    person_str_name = person_str_name + " " + name.capitalize()
+                person_str_name = person_str_name[1:]
+                result_func.append(person_str_name)
+                continue
+
+            if(current_word.startswith('#ESS')):
+                result_func.append(essences[current_word])
+                continue
+
+        result_func_list.append(result_func)
+
+    return result_func_list
 
 
 # Decomposition and Rule Apply
@@ -432,12 +596,42 @@ class DialogConfigDRA(QDialog):
         for action in actions.items():
             self.textEdit.append(str(action[0]) + ' -> ' + str(action[1]))
 
-        self.textEdit.append('\nРезультирующий формат предложения:')
-        for sentence in final_primary_sentences:
-            self.textEdit.append(str(sentence) + '')
+        for text in self.texts:
+            self.textEdit.append('\nРезультирующий формат предложения:')
+            for sentence in text.updated_sentences:
+                self.textEdit.append(str(sentence) + '')
 
 
+        self.textEdit.append('\nПреобразование в функциональный вид:')
+        # правила формирования аргументов для каждой функции
+        actions_grammatic = [['покинуть','#$','#ESS','#ESS'],
+                             ['заменить','#$','#$'],
+                             ['вступить','#$','#ESS','#ESS']]
 
+        for text in self.texts:
+            print("IN SENTENCES: ", text.updated_sentences)
+            actions_map = formActions(text.updated_sentences, actions_grammatic)
+            print("ACTIONS MAP: ", actions_map)
+            for action in actions_map:
+                self.textEdit.append('\nФункция:' + str(action))
+
+        self.textEdit.append('\nПрименение правил вывода:')
+        
+
+
+        # Добавим правило вывода: [входные функции] [выходные функции]
+        output_rules = []
+        output_rules.append([[['покинуть','#0','#1','#2'],['заменить','#0','#3']],
+                           [ ['покинуть','#0','#1','#2'],['вступить','#3','#1','#2'],['испариться','#0']]])
+
+        updated_functions = applyRules(output_rules, actions_map)
+        for function in updated_functions:
+            self.textEdit.append('\n'+str(function))
+
+        self.textEdit.append('\nВосстановление ссылок:')
+        reconstructed_functions = reconstructFunctions(updated_functions)
+        for function in reconstructed_functions:
+            self.textEdit.append(str(function))
 
 
         self.textEdit.append('Успешно завершено.')
