@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>537</width>
-    <height>454</height>
+    <height>671</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -55,7 +55,42 @@
    <item>
     <widget class="QPushButton" name="buttonClasterization">
      <property name="text">
-      <string>Выделить кластеры</string>
+      <string>Иерархический алгоритм</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pushButtonKMiddle">
+     <property name="text">
+      <string>Алгоритм к-средних</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pushButtonDBSCAN">
+     <property name="text">
+      <string>Плотностный алгоритм DBSCAN</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pushButtonCMiddle">
+     <property name="text">
+      <string>Нечеткий алгоритм с-средних</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pushButtonC2ICM">
+     <property name="text">
+      <string>Инкрементный алгоритм C2ICM</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pushButtonSOM">
+     <property name="text">
+      <string>Нейросетевой алгоритм SOM</string>
      </property>
     </widget>
    </item>
