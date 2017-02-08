@@ -12,7 +12,7 @@ from PyQt5 import QtCore
 
 
 from sources.TextData import TextData
-from sources.TextPreprocessing import *
+from sources.XiSquare import *
 from sources.TextClasterization import *
 from sources.TextClassification import *
 from sources.TextLSA import *
@@ -60,6 +60,11 @@ class MainWindow(QMainWindow):
         button_analyze_and_rule_apply.setMinimumHeight(32)
         button_analyze_and_rule_apply.clicked.connect(self.analyze_and_rule_apply)
 
+        button_xi_square = QPushButton("Критерий Хи-Квадрат")
+        button_xi_square.setMinimumHeight(32)
+        button_xi_square.clicked.connect(self.makeXiSquare)
+        button_xi_square.setEnabled(False)
+
 
         spacer = QSpacerItem(20,40,QSizePolicy.Minimum,QSizePolicy.Expanding)
 
@@ -68,6 +73,8 @@ class MainWindow(QMainWindow):
         vbox.addWidget(button_classification)
         vbox.addWidget(button_lsa)
         vbox.addWidget(button_analyze_and_rule_apply)
+        vbox.addWidget(button_xi_square
+                       )
         vbox.addItem(spacer)
 
         widget = QWidget();
@@ -77,6 +84,12 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Этапный текстовый процессор')    
         self.show()
 
+    def getFilenameFromUserSelection(self):
+        filenames, _ = QFileDialog.getOpenFileName(self, "Открыть файлы для анализа", "", "Any Files (*.*)", None)
+        if(len(filenames) > 0):
+            return filenames
+        else:
+            return None
 
     def getFilenamesFromUserSelection(self):
         filenames, _ = QFileDialog.getOpenFileNames(self, "Открыть файлы для анализа", "", "Text Files (*.txt)", None)
@@ -120,6 +133,15 @@ class MainWindow(QMainWindow):
             self.hide()
             dialogConfigDRA.destroyed.connect(self.show)
             dialogConfigDRA.exec_()
+
+    def makeXiSquare(self):
+        print("Применение критерия Хи-Квадрат")
+        filename = self.getFilenameFromUserSelection()
+        if(filename != None):
+            dialogXiSquare = DialogXiSquare(filename, morph, configurations, self)
+            self.hide()
+            dialogXiSquare.destroyed.connect(self.show)
+            dialogXiSquare.exec_()
 
 
 
