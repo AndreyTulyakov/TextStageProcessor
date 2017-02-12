@@ -28,7 +28,6 @@ def CreateLSAMatrix(texts, idf_word_data):
 
 
     all_idf_word_keys = list(all_idf_word_list.keys())
-    print("TOTAL WORDS:" + str(len(all_idf_word_list)))
     words_count = len(all_idf_word_keys)
 
     lsa_matrix = np.zeros(shape=(words_count,all_documents_count))
@@ -42,9 +41,6 @@ def CreateLSAMatrix(texts, idf_word_data):
             lsa_matrix[i][t] = text.words_tf_idf.get(current_word, 0.0)*math.sqrt(word_frequency_in_current_text*10.0)
             #lsx_matrix[i][t] = text.words_tf_idf.get(current_word, 0.0)
 
-    print("LSA:")
-    print(lsa_matrix)
-
     return lsa_matrix, all_idf_word_keys
 
 
@@ -52,31 +48,30 @@ def CreateLSAMatrix(texts, idf_word_data):
 def divideSingular(matrix):
     u,s,v = np.linalg.svd(matrix, full_matrices = True)
     S = np.zeros((u.shape[0], v.shape[0]), dtype=complex)
-    print("Сингулярный переход:" + str(s))
     S[:v.shape[0], :v.shape[1]] = np.diag(s)
     return u, S, v, s
 
 
-def cutSingularValue(u, S, v, s):
+def cutSingularValue(u, S, v, s, textEdit):
     # Если сингулярный переход менее 2 измерений то не имеет смысла анализировать.
     if(s.shape[0] == 0):
-        print("Сингулярный переход отсутствует. Добавьте документов или слов.")
+        textEdit.append("Сингулярный переход отсутствует. Добавьте документов или слов.\n")
         exit(0)
 
     if(s.shape[0] == 1):
-        print("Сингулярный переход имеет размерность 1. Добавьте документов или слов.")
+        textEdit.append("Сингулярный переход имеет размерность 1. Добавьте документов или слов.\n")
         exit(0)
 
     if(s.shape[0] == 2):
-        print("Сингулярный переход имеет размерность 2. 3D Проекция будет отключена.")
+        textEdit.append("Сингулярный переход имеет размерность 2. 3D Проекция будет отключена.\n")
         singular_minimal_transfer = 2
 
     if(s.shape[0] == 3):
-        print("Сингулярный переход имеет размерность 3.")
+        textEdit.append("Сингулярный переход имеет размерность 3.\n")
         singular_minimal_transfer = 3
 
     if(s.shape[0] > 3):
-        print("Сингулярный переход имеет размерность " + str(s.shape[0]) + ". Уменьшение до 3...")
+        textEdit.append("Сингулярный переход имеет размерность " + str(s.shape[0]) + ". Уменьшение до 3...\n")
         singular_minimal_transfer = 3
 
     nu = u[0:,0:(singular_minimal_transfer)]
@@ -199,7 +194,7 @@ class DialogConfigLSA(QDialog):
         self.repaint()
         lsa_matrix, self.all_idf_word_keys = CreateLSAMatrix(self.texts, idf_word_data)
         u, S, v, s = divideSingular(lsa_matrix)
-        self.nu, self.ns, self.nv = cutSingularValue(u, S, v, s)
+        self.nu, self.ns, self.nv = cutSingularValue(u, S, v, s, self.textEdit)
 
         self.button2DView.setEnabled(True)
         self.button3DView.setEnabled(True)

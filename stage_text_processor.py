@@ -71,8 +71,7 @@ class MainWindow(QMainWindow):
         vbox.addWidget(button_classification)
         vbox.addWidget(button_lsa)
         vbox.addWidget(button_analyze_and_rule_apply)
-        vbox.addWidget(button_xi_square
-                       )
+        vbox.addWidget(button_xi_square)
         vbox.addItem(spacer)
 
         widget = QWidget();
