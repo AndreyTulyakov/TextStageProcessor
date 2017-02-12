@@ -4,6 +4,7 @@
 import numpy as np
 import math
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
 from PyQt5 import QtCore, QtGui, uic
 
@@ -15,7 +16,6 @@ from sources.TextData import TextData
 from sources.TextPreprocessing import *
 
 # Реализация латентно семантического анализа. LSA
-
 # Создание матрицы слова-[частота]-документы
 def CreateLSAMatrix(texts, idf_word_data):
 
@@ -151,6 +151,9 @@ class DialogConfigLSA(QDialog):
         self.morph = morph
         self.configurations = configurations
         self.parent = parent
+
+        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint;
+        self.setWindowFlags(flags)
 
         self.nu = []
         self.ns = []

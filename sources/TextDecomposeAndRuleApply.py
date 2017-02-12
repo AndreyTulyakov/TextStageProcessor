@@ -6,7 +6,8 @@
 import pymorphy2
 import collections
 
-from pymorphy2 import tokenizers 
+from PyQt5.QtCore import Qt
+from pymorphy2 import tokenizers
 
 from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
 from PyQt5 import QtCore, QtGui, uic
@@ -529,6 +530,9 @@ class DialogConfigDRA(QDialog):
     def __init__(self, filenames, morph, configurations, parent):
         super().__init__()
         uic.loadUi('sources/DialogDecomposeAndRuleApply.ui', self)
+
+        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint;
+        self.setWindowFlags(flags)
 
         self.filenames = filenames
         self.morph = morph

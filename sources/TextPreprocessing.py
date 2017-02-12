@@ -38,8 +38,6 @@ def readSentencesFromInputText(filename, input_dir_name):
 
 # Загружает из директории input_dir_name все txt файлы в список объектов TextData
 def loadInputFilesFromList(input_files_list):
-    print(input_files_list)
-
     texts = []
     for filename in input_files_list:
         text_data = TextData(filename)
@@ -209,7 +207,7 @@ def calculateWordsFrequencyInTexts(texts):
                     text.word_frequency[word] = text.word_frequency.get(word, 0) + 1
 
         # Сортируем слова по частоте
-        text.sorted_word_frequency = sorted(text.word_frequency.items(), key= lambda x: x[1], reverse=True)
+        text.sorted_word_frequency = sorted(text.word_frequency.items(), key=lambda x: x[1], reverse=True)
 
     log_string = 'Расчет частотной таблицы слов.\n'
 

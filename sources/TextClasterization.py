@@ -3,6 +3,8 @@
 
 import pymorphy2
 import math
+
+from PyQt5.QtCore import Qt
 from pymorphy2 import tokenizers
 import os
 import random
@@ -182,6 +184,9 @@ class DialogConfigClasterization(QDialog):
     def __init__(self, filenames, morph, configurations, parent):
         super().__init__()
         uic.loadUi('sources/DialogConfigClasterization.ui', self)
+
+        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint;
+        self.setWindowFlags(flags)
 
         self.filenames = filenames
         self.morph = morph

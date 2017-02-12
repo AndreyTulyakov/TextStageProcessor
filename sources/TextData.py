@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 # Основная структура данных где хранятся промежуточные варианты по тексту
+import codecs
+
+
 class TextData:
     def __init__(self, filename):
         # Имя файла с текстом
@@ -26,3 +29,24 @@ class TextData:
         self.updated_sentences = []
         # Рассчитанные веса TF*IDF для каждого слова в тексте (с учетом соседних документов)
         self.words_tf_idf = dict()
+        # Категория документа (статьи)
+        self.category = None
+
+    def readSentencesFromInputText(self, subdir = None):
+        full_filename = self.filename
+        if(subdir != None):
+            full_filename = subdir + '/' + self.filename
+
+        with codecs.open(full_filename, 'r', "utf-8") as text_file:
+            data = text_file.read().replace('\n', ' ')
+            sentences = data.split('.')
+            for i in range(len(sentences)):
+                sentences[i] = sentences[i].strip().replace(',', '')
+            self.original_sentences = sentences
+
+    def constainsWord(self, test_word):
+        for sentense in self.register_pass_centences:
+            for word in sentense:
+                if(word == test_word):
+                    return True
+        return False

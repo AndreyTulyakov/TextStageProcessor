@@ -63,8 +63,6 @@ class MainWindow(QMainWindow):
         button_xi_square = QPushButton("Критерий Хи-Квадрат")
         button_xi_square.setMinimumHeight(32)
         button_xi_square.clicked.connect(self.makeXiSquare)
-        button_xi_square.setEnabled(False)
-
 
         spacer = QSpacerItem(20,40,QSizePolicy.Minimum,QSizePolicy.Expanding)
 
@@ -136,7 +134,7 @@ class MainWindow(QMainWindow):
 
     def makeXiSquare(self):
         print("Применение критерия Хи-Квадрат")
-        filename = self.getFilenameFromUserSelection()
+        filename = '/home/andrew/PycharmProjects/TextStageProcessor/input_files/learn_group.csv'#self.getFilenameFromUserSelection()
         if(filename != None):
             dialogXiSquare = DialogXiSquare(filename, morph, configurations, self)
             self.hide()

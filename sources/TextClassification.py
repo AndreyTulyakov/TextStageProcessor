@@ -3,6 +3,9 @@
 
 import os
 import re
+
+from PyQt5.QtCore import Qt
+
 from sources.TextPreprocessing import *
 
 from sklearn.feature_extraction.text import CountVectorizer
@@ -231,6 +234,9 @@ class DialogConfigClassification(QDialog):
     def __init__(self, filenames, morph, configurations, parent):
         super().__init__()
         uic.loadUi('sources/DialogConfigClassification.ui', self)
+
+        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint;
+        self.setWindowFlags(flags)
 
         self.filenames = filenames
         self.morph = morph
