@@ -24,6 +24,7 @@ Open source project for text mining process exploration.
  - lapack
  - scipy
  - sclearn
+ - pandas
 
 ### По вопросам
 > Andrew Tulyakov (mhyhre@gmail.com)
