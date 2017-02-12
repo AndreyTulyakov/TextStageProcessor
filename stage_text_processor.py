@@ -82,8 +82,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Этапный текстовый процессор')    
         self.show()
 
-    def getFilenameFromUserSelection(self):
-        filenames, _ = QFileDialog.getOpenFileName(self, "Открыть файлы для анализа", "", "Any Files (*.*)", None)
+    def getFilenameFromUserSelection(self, file_types = "Any Files (*.*)"):
+        filenames, _ = QFileDialog.getOpenFileName(self, "Открыть файлы для анализа", "", file_types, None)
         if(len(filenames) > 0):
             return filenames
         else:
@@ -134,7 +134,7 @@ class MainWindow(QMainWindow):
 
     def makeXiSquare(self):
         print("Применение критерия Хи-Квадрат")
-        filename = '/home/andrew/PycharmProjects/TextStageProcessor/input_files/learn_group.csv'#self.getFilenameFromUserSelection()
+        filename = self.getFilenameFromUserSelection("CSV Files (*.csv)")
         if(filename != None):
             dialogXiSquare = DialogXiSquare(filename, morph, configurations, self)
             self.hide()

@@ -42,17 +42,13 @@ class DialogXiSquare(QDialog):
         self.textEdit.setText("")
         self.configurations["minimal_word_size"] = 4
         self.configurations["cut_ADJ"] = False
-
         output_dir = self.configurations.get("output_files_directory", "output_files")
 
-        print('Step',1)
-
-        # Считываем обучающий файл содержащий информацию о том,
-        # какой файл к какой категории относится
+        # Считываем файл с информацией о категории и файлах
         learn_groups = pd.read_csv(self.filename, index_col=None,na_values=['nan'], keep_default_na=False)
         self.input_path = self.filename[0:self.filename.rfind('/')]
 
-        # Заполняем словарь КАТЕГОРИЯ:СПИСОК(ИМЯ_ФАЙЛА)
+        # Заполняем словарь КАТЕГОРИЯ:СПИСОК_ФАЙЛОВ
         for category in list(learn_groups):
             self.categories[category] = []
             for value in learn_groups[category]:
@@ -60,19 +56,14 @@ class DialogXiSquare(QDialog):
                 if(len(value) > 0):
                     self.categories[category].append(value)
 
-        print('Step',2)
-
+        # Загрузка текстовых файлов
         for key in self.categories.keys():
-            print(key)
             for filename in self.categories[key]:
                 if(filename != None and filename != 'nan' and len(filename) != 0):
                     text = TextData(filename)
                     text.readSentencesFromInputText(self.input_path)
                     text.category = key
-
                     self.texts.append(text)
-
-        print('Step', 3)
 
         # Предварительная обработка
         self.texts = tokenizeTextData(self.texts)
@@ -81,9 +72,7 @@ class DialogXiSquare(QDialog):
         self.texts, log_string = fixRegisterInTexts(self.texts, self.morph)
         self.texts, log_string = calculateWordsFrequencyInTexts(self.texts)
 
-        print('Step', 4)
-
-        # Создание матриц [Термы * Категории]
+        # Рассчет списка уникальных слов для матриц
         all_unique_words = dict()
         for text in self.texts:
             for sentence in text.register_pass_centences:
@@ -94,24 +83,16 @@ class DialogXiSquare(QDialog):
         categories_list = list(learn_groups)
         categories_count = len(categories_list)
 
-        print('Step', 5)
-
+        # Создание матриц (Категория * Слова)
         xi_a_matrix = np.zeros(shape=(categories_count, unique_words_count))
         xi_b_matrix = np.zeros(shape=(categories_count, unique_words_count))
         xi_c_matrix = np.zeros(shape=(categories_count, unique_words_count))
         xi_d_matrix = np.zeros(shape=(categories_count, unique_words_count))
         xi_mi_matrix = np.zeros(shape=(categories_count, unique_words_count))
+        xi_ig_matrix = np.zeros(shape=(categories_count, unique_words_count))
         xi_chi_matrix = np.zeros(shape=(categories_count, unique_words_count))
 
-        print('Step', 6)
-
-        print('Total unique words: ', len(all_unique_words.keys()))
-
-        # Рассчет частот
-        # A - кол-во док. принадлежащих к кат С и содержащих термин t
-        print(unique_words_count, categories_count)
-
-
+        # Рассчет А, B, C, D показателей (стр 173)
         for category_index in range(categories_count):
             category = categories_list[category_index]
             for word_index in range(unique_words_count):
@@ -129,12 +110,10 @@ class DialogXiSquare(QDialog):
                     if (not target_category and not contains_word):
                         xi_d_matrix[category_index][word_index] = xi_d_matrix[category_index][word_index] + 1
 
-        print('Step', 7)
 
         for category_index in range(categories_count):
-            category = categories_list[category_index]
             for word_index in range(unique_words_count):
-                word = all_unique_words_list[word_index]
+
                 u = len(self.texts)
                 a = xi_a_matrix[category_index][word_index]
                 b = xi_b_matrix[category_index][word_index]
@@ -145,21 +124,24 @@ class DialogXiSquare(QDialog):
                 mi_value = (a * u) / ((a+c)*(a+b))
                 xi_mi_matrix[category_index][word_index] = np.log2(mi_value)
 
+                # Формула 7 стр174
+                ig_value_1 = (a / u) * np.log2((u * a) / ((a + b) * (a + c)))
+                ig_value_2 = (c / u) * np.log2((u * c) / ((c + d) * (a + c)))
+                ig_value_3 = (b / u) * np.log2((u * b) / ((a + b) * (b + d)))
+                ig_value_4 = (d / u) * np.log2((u * d) / ((c + d) * (b + d)))
+                xi_ig_matrix[category_index][word_index] = ig_value_1 + ig_value_2 + ig_value_3 + ig_value_4
+
                 # Формула-9 стр174
                 chi_value = u * (((a*d)-(c*b))**2)
                 chi_value = chi_value / ((a+c)*(b+d)*(a+b)*(c+d))
                 xi_chi_matrix[category_index][word_index] = chi_value
 
-        print(xi_mi_matrix)
-
+        # Сохраняем рассчитанные матрицы в CSV файлы
         self.printMatrixToCsv(output_dir + '/mi_matrix.csv', categories_list, all_unique_words_list, xi_mi_matrix)
+        self.printMatrixToCsv(output_dir + '/ig_matrix.csv', categories_list, all_unique_words_list, xi_ig_matrix)
         self.printMatrixToCsv(output_dir + '/chi_matrix.csv', categories_list, all_unique_words_list, xi_chi_matrix)
 
-
-
-        print('Step', 8)
-
-        QMessageBox.information(self, "Внимание", "Расчет Хи-Квадрат завершен!")
+        QMessageBox.information(self, "Внимание", "Расчет: MI, IG, Хи-Квадрат завершен!")
 
 
     def printMatrixToCsv(self, filename, header1, header2, matrix):
