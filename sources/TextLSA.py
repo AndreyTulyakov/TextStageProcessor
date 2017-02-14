@@ -4,8 +4,6 @@
 import numpy as np
 import math
 
-import pyqtgraph as pg
-
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
@@ -13,7 +11,6 @@ from PyQt5 import QtCore, QtGui, uic
 from PyQt5.QtCore import QObject
 
 import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from PyQt5.QtCore import QThread
@@ -159,7 +156,6 @@ class DialogConfigLSA(QDialog):
         self.viewLSAGraphics2D(plt, self.nu, self.nv, need_words, self.all_idf_word_keys, self.texts)
         plt.show()
 
-
     def make3DView(self):
         need_words = self.checkBoxShowWords.isChecked();
         self.viewLSAGraphics3D(plt, self.nu, self.nv, need_words, self.all_idf_word_keys, self.texts)
@@ -184,7 +180,6 @@ class DialogConfigLSA(QDialog):
         for i in range(len(texts)):
                 plt.annotate(str(texts[i].filename), xy=(nv[0][i],nv[1][i]), textcoords='data')
 
-        plt.show()
 
 
     def viewLSAGraphics3D(self, plt, nu, nv, need_words, all_idf_word_keys, texts):
@@ -216,5 +211,3 @@ class DialogConfigLSA(QDialog):
            for i in range(len(nuxx)):
                if(abs(nu[0][i])>min_value or abs(nu[1][i])>min_value or abs(nu[2][i])>min_value):
                    ax.text(nuxx[i],nuxy[i],nuxz[i], str(all_idf_word_keys[i]), None)
-
-        plt.show()
