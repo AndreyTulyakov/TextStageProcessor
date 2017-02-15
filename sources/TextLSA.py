@@ -9,9 +9,18 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
 from PyQt5 import QtCore, QtGui, uic
 from PyQt5.QtCore import QObject
+from PyQt5.QtWidgets import QVBoxLayout
+from PyQt5.QtWidgets import QWidget
+from PyQt5.uic import loadUiType
+
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+    NavigationToolbar2QT as NavigationToolbar)
 
 import matplotlib
 import matplotlib.pyplot as plt
+
 from mpl_toolkits.mplot3d import Axes3D
 from PyQt5.QtCore import QThread
 
@@ -46,14 +55,12 @@ def CreateLSAMatrix(texts, idf_word_data):
 
     return lsa_matrix, all_idf_word_keys
 
-
 # Сингулярное разложение на a = u, s, v (S - восстановленный до диагональной матрицы вектор)
 def divideSingular(matrix):
     u,s,v = np.linalg.svd(matrix, full_matrices = True)
     S = np.zeros((u.shape[0], v.shape[0]), dtype=complex)
     S[:v.shape[0], :v.shape[1]] = np.diag(s)
     return u, S, v, s
-
 
 def cutSingularValue(u, S, v, s, textEdit):
     # Если сингулярный переход менее 2 измерений то не имеет смысла анализировать.
@@ -82,6 +89,95 @@ def cutSingularValue(u, S, v, s, textEdit):
     nv = v[0:(singular_minimal_transfer),0:]
 
     return nu, ns, nv
+
+
+Ui_DialogPlotter, QDialog = loadUiType('sources\DialogLSAPlot.ui')
+
+class DialogPlotter(QDialog, Ui_DialogPlotter):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+        fig = Figure()
+        self.addmpl(fig)
+
+    def addfig(self, fig):
+        self.rmmpl()
+        self.addmpl(fig)
+
+    def addmpl(self, fig):
+        self.canvas = FigureCanvas(fig)
+        self.mplvl.addWidget(self.canvas)
+        self.canvas.draw()
+        self.toolbar = NavigationToolbar(self.canvas,
+                                         self.mplwindow, coordinates=True)
+        self.mplvl.addWidget(self.toolbar)
+        # This is the alternate toolbar placement. Susbstitute the three lines above
+        # for these lines to see the different look.
+        #        self.toolbar = NavigationToolbar(self.canvas,
+        #                self, coordinates=True)
+        #        self.addToolBar(self.toolbar)
+
+    def rmmpl(self, ):
+        self.mplvl.removeWidget(self.canvas)
+        self.canvas.close()
+        self.mplvl.removeWidget(self.toolbar)
+        self.toolbar.close()
+
+    def viewLSAGraphics2D(self, plt, nu, nv, need_words, all_idf_word_keys, texts):
+
+        fig = plt.figure()
+        plt.plot(nu[0], nu[1], 'go')
+        plt.plot(nv[0], nv[1], 'go')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title('LSA 2D')
+        plt.grid(True)
+
+        min_value = 0.1
+
+        if (need_words):
+            for i in range(int(nu.shape[0])):
+                if (abs(nu[i][0]) > min_value or abs(nu[i][1]) > min_value or abs(nu[i][2]) > min_value):
+                    plt.annotate(str(all_idf_word_keys[i]), xy=(nu[i][0], nu[i][1]), textcoords='data')
+
+        for i in range(len(texts)):
+            plt.annotate(str(texts[i].filename), xy=(nv[0][i], nv[1][i]), textcoords='data')
+
+        self.addfig(fig)
+
+
+    def viewLSAGraphics3D(self, plt, nu, nv, need_words, all_idf_word_keys, texts):
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        nu = np.transpose(nu)
+
+        min_value = 0.1
+
+        nuxx = []
+        nuxy = []
+        nuxz = []
+
+        for i in range(len(nu[0])):
+            if (abs(nu[0][i]) > min_value or abs(nu[1][i]) > min_value or abs(nu[2][i]) > min_value):
+                nuxx.append(nu[0][i])
+                nuxy.append(nu[1][i])
+                nuxz.append(nu[2][i])
+
+        if (need_words):
+            ax.scatter(nuxx, nuxy, nuxz, c='r')  # , marker='o')
+        ax.scatter(nv[0], nv[1], nv[2], c='b', marker='^')
+
+        for i in range(len(texts)):
+            ax.text(nv[0][i], nv[1][i], nv[2][i], str(texts[i].filename), None)
+
+        if (need_words):
+            for i in range(len(nuxx)):
+                if (abs(nu[0][i]) > min_value or abs(nu[1][i]) > min_value or abs(nu[2][i]) > min_value):
+                    ax.text(nuxx[i], nuxy[i], nuxz[i], str(all_idf_word_keys[i]), None)
+
+        self.addfig(fig)
+
 
 
 
@@ -153,61 +249,14 @@ class DialogConfigLSA(QDialog):
 
     def make2DView(self):
         need_words = self.checkBoxShowWords.isChecked();
-        self.viewLSAGraphics2D(plt, self.nu, self.nv, need_words, self.all_idf_word_keys, self.texts)
-        plt.show()
+        plot_dialog = DialogPlotter()
+        plot_dialog.viewLSAGraphics2D(plt, self.nu, self.nv, need_words, self.all_idf_word_keys, self.texts)
+        plot_dialog.exec_()
 
     def make3DView(self):
         need_words = self.checkBoxShowWords.isChecked();
-        self.viewLSAGraphics3D(plt, self.nu, self.nv, need_words, self.all_idf_word_keys, self.texts)
-        plt.show()
+        plot_dialog = DialogPlotter()
+        plot_dialog.viewLSAGraphics3D(plt, self.nu, self.nv, need_words, self.all_idf_word_keys, self.texts)
+        plot_dialog.exec_()
 
 
-    def viewLSAGraphics2D(self, plt, nu, nv, need_words, all_idf_word_keys, texts):
-        plt.plot(nu[0],nu[1],'go')
-        plt.plot(nv[0],nv[1],'go')
-        plt.xlabel('x')
-        plt.ylabel('y')
-        plt.title('LSA 2D')
-        plt.grid(True)
-
-        min_value = 0.1
-
-        if(need_words):
-            for i in range(int(nu.shape[0])):
-                if(abs(nu[i][0])>min_value or abs(nu[i][1])>min_value or abs(nu[i][2])>min_value ):
-                    plt.annotate(str(all_idf_word_keys[i]), xy=(nu[i][0],nu[i][1]), textcoords='data')
-
-        for i in range(len(texts)):
-                plt.annotate(str(texts[i].filename), xy=(nv[0][i],nv[1][i]), textcoords='data')
-
-
-
-    def viewLSAGraphics3D(self, plt, nu, nv, need_words, all_idf_word_keys, texts):
-
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        nu = np.transpose(nu)
-
-        min_value = 0.1
-
-        nuxx = []
-        nuxy = []
-        nuxz = []
-
-        for i in range(len(nu[0])):
-            if(abs(nu[0][i])>min_value or abs(nu[1][i])>min_value or abs(nu[2][i])>min_value):
-                nuxx.append(nu[0][i])
-                nuxy.append(nu[1][i])
-                nuxz.append(nu[2][i])
-
-        if(need_words):
-           ax.scatter(nuxx,nuxy,nuxz, c='r')#, marker='o')
-        ax.scatter(nv[0],nv[1],nv[2], c='b', marker='^')
-
-        for i in range(len(texts)):
-               ax.text(nv[0][i], nv[1][i], nv[2][i], str(texts[i].filename), None)
-
-        if(need_words):
-           for i in range(len(nuxx)):
-               if(abs(nu[0][i])>min_value or abs(nu[1][i])>min_value or abs(nu[2][i])>min_value):
-                   ax.text(nuxx[i],nuxy[i],nuxz[i], str(all_idf_word_keys[i]), None)

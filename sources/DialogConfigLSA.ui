@@ -91,14 +91,14 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="checkBoxShowWords">
-     <property name="text">
-      <string>Показывать слова в диаграммах</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QCheckBox" name="checkBoxShowWords">
+       <property name="text">
+        <string>Показывать слова в диаграммах</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QPushButton" name="buttonMakeLSA">
        <property name="text">
@@ -106,6 +106,10 @@
        </property>
       </widget>
      </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QPushButton" name="button2DView">
        <property name="enabled">
