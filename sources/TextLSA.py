@@ -97,8 +97,11 @@ class DialogPlotter(QDialog, Ui_DialogPlotter):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinMaxButtonsHint | Qt.WindowCloseButtonHint;
+        self.setWindowFlags(flags)
         fig = Figure()
         self.addmpl(fig)
+
 
     def addfig(self, fig):
         self.rmmpl()
@@ -108,14 +111,9 @@ class DialogPlotter(QDialog, Ui_DialogPlotter):
         self.canvas = FigureCanvas(fig)
         self.mplvl.addWidget(self.canvas)
         self.canvas.draw()
-        self.toolbar = NavigationToolbar(self.canvas,
-                                         self.mplwindow, coordinates=True)
-        self.mplvl.addWidget(self.toolbar)
-        # This is the alternate toolbar placement. Susbstitute the three lines above
-        # for these lines to see the different look.
-        #        self.toolbar = NavigationToolbar(self.canvas,
-        #                self, coordinates=True)
-        #        self.addToolBar(self.toolbar)
+        self.toolbar = NavigationToolbar(self.canvas, self.mplwindow, coordinates=True)
+        #self.mplvl.addWidget(self.toolbar)
+        self.verticalLayout.addWidget(self.toolbar)
 
     def rmmpl(self, ):
         self.mplvl.removeWidget(self.canvas)
