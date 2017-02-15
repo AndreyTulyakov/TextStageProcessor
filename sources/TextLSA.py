@@ -5,12 +5,15 @@ import numpy as np
 import math
 
 from PyQt5.QtCore import Qt
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
 from PyQt5 import QtCore, QtGui, uic
+from PyQt5.QtCore import QObject
 
+import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-
+from PyQt5.QtCore import QThread
 
 from sources.TextData import TextData
 from sources.TextPreprocessing import *
@@ -81,60 +84,6 @@ def cutSingularValue(u, S, v, s, textEdit):
     return nu, ns, nv
 
 
-def viewLSAGraphics2D(plt, nu, nv, need_words, all_idf_word_keys, texts):
-    plt.plot(nu[0],nu[1],'go')
-    plt.plot(nv[0],nv[1],'go')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title('LSA 2D')
-    plt.grid(True)
-
-    min_value = 0.1
-
-    if(need_words):
-        for i in range(int(nu.shape[0])):
-            if(abs(nu[i][0])>min_value or abs(nu[i][1])>min_value or abs(nu[i][2])>min_value ):
-                plt.annotate(str(all_idf_word_keys[i]), xy=(nu[i][0],nu[i][1]), textcoords='data')
-
-    for i in range(len(texts)):
-            plt.annotate(str(texts[i].filename), xy=(nv[0][i],nv[1][i]), textcoords='data')
-
-    plt.show()
-
-
-def viewLSAGraphics3D(plt, nu, nv, need_words, all_idf_word_keys, texts):
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    nu = np.transpose(nu)
-
-    min_value = 0.1
-
-    nuxx = []
-    nuxy = []
-    nuxz = []
-
-    for i in range(len(nu[0])):
-        if(abs(nu[0][i])>min_value or abs(nu[1][i])>min_value or abs(nu[2][i])>min_value):
-            nuxx.append(nu[0][i])
-            nuxy.append(nu[1][i])
-            nuxz.append(nu[2][i])
-
-    if(need_words):
-       ax.scatter(nuxx,nuxy,nuxz, c='r')#, marker='o')
-    ax.scatter(nv[0],nv[1],nv[2], c='b', marker='^')
-
-    for i in range(len(texts)):
-           ax.text(nv[0][i], nv[1][i], nv[2][i], str(texts[i].filename), None)
-
-    if(need_words):
-       for i in range(len(nuxx)):
-           if(abs(nu[0][i])>min_value or abs(nu[1][i])>min_value or abs(nu[2][i])>min_value):
-               ax.text(nuxx[i],nuxy[i],nuxz[i], str(all_idf_word_keys[i]), None)
-
-    plt.show()
-
-
 
 class DialogConfigLSA(QDialog):
 
@@ -200,13 +149,65 @@ class DialogConfigLSA(QDialog):
         self.button3DView.setEnabled(True)
 
         self.textEdit.append('Успешно завершено.')
-
         QMessageBox.information(self, "Внимание", "Латентно-семантический анализ завершен!")
 
     def make2DView(self):
         need_words = self.checkBoxShowWords.isChecked();
-        viewLSAGraphics2D(plt, self.nu, self.nv, need_words, self.all_idf_word_keys, self.texts)
+        self.viewLSAGraphics2D(plt, self.nu, self.nv, need_words, self.all_idf_word_keys, self.texts)
+        plt.show()
 
     def make3DView(self):
         need_words = self.checkBoxShowWords.isChecked();
-        viewLSAGraphics3D(plt, self.nu, self.nv, need_words, self.all_idf_word_keys, self.texts)
+        self.viewLSAGraphics3D(plt, self.nu, self.nv, need_words, self.all_idf_word_keys, self.texts)
+        plt.show()
+
+
+    def viewLSAGraphics2D(self, plt, nu, nv, need_words, all_idf_word_keys, texts):
+        plt.plot(nu[0],nu[1],'go')
+        plt.plot(nv[0],nv[1],'go')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title('LSA 2D')
+        plt.grid(True)
+
+        min_value = 0.1
+
+        if(need_words):
+            for i in range(int(nu.shape[0])):
+                if(abs(nu[i][0])>min_value or abs(nu[i][1])>min_value or abs(nu[i][2])>min_value ):
+                    plt.annotate(str(all_idf_word_keys[i]), xy=(nu[i][0],nu[i][1]), textcoords='data')
+
+        for i in range(len(texts)):
+                plt.annotate(str(texts[i].filename), xy=(nv[0][i],nv[1][i]), textcoords='data')
+
+
+
+    def viewLSAGraphics3D(self, plt, nu, nv, need_words, all_idf_word_keys, texts):
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        nu = np.transpose(nu)
+
+        min_value = 0.1
+
+        nuxx = []
+        nuxy = []
+        nuxz = []
+
+        for i in range(len(nu[0])):
+            if(abs(nu[0][i])>min_value or abs(nu[1][i])>min_value or abs(nu[2][i])>min_value):
+                nuxx.append(nu[0][i])
+                nuxy.append(nu[1][i])
+                nuxz.append(nu[2][i])
+
+        if(need_words):
+           ax.scatter(nuxx,nuxy,nuxz, c='r')#, marker='o')
+        ax.scatter(nv[0],nv[1],nv[2], c='b', marker='^')
+
+        for i in range(len(texts)):
+               ax.text(nv[0][i], nv[1][i], nv[2][i], str(texts[i].filename), None)
+
+        if(need_words):
+           for i in range(len(nuxx)):
+               if(abs(nu[0][i])>min_value or abs(nu[1][i])>min_value or abs(nu[2][i])>min_value):
+                   ax.text(nuxx[i],nuxy[i],nuxz[i], str(all_idf_word_keys[i]), None)

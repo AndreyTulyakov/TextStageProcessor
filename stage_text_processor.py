@@ -11,6 +11,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5 import QtCore
 
 
+
 from sources.TextData import TextData
 from sources.XiSquare import *
 from sources.TextClasterization import *

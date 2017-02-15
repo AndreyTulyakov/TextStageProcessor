@@ -359,8 +359,9 @@ def makePreprocessing(filenames, morph, configurations, additional_output):
 
     # Загружаем предложения из нескольких файлов
     texts = loadInputFilesFromList(filenames)
-    output_dir = configurations.get("output_files_directory", "output_files") + "/" 
-
+    output_dir = configurations.get("output_files_directory", "output_files") + "/preprocessing/"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     # Разделяем предложения на слова
     texts = tokenizeTextData(texts)
 
