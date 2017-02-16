@@ -46,6 +46,8 @@ class XiCalculator(QThread):
                 matrix_csv_str = matrix_csv_str + str(matrix[header1_index][header2_index]) + ';'
             matrix_csv_str = matrix_csv_str + '\n'
 
+        matrix_csv_str = matrix_csv_str.replace('nan','')
+
         writeStringToFile(matrix_csv_str, filename)
 
     def run(self):

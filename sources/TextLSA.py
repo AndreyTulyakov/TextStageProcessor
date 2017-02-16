@@ -13,12 +13,12 @@ from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtWidgets import QWidget
 from PyQt5.uic import loadUiType
 
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt5agg import (
-    FigureCanvasQTAgg as FigureCanvas,
-    NavigationToolbar2QT as NavigationToolbar)
-
 import matplotlib
+matplotlib.use('Qt5Agg')
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+
+
 import matplotlib.pyplot as plt
 
 from mpl_toolkits.mplot3d import Axes3D
@@ -91,7 +91,7 @@ def cutSingularValue(u, S, v, s, textEdit):
     return nu, ns, nv
 
 
-Ui_DialogPlotter, QDialog = loadUiType('sources\DialogLSAPlot.ui')
+Ui_DialogPlotter, QDialog = loadUiType('sources/DialogLSAPlot.ui')
 
 class DialogPlotter(QDialog, Ui_DialogPlotter):
     def __init__(self):
