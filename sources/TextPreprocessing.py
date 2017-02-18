@@ -345,18 +345,15 @@ def removeTFIDFWordsWithMiniamlMultiplier(texts , min_mult):
             word = item[0]
             tfidf = item[1]
             
-            if(tfidf < minimal_value):
+            if tfidf < minimal_value:
                 text.words_tf_idf.pop(word)
                 text.word_frequency.pop(word)
-
-
-
 
 
 def makePreprocessing(filenames, morph, configurations, additional_output):
 
     log_string = ""
-
+    print(1)
     # Загружаем предложения из нескольких файлов
     texts = loadInputFilesFromList(filenames)
     output_dir = configurations.get("output_files_directory", "output_files") + "/preprocessing/"
@@ -364,7 +361,7 @@ def makePreprocessing(filenames, morph, configurations, additional_output):
         os.makedirs(output_dir)
     # Разделяем предложения на слова
     texts = tokenizeTextData(texts)
-
+    print(2)
     additional_output.append('Этап препроцессинга:\n')
 
     # Удаление стоп-слов из предложения (частицы, прилагательные и тд)

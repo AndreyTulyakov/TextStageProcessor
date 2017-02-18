@@ -6,7 +6,7 @@ import math
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
+from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit, QProgressBar, QApplication
 from PyQt5 import QtCore, QtGui, uic
 from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QVBoxLayout
@@ -102,7 +102,6 @@ class DialogPlotter(QDialog, Ui_DialogPlotter):
         fig = Figure()
         self.addmpl(fig)
 
-
     def addfig(self, fig):
         self.rmmpl()
         self.addmpl(fig)
@@ -143,7 +142,6 @@ class DialogPlotter(QDialog, Ui_DialogPlotter):
 
         self.addfig(fig)
 
-
     def viewLSAGraphics3D(self, plt, nu, nv, need_words, all_idf_word_keys, texts):
 
         fig = plt.figure()
@@ -177,6 +175,70 @@ class DialogPlotter(QDialog, Ui_DialogPlotter):
         self.addfig(fig)
 
 
+class LsaCalculatorSignals(QObject):
+    PrintInfo = pyqtSignal(str)
+    UpdateProgressBar = pyqtSignal(int)
+    Finished = pyqtSignal(np.ndarray, np.ndarray, np.ndarray, list, list)
+
+
+class LsaCalculator(QThread):
+
+    def __init__(self, filenames, output_dir, morph, textEdit):
+        super().__init__()
+        self.filenames = filenames
+        self.output_dir = output_dir
+        self.morph = morph
+        self.configurations = None
+        self.texts = []
+        self.categories = dict()
+        self.signals = LsaCalculatorSignals()
+        self.textEdit = textEdit
+        self.nu = None
+        self.ns = None
+        self.nv = None
+
+    def setConfiguration(self, configurations):
+        self.configurations = configurations
+
+    def run(self):
+        self.signals.UpdateProgressBar.emit(0)
+
+        self.texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
+        output_dir = self.configurations.get("output_files_directory", "output_files") + '/preprocessing'
+
+        self.signals.UpdateProgressBar.emit(30)
+        self.signals.PrintInfo.emit('Этап ЛСА:\n')
+        self.signals.PrintInfo.emit('1) Вычисление показателей TF*IDF.\n')
+        idf_word_data = calculateWordsIDF(self.texts)
+
+        self.signals.UpdateProgressBar.emit(40)
+
+        sorted_IDF = sorted(idf_word_data.items(), key=lambda x: x[1], reverse=False)
+        calculateTFIDF(self.texts, idf_word_data)
+
+        self.signals.UpdateProgressBar.emit(50)
+
+        log_string = writeWordTFIDFToString(self.texts, idf_word_data)
+        writeStringToFile(log_string.replace('\n ', '\n'), output_dir + '/output_stage_6.csv')
+
+        # Вырезаем из TF-IDF % худших слов
+        removeTFIDFWordsWithMiniamlMultiplier(self.texts, self.configurations.get('CutPercent', 25))
+
+        self.signals.UpdateProgressBar.emit(60)
+
+        log_string = writeWordTFIDFToString(self.texts, idf_word_data)
+        writeStringToFile(log_string.replace('\n ', '\n'), output_dir + '/output_stage_7.csv')
+
+        self.signals.PrintInfo.emit('2) Латентно-семантический анализ.\n')
+
+        lsa_matrix, self.all_idf_word_keys = CreateLSAMatrix(self.texts, idf_word_data)
+        u, S, v, s = divideSingular(lsa_matrix)
+
+        self.signals.UpdateProgressBar.emit(70)
+        self.nu, self.ns, self.nv = cutSingularValue(u, S, v, s, self.textEdit)
+        self.signals.UpdateProgressBar.emit(100)
+        self.signals.PrintInfo.emit('Рассчеты закончены!')
+        self.signals.Finished.emit(self.nu, self.ns, self.nv, self.all_idf_word_keys, self.texts)
 
 
 class DialogConfigLSA(QDialog):
@@ -185,7 +247,6 @@ class DialogConfigLSA(QDialog):
         super().__init__()
         uic.loadUi('sources/DialogConfigLSA.ui', self)
 
-        self.filenames = filenames
         self.morph = morph
         self.configurations = configurations
         self.parent = parent
@@ -205,45 +266,48 @@ class DialogConfigLSA(QDialog):
         self.button2DView.clicked.connect(self.make2DView)
         self.button3DView.clicked.connect(self.make3DView)
 
+        self.configurations["minimal_word_size"] = 4
+        self.configurations["cut_ADJ"] = False
+        output_dir = self.configurations.get("output_files_directory", "output_files")
+
+        self.calculator = LsaCalculator(filenames, output_dir, morph, self.textEdit)
+        self.calculator.signals.Finished.connect(self.onCalculationFinish)
+        self.calculator.signals.UpdateProgressBar.connect(self.onUpdateProgressBar)
+        self.calculator.signals.PrintInfo.connect(self.onTextLogAdd)
+
         self.textEdit.setText("")
 
+    def onTextLogAdd(self, QString):
+        self.textEdit.append(QString + '\n')
+        self.repaint()
+
+    def onUpdateProgressBar(self, value):
+        self.progressBar.setValue(value)
+        self.repaint()
+
+    def onCalculationFinish(self, nu, ns, nv, all_idf_word_keys, texts):
+        self.nu = nu
+        self.ns = ns
+        self.nv = nv
+        self.all_idf_word_keys = all_idf_word_keys
+        self.texts = texts
+        QApplication.restoreOverrideCursor()
+        self.textEdit.append('Успешно завершено.')
+        self.button2DView.setEnabled(True)
+        self.button3DView.setEnabled(True)
+        QMessageBox.information(self, "Внимание", "Латентно-семантический анализ завершен!")
 
     def makeLSA(self):
+        self.calculator.setConfiguration(self.configurations)
+        self.buttonMakeLSA.setEnabled(False)
+        self.button2DView.setEnabled(False)
+        self.button3DView.setEnabled(False)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
         self.textEdit.setText("")
         self.configurations["minimal_word_size"] = self.spinBoxMinimalWordsLen.value()
         self.configurations["cut_ADJ"] = self.checkBoxPrilag.isChecked()
-        
-        self.texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
-        output_dir = self.configurations.get("output_files_directory", "output_files")
-
-        self.repaint()
-        self.textEdit.append('Этап ЛСА:\n')
-        self.textEdit.append('1) Вычисление показателей TF*IDF.\n')
-        self.repaint()
-        idf_word_data = calculateWordsIDF(self.texts)
-        sorted_IDF = sorted(idf_word_data.items(), key=lambda x: x[1], reverse=False)
-        calculateTFIDF(self.texts, idf_word_data)
-
-        log_string = writeWordTFIDFToString(self.texts, idf_word_data)
-        writeStringToFile(log_string.replace('\n ', '\n'), output_dir + '/output_stage_6.csv')
-
-        # Вырезаем из TF-IDF % худших слов
-        removeTFIDFWordsWithMiniamlMultiplier(self.texts , self.spinBoxCutPercent.value()/100.0)
-
-        log_string = writeWordTFIDFToString(self.texts, idf_word_data)
-        writeStringToFile(log_string.replace('\n ', '\n'), output_dir + '/output_stage_7.csv')
-
-        self.textEdit.append('2) Латентно-семантический анализ.\n')
-        self.repaint()
-        lsa_matrix, self.all_idf_word_keys = CreateLSAMatrix(self.texts, idf_word_data)
-        u, S, v, s = divideSingular(lsa_matrix)
-        self.nu, self.ns, self.nv = cutSingularValue(u, S, v, s, self.textEdit)
-
-        self.button2DView.setEnabled(True)
-        self.button3DView.setEnabled(True)
-
-        self.textEdit.append('Успешно завершено.')
-        QMessageBox.information(self, "Внимание", "Латентно-семантический анализ завершен!")
+        self.configurations["CutPercent"] = self.spinBoxCutPercent.value() / 100.0
+        self.calculator.start()
 
     def make2DView(self):
         need_words = self.checkBoxShowWords.isChecked();

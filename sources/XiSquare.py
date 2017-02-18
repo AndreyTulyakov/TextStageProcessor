@@ -17,6 +17,7 @@ from sources.TextPreprocessing import *
 class XiCalculatorSignals(QObject):
     PrintInfo = pyqtSignal(str)
     Finished = pyqtSignal()
+    UpdateProgressBar = pyqtSignal(int)
 
 class XiCalculator(QThread):
 
@@ -51,6 +52,7 @@ class XiCalculator(QThread):
         writeStringToFile(matrix_csv_str, filename)
 
     def run(self):
+        self.signals.UpdateProgressBar.emit(0)
         # Считываем файл с информацией о категории и файлах
         self.signals.PrintInfo.emit('Чтение файла с категориям...')
         learn_groups = pd.read_csv(self.filename, index_col=None,na_values=['nan'], keep_default_na=False)
@@ -64,6 +66,7 @@ class XiCalculator(QThread):
                 if(len(value) > 0):
                     self.categories[category].append(value)
 
+        self.signals.UpdateProgressBar.emit(10)
         self.signals.PrintInfo.emit('Загрузка текстовых файлов...')
         # Загрузка текстовых файлов
         for key in self.categories.keys():
@@ -74,14 +77,21 @@ class XiCalculator(QThread):
                     text.category = key
                     self.texts.append(text)
 
+        self.signals.UpdateProgressBar.emit(20)
         self.signals.PrintInfo.emit('Предварительная обработка текстов...')
 
         # Предварительная обработка
         self.texts = tokenizeTextData(self.texts)
+        self.signals.UpdateProgressBar.emit(25)
         self.texts, log_string = removeStopWordsInTexts(self.texts, self.morph, self.configurations)
+        self.signals.UpdateProgressBar.emit(30)
         self.texts, log_string = normalizeTexts(self.texts, self.morph)
+        self.signals.UpdateProgressBar.emit(35)
         self.texts, log_string = fixRegisterInTexts(self.texts, self.morph)
+        self.signals.UpdateProgressBar.emit(40)
         self.texts, log_string = calculateWordsFrequencyInTexts(self.texts)
+        self.signals.UpdateProgressBar.emit(45)
+
 
         self.signals.PrintInfo.emit('Рассчет списка уникальных слов для матриц...')
 
@@ -96,6 +106,8 @@ class XiCalculator(QThread):
         categories_list = list(learn_groups)
         categories_count = len(categories_list)
 
+        self.signals.UpdateProgressBar.emit(55)
+
         self.signals.PrintInfo.emit('Создание и заполнение MI, IG, CHI матриц...')
 
         # Создание матриц (Категория * Слова)
@@ -106,6 +118,8 @@ class XiCalculator(QThread):
         xi_mi_matrix = np.zeros(shape=(categories_count, unique_words_count))
         xi_ig_matrix = np.zeros(shape=(categories_count, unique_words_count))
         xi_chi_matrix = np.zeros(shape=(categories_count, unique_words_count))
+
+        self.signals.UpdateProgressBar.emit(60)
 
         # Рассчет А, B, C, D показателей (стр 173)
         for category_index in range(categories_count):
@@ -125,6 +139,7 @@ class XiCalculator(QThread):
                     if (not target_category and not contains_word):
                         xi_d_matrix[category_index][word_index] = xi_d_matrix[category_index][word_index] + 1
 
+        self.signals.UpdateProgressBar.emit(80)
 
         for category_index in range(categories_count):
             for word_index in range(unique_words_count):
@@ -159,6 +174,7 @@ class XiCalculator(QThread):
 
                 xi_chi_matrix[category_index][word_index] = chi_value
 
+        self.signals.UpdateProgressBar.emit(90)
         # Сохраняем рассчитанные матрицы в CSV файлы
         self.printMatrixToCsv(self.output_dir + '/mi_matrix.csv', categories_list, all_unique_words_list, xi_mi_matrix)
         self.signals.PrintInfo.emit('Матрица MI записана в файл:' + self.output_dir + '/mi_matrix.csv')
@@ -169,6 +185,7 @@ class XiCalculator(QThread):
         self.printMatrixToCsv(self.output_dir + '/chi_matrix.csv', categories_list, all_unique_words_list, xi_chi_matrix)
         self.signals.PrintInfo.emit('Матрица CHI записана в файл:' + self.output_dir + '/chi_matrix.csv')
 
+        self.signals.UpdateProgressBar.emit(100)
         self.signals.PrintInfo.emit('Рассчеты закончены!')
         self.signals.Finished.emit()
 
@@ -196,13 +213,19 @@ class DialogXiSquare(QDialog):
         self.configurations["minimal_word_size"] = 4
         self.configurations["cut_ADJ"] = False
         output_dir = self.configurations.get("output_files_directory", "output_files")
+        self.progressBar.setValue(0)
 
         self.calculator = XiCalculator(filename, output_dir, morph, self.configurations)
         self.calculator.signals.Finished.connect(self.onCalculationFinish)
+        self.calculator.signals.UpdateProgressBar.connect(self.onUpdateProgressBar)
         self.calculator.signals.PrintInfo.connect(self.onTextLogAdd)
 
     def onTextLogAdd(self, QString):
         self.textEdit.append(QString + '\n')
+        self.repaint()
+
+    def onUpdateProgressBar(self, value):
+        self.progressBar.setValue(value)
         self.repaint()
 
     def onCalculationFinish(self):

@@ -11,13 +11,20 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Анализ и применение правил вывода</string>
+   <string>Расчет критериев</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTextEdit" name="textEdit">
      <property name="readOnly">
       <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QProgressBar" name="progressBar">
+     <property name="value">
+      <number>0</number>
      </property>
     </widget>
    </item>

@@ -1,23 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import pymorphy2
-
-from matplotlib import rc
-
 import sys
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QSizePolicy, QAction, qApp, QSpacerItem, QApplication, QWidget, QFileDialog, QDialog, QPushButton, QHBoxLayout, QVBoxLayout
-from PyQt5.QtGui import QIcon
-from PyQt5 import QtCore
-
-
-
-from sources.TextData import TextData
+import pymorphy2
+from matplotlib import rc
+from PyQt5.QtWidgets import QMainWindow, QSizePolicy, QSpacerItem, QFileDialog, QPushButton
 from sources.XiSquare import *
 from sources.TextClasterization import *
 from sources.TextClassification import *
 from sources.TextLSA import *
 from sources.TextDecomposeAndRuleApply import *
+from sources.AnnotationMaker import *
 
 
 # Для корректного отображение шрифтов на графиках в Windows
@@ -65,6 +58,11 @@ class MainWindow(QMainWindow):
         button_xi_square.setMinimumHeight(32)
         button_xi_square.clicked.connect(self.makeXiSquare)
 
+        button_annotation = QPushButton("Создание аннотации документа")
+        button_annotation.setMinimumHeight(32)
+        button_annotation.clicked.connect(self.makeTextAnnotation)
+        button_annotation.setEnabled(False)
+
         spacer = QSpacerItem(20,40,QSizePolicy.Minimum,QSizePolicy.Expanding)
 
         vbox = QVBoxLayout()
@@ -73,6 +71,7 @@ class MainWindow(QMainWindow):
         vbox.addWidget(button_lsa)
         vbox.addWidget(button_analyze_and_rule_apply)
         vbox.addWidget(button_xi_square)
+        vbox.addWidget(button_annotation)
         vbox.addItem(spacer)
 
         widget = QWidget();
@@ -140,6 +139,16 @@ class MainWindow(QMainWindow):
             self.hide()
             dialogXiSquare.destroyed.connect(self.show)
             dialogXiSquare.exec_()
+
+    def makeTextAnnotation(self):
+        print("Аннотирование текста")
+        filename = self.getFilenameFromUserSelection("Text file (*.txt)")
+        if (filename != None):
+            dialogAnnotationMaker = DialogAnnotationMaker(filename, morph, configurations, self)
+            self.hide()
+            dialogAnnotationMaker.destroyed.connect(self.show)
+            dialogAnnotationMaker.exec_()
+
 
 
 
