@@ -7,281 +7,156 @@ import re
 from PyQt5.QtCore import Qt
 
 from sources.TextPreprocessing import *
-
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.pipeline import Pipeline
-from sklearn import neighbors
-from sklearn.linear_model import SGDClassifier
-from sklearn import tree
-
+from sources.classification.Rocchio import *
+from sources.classification.NaiveBayes import *
 
 from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
 from PyQt5 import QtCore, QtGui, uic
 
 
-
-class BagOfWords(object):
-
-    
-    def __init__(self):
-        self.__number_of_words = 0
-        self.__bag_of_words = {}
-        
-    def __add__(self,other):
-
-        erg = BagOfWords()
-        sum = erg.__bag_of_words
-        for key in self.__bag_of_words:
-            sum[key] = self.__bag_of_words[key]
-            if key in other.__bag_of_words:
-                sum[key] += other.__bag_of_words[key]
-        for key in other.__bag_of_words:
-            if key not in sum:
-                sum[key] = other.__bag_of_words[key]
-        return erg
-        
-    def add_word(self,word):
-
-        self.__number_of_words += 1
-        if word in self.__bag_of_words:
-            self.__bag_of_words[word] += 1
-        else:
-            self.__bag_of_words[word] = 1
-    
-    def len(self):
-
-        return len(self.__bag_of_words)
-    
-    def Words(self):
-
-        return self.__bag_of_words.keys()
-    
-        
-    def BagOfWords(self):
-
-        return self.__bag_of_words
-        
-    def WordFreq(self,word):
-
-        if word in self.__bag_of_words:
-            return self.__bag_of_words[word]
-        else:
-            return 0
-            
-class Document(object):
-
-    _vocabulary = BagOfWords()
- 
-    def __init__(self, vocabulary):
-        self.__name = ""
-        self.__document_class = None
-        self._words_and_freq = BagOfWords()
-        Document._vocabulary = vocabulary
-    
-    def read_document(self,filename, learn=False):
-
-        try:
-            text = open(filename,"r", encoding='utf-8').read()
-        except UnicodeDecodeError:
-            text = open(filename,"r", encoding='latin-1').read()
-        text = text.lower()
-        words = re.split("[^\wäöüÄÖÜß]*",text)
-
-        self._number_of_words = 0
-        for word in words:
-            self._words_and_freq.add_word(word)
-            if learn:
-                Document._vocabulary.add_word(word)
-
-    def __add__(self,other):
-
-        res = Document(Document._vocabulary)
-        res._words_and_freq = self._words_and_freq + other._words_and_freq    
-        return res
-    
-    def vocabulary_length(self):
-
-        return len(Document._vocabulary)
-                
-    def WordsAndFreq(self):
-
-        return self._words_and_freq.BagOfWords()
-        
-    def Words(self):
-
-        d =  self._words_and_freq.BagOfWords()
-        return d.keys()
-    
-    def WordFreq(self,word):
-
-        bow =  self._words_and_freq.BagOfWords()
-        if word in bow:
-            return bow[word]
-        else:
-            return 0
-                
-    def __and__(self, other):
-  
-        intersection = []
-        words1 = self.Words()
-        for word in other.Words():
-            if word in words1:
-                intersection += [word]
-        return intersection
-        
-class DocumentClass(Document):
-    def __init__(self, vocabulary):
-        Document.__init__(self, vocabulary)
-        self._number_of_docs = 0
-
-    def Probability(self,word):
-
-        voc_len = Document._vocabulary.len()
-        SumN = 0
-        for i in range(voc_len):
-            SumN = DocumentClass._vocabulary.WordFreq(word)
-        N = self._words_and_freq.WordFreq(word)
-        erg = 1 + N
-        erg /= voc_len + SumN
-        return erg
-
-    def __add__(self,other):
-
-        res = DocumentClass(self._vocabulary)
-        res._words_and_freq = self._words_and_freq + other._words_and_freq 
- 
-        return res
-
-    def SetNumberOfDocs(self, number):
-        self._number_of_docs = number
-    
-    def NumberOfDocuments(self):
-        return self._number_of_docs
-
-class Pool(object):
-    def __init__(self):
-        self.__document_classes = {}
-        self.__vocabulary = BagOfWords()
-            
-    def sum_words_in_class(self, dclass):
-
-        sum = 0
-        for word in self.__vocabulary.Words():
-            WaF = self.__document_classes[dclass].WordsAndFreq()
-            if word in WaF:
-                sum +=  WaF[word]
-        return sum
-    
-    def learn(self, directory, dclass_name):
-
-        x = DocumentClass(self.__vocabulary)
-        dir = os.listdir(directory)
-        for file in dir:
-            d = Document(self.__vocabulary)
-            print(directory + "/" + file)
-            d.read_document(directory + "/" +  file, learn = True)
-            x = x + d
-        self.__document_classes[dclass_name] = x
-        x.SetNumberOfDocs(len(dir))
-
-    
-    def Probability(self, doc, dclass = ""):
-
-        if dclass:
-            sum_dclass = self.sum_words_in_class(dclass)
-            prob = 0
-        
-            d = Document(self.__vocabulary)
-            d.read_document(doc)
-
-            for j in self.__document_classes:
-                sum_j = self.sum_words_in_class(j)
-                prod = 1
-                for i in d.Words():
-                    wf_dclass = 1 + self.__document_classes[dclass].WordFreq(i)
-                    wf = 1 + self.__document_classes[j].WordFreq(i)
-                    r = wf * sum_dclass / (wf_dclass * sum_j)
-                    prod *= r
-                prob += prod * self.__document_classes[j].NumberOfDocuments() / self.__document_classes[dclass].NumberOfDocuments()
-            if prob != 0:
-                return round(1 / prob, 3)
-            else:
-                return -1
-        else:
-            prob_list = []
-            for dclass in self.__document_classes:
-                prob = self.Probability(doc, dclass)
-                prob_list.append([dclass,prob])
-            prob_list.sort(key = lambda x: x[1], reverse = True)
-            return prob_list
-
-    def DocumentIntersectionWithClasses(self, doc_name):
-        res = [doc_name]
-        for dc in self.__document_classes:
-            d = Document(self.__vocabulary)
-            d.read_document(doc_name, learn=False)
-            o = self.__document_classes[dc] &  d
-            intersection_ratio = len(o) / len(d.Words())
-            res += (dc, intersection_ratio)
-        return res
-
-
-
 class DialogConfigClassification(QDialog):
 
-    def __init__(self, filenames, morph, configurations, parent):
+    def __init__(self, morph, configurations, parent):
         super().__init__()
         uic.loadUi('sources/DialogConfigClassification.ui', self)
 
         flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint;
         self.setWindowFlags(flags)
 
-        self.filenames = filenames
         self.morph = morph
         self.configurations = configurations
         self.parent = parent
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-
         self.buttonClassify.clicked.connect(self.makeClassification)
-
         self.textEdit.setText("")
 
+        self.output_dir = configurations.get("output_files_directory", "output_files/classification") + "/"
+        self.input_dir = configurations.get("input_classification_files_directory", "input_files/classification") + "/"
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
 
-    def writeStringToFile(data_str, filename):
-        with open(filename, 'w') as out_text_file:
-            out_text_file.write(data_str)
-
+    # Вызов при нажатии на кнопку "Классифицировать"
     def makeClassification(self):
         self.textEdit.setText("")
-        base = "input_files/classification/test/"
 
-        DClasses = os.listdir(base)
+        needPreprocessing = self.checkBoxNeedPreprocessing.isChecked()
+
+        if(self.radioButtonNaiveBayes.isChecked()):
+            self.classification_naive_bayes(needPreprocessing)
+
+        if(self.radioButtonRocchio.isChecked()):
+            self.classification_rocchio(needPreprocessing)
+
+        self.textEdit.append('Завершено.')
+        QMessageBox.information(self, "Внимание", "Процесс классификации завершен!")
+
+    # Алгоритм наивного Байеса
+    def classification_naive_bayes(self, needPreprocessing):
+
+        # Обучение
+        self.textEdit.append('Обучение...')
+        traindir = self.input_dir + "train/"
+        DClasses = os.listdir(traindir)
 
         p = Pool()
         for i in DClasses:
-            p.learn(base + i, i)
+            p.learn(traindir + i, i)
 
-        log_string = "Naive Bayes:\n"
+        # Классификация
+        self.textEdit.append('Классификация...')
+        testdir = self.input_dir + "test/"
+
+        log_string = "Вероятности документов:\n"
+        log_string_rates = "Процент похожих слов:\n"
+
         for i in DClasses:
-            dir = os.listdir(base + i)
+            dir = os.listdir(testdir + i)
+            correct = 0
             for file in dir:
-                res = p.Probability(base + i + "/" + file)
+                res = p.Probability(testdir + i + "/" + file)
                 str_out = i + ": " + file + ": " + str(res)
-                self.textEdit.setText(str_out)
+                if i == res[0][0]:
+                    correct = correct + 1
                 log_string = log_string + str_out + '\n'
+                log_string_rates += str(p.DocumentIntersectionWithClasses(testdir + i + "/" + file)) + "\n"
+            log_string = log_string + 'Верных классов:' + i + ': ' + str(correct) + '\n'
 
-        self.textEdit.setText(log_string)
-        
+        log_string_learn = "Словарь классов обучения:\n"
+        for c in DClasses:
+            log_string_learn += c + "\n"
+            log_string_learn += str(p.BagOfWords_in_class(c)) + "\n"
 
-                
-        output_dir = self.configurations.get("output_files_directory", "output_files/")
+        self.textEdit.append("Выходные файлы:")
+        out_dir = self.output_dir + 'nb_out/'
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+        self.textEdit.append(out_dir + 'output_naive_bayes.csv')
+        writeStringToFile(log_string, out_dir + 'output_naive_bayes.csv')
+        self.textEdit.append(out_dir + 'naive_bayes_learn.csv')
+        writeStringToFile(log_string_learn, out_dir + 'naive_bayes_learn.csv')
+        self.textEdit.append(out_dir + 'naive_bayes_rates.csv')
+        writeStringToFile(log_string_rates, out_dir + 'naive_bayes_rates.csv')
 
-        writeStringToFile(log_string, output_dir + 'output_naive_bayes.txt')
+    # Алгоритм Рочио
+    def classification_rocchio(self, needPreprocessing):
+        # Обучение
+        self.textEdit.append('Обучение...')
+        root_path = self.input_dir + 'train/'
+        folders = [root_path + folder + '/' for folder in os.listdir(root_path)]
+        class_titles = os.listdir(root_path)
+        files = {}
+        for folder, title in zip(folders, class_titles):
+            files[title] = [folder + f for f in os.listdir(folder)]
+        train = files
 
+        # Классификация
+        self.textEdit.append('Классификация...')
+        root_path = self.input_dir + 'test/'
+        folders = [root_path + folder + '/' for folder in os.listdir(root_path)]
+        class_titles = os.listdir(root_path)
+        files = {}
+        for folder, title in zip(folders, class_titles):
+            files[title] = [folder + f for f in os.listdir(folder)]
+        test = files
 
-        self.textEdit.append('Успешно завершено.')
+        pool = createTokenPool(class_titles, train)
+        tdict = createDictionary(class_titles, pool)
+        rocchio = Rocchio(class_titles, tdict)
+        rocchio.train(pool)
 
-        QMessageBox.information(self, "Внимание", "Процесс классификации завершен!")
+        test_pool = createTokenPool(class_titles, test)
+        test_lbl_pool = rocchio.predictPool(test_pool)
+
+        log_string = "Роккио:\n"
+
+        for i in class_titles:
+            correct = 0
+            log_string = log_string + i + '\n'
+            for j in range(len(test_lbl_pool[i])):
+                str_out = test[i][j] + ' = ' + test_lbl_pool[i][j] + '\n'
+                log_string = log_string + str_out
+            for val in test_lbl_pool[i]:
+                correct = correct + (val == i)
+            log_string = log_string + 'Верных классов: ' + i + ': ' + str(correct) + '\n'
+
+        log_string_centr = "Центроиды классов:\n"
+        idx = []
+        for itm in list(tdict.values()):
+            idx.append(itm[idx_lbl])
+
+        for i in range(len(class_titles)):
+            log_string_centr += class_titles[i] + '\n'
+            log_string_centr += ';'.join([x for (y, x) in sorted(zip(idx, tdict.keys()))]) + '\n'
+            log_string_centr += ';'.join(str(x) for x in sum(rocchio.centroids[i].tolist(), [])) + '\n'
+
+        self.textEdit.append("Выходные файлы:")
+        out_dir = self.output_dir + 'roc_out/'
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+
+        self.textEdit.append(out_dir + 'output_Rocchio.csv')
+        writeStringToFile(log_string, out_dir + 'output_Rocchio.csv')
+
+        self.textEdit.append(out_dir + 'Rocchio_centroids.csv')
+        writeStringToFile(log_string_centr, out_dir + 'Rocchio_centroids.csv')

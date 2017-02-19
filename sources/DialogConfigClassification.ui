@@ -15,6 +15,39 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Алгоритм классификации</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QRadioButton" name="radioButtonNaiveBayes">
+        <property name="text">
+         <string>Naive Bayes</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="radioButtonRocchio">
+        <property name="text">
+         <string>Rocchio</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkBoxNeedPreprocessing">
+     <property name="text">
+      <string>Производить предварительную обработку</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QTextEdit" name="textEdit">
      <property name="readOnly">
       <bool>true</bool>

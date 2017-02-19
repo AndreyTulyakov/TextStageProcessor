@@ -108,7 +108,7 @@ class MainWindow(QMainWindow):
         print("Классификация")
         filenames = []
         if(filenames != None):
-            dialogConfigClassification = DialogConfigClassification(filenames, morph, configurations, self)
+            dialogConfigClassification = DialogConfigClassification(morph, configurations, self)
             self.hide()
             dialogConfigClassification.destroyed.connect(self.show)
             dialogConfigClassification.exec_()
