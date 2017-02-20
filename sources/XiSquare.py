@@ -14,6 +14,12 @@ from PyQt5.QtCore import QThread
 
 from sources.TextPreprocessing import *
 
+
+def slog2(x):
+    if x <= 0:
+        return 0
+    return math.log(x, 2)
+
 class XiCalculatorSignals(QObject):
     PrintInfo = pyqtSignal(str)
     Finished = pyqtSignal()
@@ -152,7 +158,7 @@ class XiCalculator(QThread):
 
                 # Формула-5 стр173
                 mi_value = (a * u) / ((a+c)*(a+b))
-                xi_mi_matrix[category_index][word_index] = np.log2(mi_value)
+                xi_mi_matrix[category_index][word_index] = slog2(mi_value)
 
                 # Формула 7 стр174
                 ig_value_1d = (a + b) * (a + c)
@@ -161,10 +167,11 @@ class XiCalculator(QThread):
                 ig_value_4d = (c + d) * (b + d)
 
 
-                ig_value_1 = (a / u) * np.log2((u * a) / ig_value_1d)
-                ig_value_2 = (c / u) * np.log2((u * c) / ig_value_2d)
-                ig_value_3 = (b / u) * np.log2((u * b) / ig_value_3d)
-                ig_value_4 = (d / u) * np.log2((u * d) / ig_value_4d)
+                ig_value_1 = (a / u) * slog2((u * a) / ig_value_1d)
+                ig_value_2 = (c / u) * slog2((u * c) / ig_value_2d)
+                ig_value_3 = (b / u) * slog2((u * b) / ig_value_3d)
+                ig_value_4 = (d / u) * slog2((u * d) / ig_value_4d)
+
                 xi_ig_matrix[category_index][word_index] = ig_value_1 + ig_value_2 + ig_value_3 + ig_value_4
 
 
