@@ -687,10 +687,10 @@ class DialogConfigClasterization(QDialog):
 
         for i in range(n):
             for j in range(m):
-                summ = 0
+                summUD = 0
                 for k in range(len(t_all)):
-                    summ += math.pow(W[i][k] - W[j][k], 2)
-                S[i][j] = math.sqrt(summ)
+                    summUD += math.pow(W[i][k] - W[j][k], 2)
+                S[i][j] = math.sqrt(summUD)
 
         dist_string = ''
 
@@ -707,35 +707,83 @@ class DialogConfigClasterization(QDialog):
 
         # Проверим для каждого уровня
         for centroidCount in range(len(texts), 0, -1):
-            result += 'Кол-во кастеров - ' + str(i) + '\n'
+            result += 'Кол-во кластеров - ' + str(centroidCount) + '\n'
 
-        #степень нечеткости 1<m< infinity
-        m = 3
+            #степень нечеткости 1<m< infinity
+            m = 3
 
-        #номер итерации
-        t=0
+            #номер итерации
+            t=0
 
-        #заполним изначально случайными числами, в сумме по строке - 1
-        U0 = [[0 for x in range(centroidCount)] for y in range(len(texts))]
-        for i in range(len(texts)):
-            remain = 1
-            for j in range(centroidCount):
-                if (j != centroidCount - 1):
-                    current = random.uniform(0, remain)
-                    remain = remain - current
-                else:
-                    U0[i][j] = remain
+            result += 'm = ' + str(m) + ';' + 'k = ' + str(centroidCount) + '\n'
 
-        while True:
-            t = t+1
-            centroids = [[0 for x in range(len(texts))] for y in range(centroidCount)]
-            # Находим таблицу Dist для центроидов
-            for i in range(centroidCount):
-                for j in range(len(texts)):
-                    summ = 0
-                    for k in range(len(t_all)):
-                        summ += math.pow(U0[i][k],m) * W[j][k]
-                        centroids[i][j] = math.sqrt(summ)
+            #заполним изначально случайными числами, в сумме по строке - 1
+            U0 = [[0 for x in range(centroidCount)] for y in range(len(texts))]
+            result += '\nU0\n'
+            for i in range(len(texts)):
+                remain = 1
+                for j in range(centroidCount):
+                    if (j != centroidCount - 1):
+                        current = random.uniform(0, remain)
+                        remain = remain - current
+                        U0[i][j] = current
+                    else:
+                        U0[i][j] = remain
+                    result += str(U0[i][j]) + ';'
+                result += '\n'
+            changes = False
+            while True:
+                t = t+1
+                result += '\nИтерация' + str(t) + '\n'
+                centroids = [[0 for x in range(len(t_all))] for y in range(centroidCount)]
+                # Находим таблицу центроидов
+                result += '\nЦентроиды\n'
+                for j in range(centroidCount):
+                    summU = 0
+                    for i in range(len(texts)):
+                       summU = summU + math.pow(U0[i][j],m)
+                    for i in range(len(texts)):
+                        summUD = 0
+                        for k in range(len(t_all)):
+                            summUD += math.pow(U0[i][j],m) * W[j][k]
+                        centroids[j][i] = summUD/summU
+                        result += str(centroids[j][i]) + ';'
+                    result += '\n'
+
+                # Находим новую таблицу разбиения U1
+                U1 = [[0 for x in range(centroidCount)] for y in range(len(texts))]
+                for i in range(len(texts)):
+                    for j in range(centroidCount):
+                        summ = 0
+                        for k in range(centroidCount):
+                            diff_ij = 0
+                            diff_ik = 0
+                            for m in range(len(t_all)):
+                                diff_ij += math.pow(W[i][m] - centroids[j][m],2)
+                                diff_ik += math.pow(W[i][m] - centroids[k][m], 2)
+                            diff_ik = math.sqrt(diff_ik)
+                            diff_ij = math.sqrt(diff_ij)
+                            summ+= math.pow(diff_ij/diff_ik,2/(m-1))
+                        U1[i][j] = 1/summ
+
+                #запишем в файл новую таблицу
+                result += 'U' + str(t) + '\n'
+                for i in range(len(texts)):
+                    for j in range(centroidCount):
+                        result += str(U1[i][j]) + ';'
+                    result += '\n'
 
 
+
+                #проверим условие остановки
+                summ = 0
+                for i in range(len(texts)):
+                    for j in range(centroidCount):
+                            summ += math.pow(U0[i][j] - U1[i][j], 2)
+                summ = math.sqrt(summ)
+                if(summ<eps):
+                    break
+                U0 = U1
+
+        writeStringToFile(result.replace('\n ', '\n').replace('.', ','), output_dir + 'steps.csv')
         self.textEdit.append('Кластеризация Нечёткий алгоритм с-средних завершена' + '\n')
