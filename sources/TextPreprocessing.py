@@ -27,13 +27,20 @@ def readConfigurationFile(filename):
 
 # Читает текст из файла и возвращает список предложений (без запятых)
 def readSentencesFromInputText(filename, input_dir_name):
+    full_path = filename
+    if(input_dir_name != None):
+        full_path = input_dir_name + '/' + filename
 
-    with codecs.open(input_dir_name + '/' + filename, 'r', "utf-8") as text_file:
-        data=text_file.read().replace('\n', ' ')
+    with codecs.open(full_path, 'r', "utf-8") as text_file:
+        data=text_file.read().replace('\n', '.')
         sentences = data.split('.')
         for i in range(len(sentences)):
             sentences[i] = sentences[i].strip().replace(',', '')
-        return sentences
+        result = []
+        for sentence in sentences:
+            if(len(sentence)>0):
+                result.append(sentence)
+        return result
     return None
 
 # Загружает из директории input_dir_name все txt файлы в список объектов TextData
@@ -77,14 +84,18 @@ def loadInputFilesFromList(filenames):
 
     return texts
 
+def tokenizeSingleText(text):
+    for sentence in text.original_sentences:
+        if (len(sentence) > 1):
+            tokenized_sentence = tokenizers.simple_word_tokenize(sentence)
+            if(len(tokenized_sentence) > 1):
+                text.tokenized_sentences.append(tokenized_sentence)
+    return text.tokenized_sentences
 
 def tokenizeTextData(texts):
     # Переводим предложения в списки слов (tokenized_sentence)
     for text in texts:
-        for sentence in text.original_sentences:
-            if(len(sentence) > 0):
-                tokenized_sentence = tokenizers.simple_word_tokenize(sentence)
-                text.tokenized_sentences.append(tokenized_sentence)
+        text.tokenized_sentences = tokenizeSingleText(text)
     return texts
 
 
@@ -122,10 +133,13 @@ def removeStopWordsFromSentences(sentences, morph, configurations):
     cut_ADJ = configurations.get("cut_ADJ", False)
     for sentence in sentences:
         i = 0
+        if(len(sentence) < 2):
+            continue
+
         while i < len(sentence):
             current_word = sentence[i]
 
-            if(len(current_word) < minimal_word_size):
+            if len(current_word) < minimal_word_size or current_word.isdigit():
                  sentence.pop(i)
                  i = i - 1
             else:
@@ -143,7 +157,13 @@ def removeStopWordsFromSentences(sentences, morph, configurations):
                             i = i - 1
                             break
             i = i + 1
-    return sentences
+
+    result_sentences = []
+    for sentence in sentences:
+        if(len(sentence) != 0):
+            result_sentences.append(sentence)
+
+    return result_sentences
 
 def removeStopWordsInTexts(texts, morph, configurations):
     for text in texts:
@@ -158,7 +178,6 @@ def removeStopWordsInTexts(texts, morph, configurations):
                 log_string = log_string + ' ' + word
             log_string = log_string + '\n'
     return texts, log_string
-
 
 def normalizeTexts(texts, morph):
     log_string = "Нормализация:\n"
@@ -203,7 +222,6 @@ def calculateWordsFrequencyInTexts(texts):
     for text in texts:
         for sentense in text.register_pass_centences:
             for word in sentense:
-                if word.isalpha():
                     text.word_frequency[word] = text.word_frequency.get(word, 0) + 1
 
         # Сортируем слова по частоте
@@ -387,3 +405,23 @@ def makePreprocessing(filenames, morph, configurations, additional_output):
 
     return texts
 
+
+def printMatrixToString(matrix, horizontal_header=None, vertical_header=None):
+    result_string = ''
+    rows, cols = matrix.shape
+
+    if (horizontal_header != None):
+        for i in range(len(horizontal_header)):
+            result_string = result_string + str(horizontal_header[i]) + ',\t'
+        result_string += '\n'
+
+    for row in range(rows):
+        if (vertical_header != None):
+            result_string = result_string + str(vertical_header[row]) + '\t'
+
+        for col in range(cols):
+            result_string = result_string + str(matrix[row, col]) + ',\t'
+
+        result_string += '\n'
+
+    return result_string

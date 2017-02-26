@@ -157,7 +157,10 @@ class XiCalculator(QThread):
                 d = xi_d_matrix[category_index][word_index]
 
                 # Формула-5 стр173
-                mi_value = (a * u) / ((a+c)*(a+b))
+                mi_value_down = ((a+c)*(a+b))
+                mi_value = 0
+                if(mi_value_down != 0):
+                    mi_value = (a * u) / ((a + c) * (a + b))
                 xi_mi_matrix[category_index][word_index] = slog2(mi_value)
 
                 # Формула 7 стр174
@@ -165,7 +168,6 @@ class XiCalculator(QThread):
                 ig_value_2d = (c + d) * (a + c)
                 ig_value_3d = (a + b) * (b + d)
                 ig_value_4d = (c + d) * (b + d)
-
 
                 ig_value_1 = (a / u) * slog2((u * a) / ig_value_1d)
                 ig_value_2 = (c / u) * slog2((u * c) / ig_value_2d)
