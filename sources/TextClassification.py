@@ -13,6 +13,10 @@ from sources.classification.NaiveBayes import *
 from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
 from PyQt5 import QtCore, QtGui, uic
 
+import numpy as np
+from sources.classification.clsf_util import *
+import copy
+
 
 class DialogConfigClassification(QDialog):
 
@@ -51,6 +55,10 @@ class DialogConfigClassification(QDialog):
 
         if(self.radioButtonRocchio.isChecked()):
             self.classification_rocchio(needPreprocessing)
+
+        if(self.radioButtonKNN.isChecked()):
+            self.classification_knn(needPreprocessing)
+
 
         self.textEdit.append('Завершено.')
         QMessageBox.information(self, "Внимание", "Процесс классификации завершен!")
@@ -105,63 +113,122 @@ class DialogConfigClassification(QDialog):
 
     # Алгоритм Рочио
     def classification_rocchio(self, needPreprocessing):
-        # Обучение
-        self.textEdit.append('Обучение...')
-        root_path = self.input_dir + 'train/'
-        folders = [root_path + folder + '/' for folder in os.listdir(root_path)]
-        class_titles = os.listdir(root_path)
-        files = {}
-        for folder, title in zip(folders, class_titles):
-            files[title] = [folder + f for f in os.listdir(folder)]
-        train = files
 
-        # Классификация
-        self.textEdit.append('Классификация...')
-        root_path = self.input_dir + 'test/'
-        folders = [root_path + folder + '/' for folder in os.listdir(root_path)]
-        class_titles = os.listdir(root_path)
-        files = {}
-        for folder, title in zip(folders, class_titles):
-            files[title] = [folder + f for f in os.listdir(folder)]
-        test = files
+        def findCentroid(nparray):
+            return (np.sum(nparray, axis=0) / len(nparray))
 
-        pool = createTokenPool(class_titles, train)
-        tdict = createDictionary(class_titles, pool)
-        rocchio = Rocchio(class_titles, tdict)
-        rocchio.train(pool)
+        ##############PARAMS###################
+        output_dir = self.output_dir + 'roc_out/'
+        input_dir = self.input_dir
+        sep = ";"
+        eol = "\n"
+        ###############ALGO##################
 
-        test_pool = createTokenPool(class_titles, test)
-        test_lbl_pool = rocchio.predictPool(test_pool)
+        fdata, fclass, split = makeFileList(input_dir)
+        tfidf, uniq_words = makeTFIDF(fdata[:split], fdata[split:])
+        class_titles = set(fclass)
 
-        log_string = "Роккио:\n"
+        combiSet = addClassToTFIDF(copy.deepcopy(tfidf), fclass)
+        trainSet = combiSet[:split]
+        testSet = combiSet[split:]
 
-        for i in class_titles:
-            correct = 0
-            log_string = log_string + i + '\n'
-            for j in range(len(test_lbl_pool[i])):
-                str_out = test[i][j] + ' = ' + test_lbl_pool[i][j] + '\n'
-                log_string = log_string + str_out
-            for val in test_lbl_pool[i]:
-                correct = correct + (val == i)
-            log_string = log_string + 'Верных классов: ' + i + ': ' + str(correct) + '\n'
+        centroids = []
+        for cl in class_titles:
+            cl_array = []
+            for i in range(len(trainSet)):
+                if fclass[i] == cl:
+                    cl_array.append(trainSet[i][:-1])
+            centroids.append(findCentroid(np.array(cl_array)).round(3).tolist())
 
-        log_string_centr = "Центроиды классов:\n"
-        idx = []
-        for itm in list(tdict.values()):
-            idx.append(itm[idx_lbl])
+        centroids = addClassToTFIDF(centroids, list(class_titles))
+        log_centr = "центроиды" + eol + sep.join(uniq_words) + eol
+        for row in centroids:
+            log_centr += sep.join(map(str, row)) + eol
 
-        for i in range(len(class_titles)):
-            log_string_centr += class_titles[i] + '\n'
-            log_string_centr += ';'.join([x for (y, x) in sorted(zip(idx, tdict.keys()))]) + '\n'
-            log_string_centr += ';'.join(str(x) for x in sum(rocchio.centroids[i].tolist(), [])) + '\n'
+        self.textEdit.append("Алгоритм Роккио")
+        log_main = "Расстояние до центроидов" + eol
+        predictions = []
+        for doc in testSet:
+            neighbors, dist = getNeighbors(centroids, testSet[0], len(centroids))
+            log_main += str(doc) + eol + sep.join([x[0][-1] for x in dist]) + eol + sep.join(
+                map(str, [x[1] for x in dist])) + eol
+            self.textEdit.append('> результат =' + repr(dist[0][0][-1]) + ', на самом деле=' + repr(doc[-1]))
+            predictions.append(dist[0][0][-1])
+        accuracy = getAccuracy(testSet, predictions)
+        self.textEdit.append('Точность: ' + repr(accuracy) + '%')
+
+        ###############LOGS##################
+        log_tfidf = sep.join(uniq_words) + eol
+        split_names = makeFileList(input_dir, fread=False)[0]
+        for i in range(len(combiSet)):
+            row = combiSet[i]
+            log_tfidf += sep.join(map(str, row)) + sep + split_names[i] + eol
+
+        self.textEdit.append('Выходные файлы:')
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        self.textEdit.append(output_dir + 'output_Rocchio.csv')
+        writeStringToFile2(log_main, output_dir + 'output_Rocchio.csv')
+        self.textEdit.append(output_dir + 'Rocchio_centroids.csv')
+        writeStringToFile2(log_centr, output_dir + 'Rocchio_centroids.csv')
+        self.textEdit.append(output_dir + 'tfidf_matrix.csv')
+        writeStringToFile2(log_tfidf, output_dir + 'tfidf_matrix.csv')
+
+
+    # Алгоритм KNN
+    def classification_knn(self, needPreprocessing):
+
+        ##############PARAMS###################
+        output_dir = self.output_dir + 'knn_out/'
+        input_dir = self.input_dir
+        sep = ";"
+        eol = "\n"
+        k = 1
+        ###############ALGO##################
+
+        fdata, fclass, split = makeFileList(input_dir)
+        tfidf, uniq_words = makeTFIDF(fdata[:split], fdata[split:])
+
+        trainingSet = addClassToTFIDF(tfidf[:split], fclass[:split])
+        testSet = addClassToTFIDF(tfidf[split:], fclass[split:])
+
+        self.textEdit.append("Алгоритм KNN")
+        predictions = []
+        log_neighbors = "Соседи и расстояния до них:" + eol
+        log_votes = "Голоса соседей:" + eol
+        for x in range(len(testSet)):
+            neighbors, dist = getNeighbors(trainingSet, testSet[x], k)
+            result = getResponse(neighbors)
+            log_neighbors += "Документ:;" + str(testSet[x]) + eol
+            for p in dist:
+                log_neighbors += sep.join(map(str, p)) + eol
+            log_votes += "Документ:;" + str(testSet[x]) + eol + str(result).strip("[]") + eol
+            predictions.append(result[0][0])
+            self.textEdit.append('> результат =' + repr(result[0][0]) + ', на самом деле=' + repr(testSet[x][-1]))
+        accuracy = getAccuracy(testSet, predictions)
+        self.textEdit.append('Точность: ' + repr(accuracy) + '%')
+
+        ###############LOGS##################
+        log_tfidf = sep.join(uniq_words) + eol
+        combiSet = trainingSet + testSet
+        split_names = makeFileList(input_dir, fread=False)[0]
+        for i in range(len(combiSet)):
+            row = combiSet[i]
+            log_tfidf += sep.join(map(str, row)) + sep + split_names[i] + eol
 
         self.textEdit.append("Выходные файлы:")
-        out_dir = self.output_dir + 'roc_out/'
-        if not os.path.exists(out_dir):
-            os.makedirs(out_dir)
 
-        self.textEdit.append(out_dir + 'output_Rocchio.csv')
-        writeStringToFile(log_string, out_dir + 'output_Rocchio.csv')
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
 
-        self.textEdit.append(out_dir + 'Rocchio_centroids.csv')
-        writeStringToFile(log_string_centr, out_dir + 'Rocchio_centroids.csv')
+        self.textEdit.append(output_dir + 'tfidf_matrix.csv')
+        writeStringToFile(log_tfidf, output_dir + 'tfidf_matrix.csv')
+
+        self.textEdit.append(output_dir + 'Соседи.csv')
+        writeStringToFile(log_neighbors, output_dir + 'Соседи.csv')
+
+        self.textEdit.append(output_dir + 'Голоса.csv')
+        writeStringToFile(log_votes, output_dir + 'Голоса.csv')
+
