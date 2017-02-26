@@ -9,6 +9,7 @@ from PyQt5.QtCore import Qt
 from sources.TextPreprocessing import *
 from sources.classification.Rocchio import *
 from sources.classification.NaiveBayes import *
+from sources.classification.KNN import *
 
 from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
 from PyQt5 import QtCore, QtGui, uic

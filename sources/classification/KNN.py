@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import operator
-from clsf_util import * 
+from sources.classification.clsf_util import *
 
 #подсчёт голосов соседей
 def getResponse(neighbors):
