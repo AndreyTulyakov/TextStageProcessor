@@ -27,18 +27,22 @@ class DialogConfigClassification(QDialog):
         self.configurations = configurations
         self.parent = parent
 
+        self.checkBoxNeedPreprocessing.setEnabled(False)
+
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.buttonClassify.clicked.connect(self.makeClassification)
         self.textEdit.setText("")
 
         self.output_dir = configurations.get("output_files_directory", "output_files/classification") + "/"
-        self.input_dir = configurations.get("input_classification_files_directory", "input_files/classification") + "/"
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
     # Вызов при нажатии на кнопку "Классифицировать"
     def makeClassification(self):
         self.textEdit.setText("")
+        self.lineEditInputDir.setEnabled(False)
+        #self.input_dir = configurations.get("input_classification_files_directory", "input_files/classification")
+        self.input_dir = self.lineEditInputDir.text() + '/'
 
         needPreprocessing = self.checkBoxNeedPreprocessing.isChecked()
 
@@ -50,6 +54,7 @@ class DialogConfigClassification(QDialog):
 
         self.textEdit.append('Завершено.')
         QMessageBox.information(self, "Внимание", "Процесс классификации завершен!")
+        self.lineEditInputDir.setEnabled(True)
 
     # Алгоритм наивного Байеса
     def classification_naive_bayes(self, needPreprocessing):

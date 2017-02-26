@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         button_annotation = QPushButton("Создание аннотации документа")
         button_annotation.setMinimumHeight(32)
         button_annotation.clicked.connect(self.makeTextAnnotation)
-        button_annotation.setEnabled(False)
+        #button_annotation.setEnabled(False)
 
         spacer = QSpacerItem(20,40,QSizePolicy.Minimum,QSizePolicy.Expanding)
 

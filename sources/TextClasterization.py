@@ -242,12 +242,9 @@ class DialogConfigClasterization(QDialog):
                     frequency_in_this_doc = 0
                 W[i][j] = frequency_in_this_doc * math.log10(len(texts) / value)
                 W_norm[i] += math.pow(W[i][j], 2)
-                #print('W[' + key + '][' + filenames[i] + '] = ' + str(frequency_in_this_doc) + '*Log(' + str(
-                #    len(texts)) + '/' + str(value) + ') = ' + str(W[i][j]))
 
                 j += 1
             W_norm[i] = math.sqrt(W_norm[i])
-            print('wnorm = ' + str(W_norm[i]))
             i += 1
 
         for i in range(len(texts)):
