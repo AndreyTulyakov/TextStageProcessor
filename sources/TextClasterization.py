@@ -669,52 +669,18 @@ class DialogConfigClasterization(QDialog):
             i += 1
         writeStringToFile(W_string.replace('\n ', '\n'), output_dir + 'W.csv')
 
-        S = GetS(W)
-        sim_string = ''
-        for name in self.filenames:
-            sim_string = sim_string + ';' + name
-        sim_string += '\n'
-        for i in range(len(texts)):
-            sim_string += self.filenames[i]
-            for j in range(len(t_all)):
-                sim_string = sim_string + ';' + str(S[i][j])
-            sim_string += '\n'
-        writeStringToFile(sim_string.replace('\n ', '\n'), output_dir + 'sim.csv')
-
-        n = len(texts)
-        m = len(texts)
-        S = [[0 for x in range(n)] for y in range(m)]
-
-        for i in range(n):
-            for j in range(m):
-                summUD = 0
-                for k in range(len(t_all)):
-                    summUD += math.pow(W[i][k] - W[j][k], 2)
-                S[i][j] = math.sqrt(summUD)
-
-        dist_string = ''
-
-        for name in self.filenames:
-            dist_string = dist_string + ';doc' + str(name)[str(name).find('/') + 1:str(name).find('.')]
-        dist_string += '\n'
-        for i in range(len(texts)):
-            dist_string += 'doc' + str(self.filenames[i])[
-                                   str(self.filenames[i]).find('/') + 1:str(self.filenames[i]).find('.')]
-            for j in range(len(texts)):
-                dist_string = dist_string + ';' + str(round(S[i][j], 2))
-            dist_string += '\n'
-        writeStringToFile(dist_string.replace('\n ', '\n').replace('.', ','), output_dir + 'dist.csv')
-
         # Проверим для каждого уровня
-        for centroidCount in range(len(texts), 0, -1):
+        # for centroidCount in range(len(texts), 0, -1):
+        #     print('Finding clusters - ' + str(centroidCount))
+        if(True):
+            centroidCount = 2
             result += 'Кол-во кластеров - ' + str(centroidCount) + '\n'
 
             #степень нечеткости 1<m< infinity
-            m = 3
+            m = 2
 
             #номер итерации
             t=0
-
             result += 'm = ' + str(m) + ';' + 'k = ' + str(centroidCount) + '\n'
 
             #заполним изначально случайными числами, в сумме по строке - 1
@@ -735,6 +701,7 @@ class DialogConfigClasterization(QDialog):
             while True:
                 t = t+1
                 result += '\nИтерация' + str(t) + '\n'
+                # print('iteration ' + str(t))
                 centroids = [[0 for x in range(len(t_all))] for y in range(centroidCount)]
                 # Находим таблицу центроидов
                 result += '\nЦентроиды\n'
@@ -749,6 +716,7 @@ class DialogConfigClasterization(QDialog):
                         centroids[j][i] = summUD/summU
                         result += str(centroids[j][i]) + ';'
                     result += '\n'
+                # print('centroids founded ')
 
                 # Находим новую таблицу разбиения U1
                 U1 = [[0 for x in range(centroidCount)] for y in range(len(texts))]
@@ -758,13 +726,14 @@ class DialogConfigClasterization(QDialog):
                         for k in range(centroidCount):
                             diff_ij = 0
                             diff_ik = 0
-                            for m in range(len(t_all)):
-                                diff_ij += math.pow(W[i][m] - centroids[j][m],2)
-                                diff_ik += math.pow(W[i][m] - centroids[k][m], 2)
+                            for p in range(len(t_all)):
+                                diff_ij += math.pow(W[i][p] - centroids[j][p],2)
+                                diff_ik += math.pow(W[i][p] - centroids[k][p], 2)
                             diff_ik = math.sqrt(diff_ik)
                             diff_ij = math.sqrt(diff_ij)
                             summ+= math.pow(diff_ij/diff_ik,2/(m-1))
                         U1[i][j] = 1/summ
+                # print('new u table founded')
 
                 #запишем в файл новую таблицу
                 result += 'U' + str(t) + '\n'
@@ -776,14 +745,47 @@ class DialogConfigClasterization(QDialog):
 
 
                 #проверим условие остановки
-                summ = 0
+                Udiff = 0
                 for i in range(len(texts)):
                     for j in range(centroidCount):
-                            summ += math.pow(U0[i][j] - U1[i][j], 2)
-                summ = math.sqrt(summ)
-                if(summ<eps):
+                        Udiff += math.pow(U0[i][j] - U1[i][j], 2)
+                Udiff = math.sqrt(Udiff)
+                if(Udiff<eps):
+                    # #Выберем самые ближайшие к документам кластеры
+                    doc2cluster = [-1 for x in range(len(texts))]
+                    # Находим таблицу Dist для центроидов
+                    clusterDist = [[0 for x in range(len(texts))] for y in range(centroidCount)]
+                    for x in range(centroidCount):
+                        for y in range(len(texts)):
+                            summ = 0
+                            for k in range(len(t_all)):
+                                summ += math.pow(W[y][k] - centroids[x][k], 2)
+                                clusterDist[x][y] = math.sqrt(summ)
+                    for doc in range(len(texts)):
+                        minDistance = 9999
+                        minCluster = -1
+                        currentDistance = 0
+                        for cluster in range(0, centroidCount):
+                            # for dist in range(len(texts)-1):
+                            currentDistance = abs(clusterDist[cluster][doc])
+                            # currentDistance/=len(t_all)
+                            if (currentDistance < minDistance):
+                                minDistance = currentDistance
+                                minCluster = cluster
+                        if (doc2cluster[doc] != minCluster):
+                            doc2cluster[doc] = minCluster
+                    result += '\nКластеры'
+                    print("Найдены кластеры в количестве " + str(centroidCount))
+                    # запишем результаты
+                    # result += 'Кластеров -'+ str(centroidCount) + '\n'
+                    for cluster in range(centroidCount):
+                        result += '\nКластер' + str(cluster)
+                        for doc in range(len(texts)):
+                            if (doc2cluster[doc] == cluster):
+                                result += '; ' + str(doc)
                     break
                 U0 = U1
+                # print('continue iterations ')
 
         writeStringToFile(result.replace('\n ', '\n').replace('.', ','), output_dir + 'steps.csv')
         self.textEdit.append('Кластеризация Нечёткий алгоритм с-средних завершена' + '\n')
