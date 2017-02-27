@@ -47,7 +47,8 @@ class DialogAnnotationMaker(QDialog):
         original_sentences = tuple(self.text.original_sentences)
 
         # Разделение текста на слова
-        self.text.tokenized_sentences = tokenizeSingleText(self.text)
+        self.configurations["minimal_words_in_sentence"] = 4
+        self.text.tokenized_sentences = tokenizeSingleText(self.text, self.configurations)
 
         # Удаление стоп-слов
         self.configurations["minimal_word_size"] = 3
@@ -72,10 +73,10 @@ class DialogAnnotationMaker(QDialog):
         u, sigma, v = singular_value_decomposition(matrix, full_matrices=False)
         u = u + np.abs(np.min(u))
         v = v + np.abs(np.min(v))
-        #u, sigma, v = self.cutSingularValue(u, sigma, v)
+        u, sigma, v = self.cutSingularValue(u, sigma, v)
 
-        print('U-MATRIX:\n', printMatrixToString(u, None, all_word_keys))
-        print('V-MATRIX:\n', printMatrixToString(v, range(v.shape[1]), None))
+        #print('U-MATRIX:\n', printMatrixToString(u, None, all_word_keys))
+        #print('V-MATRIX:\n', printMatrixToString(v, range(v.shape[1]), None))
 
         self.calculateBySentenceValues(v, result_sentence_count)
         self.calculateByWordsValues(all_word_keys, u, result_sentence_count)
@@ -106,10 +107,9 @@ class DialogAnnotationMaker(QDialog):
 
     def calculateBySentenceValues(self, v, sentence_count_need):
         sentences_score = tuple((i, np.mean(v[0, i])) for i in range(v.shape[1]))
-        print('sentences_score:', str(sentences_score))
         sorted_sentences_score = sorted(sentences_score, key=lambda x: x[1], reverse=True)
         result_sentences = []
-        self.textEdit.append('\nРезультирующие предложения:')
+        self.textEdit.append('\nРезультирующие предложения (По весу предложения):')
         for i in range(min(sentence_count_need, len(sorted_sentences_score))):
             item = sorted_sentences_score[i]
             result_sentences.append(self.text.original_sentences[item[0]])
@@ -124,7 +124,7 @@ class DialogAnnotationMaker(QDialog):
             summa = []
             for y in range(u.shape[1]):
                 summa.append(u[index][y])
-            words_score[word] = np.sum(summa)
+            words_score[word] = np.mean(summa)
 
         sentences_res2 = list()
         for index, sentence in enumerate(self.text.register_pass_centences):
@@ -135,7 +135,7 @@ class DialogAnnotationMaker(QDialog):
         sorted_sentences_score2 = sorted(sentences_res2, key=lambda x: x[1], reverse=True)
 
         result_sentences2 = []
-        self.textEdit.append('\nРезультирующие предложения (По сумме весов):')
+        self.textEdit.append('\nРезультирующие предложения (По весам слов):')
         for i in range(min(sentence_count_need, len(sorted_sentences_score2))):
             item = sorted_sentences_score2[i]
             result_sentences2.append(self.text.original_sentences[item[0]])
@@ -203,7 +203,7 @@ class DialogAnnotationMaker(QDialog):
 
     def cutSingularValue(self, u, sigma, v):
 
-        print('SING SIZE:', sigma.shape[0], str(sigma))
+        #print('SING SIZE:', sigma.shape[0], str(sigma))
         singular_minimal_transfer = 3
         m = np.median(sigma)
         for i in range(sigma.shape[0]):
@@ -213,7 +213,7 @@ class DialogAnnotationMaker(QDialog):
         nu = u[0:, 0:(singular_minimal_transfer)]
         ns = sigma[0:(singular_minimal_transfer)]
         nv = v[0:(singular_minimal_transfer), 0:]
-        print('SING SIZE AFTER:', singular_minimal_transfer, str(ns))
+        #print('SING SIZE AFTER:', singular_minimal_transfer, str(ns))
 
         return nu, ns, nv
 

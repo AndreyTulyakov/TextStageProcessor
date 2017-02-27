@@ -84,22 +84,42 @@ def loadInputFilesFromList(filenames):
 
     return texts
 
-def tokenizeSingleText(text):
-    for sentence in text.original_sentences:
+
+def tokenizeSingleText(text, configurations):
+    minimal_words_in_sentence = 3
+    if(configurations != None):
+        minimal_words_in_sentence = configurations.get("minimal_words_in_sentence", 3)
+
+    remove_index_list = []
+
+    for index, sentence in enumerate(text.original_sentences):
         if (len(sentence) > 1):
             tokenized_sentence = tokenizers.simple_word_tokenize(sentence)
-            if(len(tokenized_sentence) > 1):
+            updated_tokenized_sentence = []
+            for word in tokenized_sentence:
+                if word.isalpha() and len(word)>1:
+                    updated_tokenized_sentence.append(word)
+            tokenized_sentence = updated_tokenized_sentence
+
+            if(len(tokenized_sentence) >= minimal_words_in_sentence):
                 text.tokenized_sentences.append(tokenized_sentence)
+            else:
+                remove_index_list.append(index);
+        else:
+            remove_index_list.append(index);
+
+    sorted_remove_index_list = sorted(remove_index_list, key=lambda x: x, reverse=True)
+    for index in sorted_remove_index_list:
+        text.original_sentences.pop(index)
+
     return text.tokenized_sentences
 
-def tokenizeTextData(texts):
+
+def tokenizeTextData(texts, configurations = None):
     # Переводим предложения в списки слов (tokenized_sentence)
     for text in texts:
-        text.tokenized_sentences = tokenizeSingleText(text)
+        text.tokenized_sentences = tokenizeSingleText(text, configurations)
     return texts
-
-
-
 
 
 # Записывает/перезаписывает строку любой длины c переносами (data_str) в файл (filename)
@@ -139,7 +159,7 @@ def removeStopWordsFromSentences(sentences, morph, configurations):
         while i < len(sentence):
             current_word = sentence[i]
 
-            if len(current_word) < minimal_word_size or current_word.isdigit():
+            if len(current_word) < minimal_word_size or current_word.isalpha() == False:
                  sentence.pop(i)
                  i = i - 1
             else:

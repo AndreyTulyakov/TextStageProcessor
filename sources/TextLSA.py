@@ -232,6 +232,7 @@ class LsaCalculator(QThread):
         self.signals.PrintInfo.emit('2) Латентно-семантический анализ.\n')
 
         lsa_matrix, self.all_idf_word_keys = CreateLSAMatrix(self.texts, idf_word_data)
+        lsa_matrix = self._compute_term_frequency(lsa_matrix)
         u, S, v, s = divideSingular(lsa_matrix)
 
         self.signals.UpdateProgressBar.emit(70)
@@ -239,6 +240,25 @@ class LsaCalculator(QThread):
         self.signals.UpdateProgressBar.emit(100)
         self.signals.PrintInfo.emit('Рассчеты закончены!')
         self.signals.Finished.emit(self.nu, self.ns, self.nv, self.all_idf_word_keys, self.texts)
+
+    def _compute_term_frequency(self, matrix, smooth=0.8):
+        """
+        Computes TF metrics for each sentence (column) in the given matrix.
+        You can read more about smoothing parameter at URL below:
+        http://nlp.stanford.edu/IR-book/html/htmledition/maximum-tf-normalization-1.html
+        """
+        assert 0.0 <= smooth < 1.0
+
+        max_word_frequencies = np.max(matrix, axis=0)
+        rows, cols = matrix.shape
+        for row in range(rows):
+            for col in range(cols):
+                max_word_frequency = max_word_frequencies[col]
+                if max_word_frequency != 0:
+                    frequency = matrix[row, col] / max_word_frequency
+                    matrix[row, col] = smooth + (1.0 - smooth) * frequency
+
+        return matrix
 
 
 class DialogConfigLSA(QDialog):
