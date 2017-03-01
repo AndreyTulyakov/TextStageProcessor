@@ -155,7 +155,6 @@ class AnnotationMakerCalculator(QThread):
 
         all_word_list_keys = list(all_word_list.keys())
         all_words_count = len(all_word_list_keys)
-
         lsa_matrix = np.zeros(shape=(all_words_count, all_sentences_count))
 
         for s in range(all_sentences_count):
@@ -169,17 +168,15 @@ class AnnotationMakerCalculator(QThread):
                         word_frequency_in_current_sentence = word_frequency_in_current_sentence + 1
 
                 lsa_matrix[i][s] = math.sqrt(word_frequency_in_current_sentence)
-
         return lsa_matrix, all_word_list_keys
 
-    def _compute_term_frequency(self, matrix, smooth=0.4):
+    def _compute_term_frequency(matrix, smooth=0.4):
         """
         Computes TF metrics for each sentence (column) in the given matrix.
         You can read more about smoothing parameter at URL below:
         http://nlp.stanford.edu/IR-book/html/htmledition/maximum-tf-normalization-1.html
         """
         assert 0.0 <= smooth < 1.0
-
         max_word_frequencies = np.max(matrix, axis=0)
         rows, cols = matrix.shape
         for row in range(rows):
@@ -192,22 +189,15 @@ class AnnotationMakerCalculator(QThread):
         return matrix
 
     def cutSingularValue(self, u, sigma, v):
-
-        # print('SING SIZE:', sigma.shape[0], str(sigma))
         singular_minimal_transfer = 3
         m = np.median(sigma)
         for i in range(sigma.shape[0]):
             if (sigma[i] > m):
                 singular_minimal_transfer = i
-
         nu = u[0:, 0:(singular_minimal_transfer)]
         ns = sigma[0:(singular_minimal_transfer)]
         nv = v[0:(singular_minimal_transfer), 0:]
-        # print('SING SIZE AFTER:', singular_minimal_transfer, str(ns))
-
         return nu, ns, nv
-
-
 
 
 class DialogAnnotationMaker(QDialog):
@@ -229,30 +219,29 @@ class DialogAnnotationMaker(QDialog):
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
-        self.buttonProcess.clicked.connect(self.processIt)
+        self.buttonProcess.clicked.connect(self.process_it)
         self.textEdit.setText("")
         self.progressBar.setValue(0)
 
         self.calculator = AnnotationMakerCalculator(filename, morph, self.configurations)
-        self.calculator.signals.Finished.connect(self.onCalculationFinish)
-        self.calculator.signals.UpdateProgressBar.connect(self.onUpdateProgressBar)
-        self.calculator.signals.PrintInfo.connect(self.onTextLogAdd)
+        self.calculator.signals.Finished.connect(self.on_calculation_finish)
+        self.calculator.signals.UpdateProgressBar.connect(self.on_update_progress_bar)
+        self.calculator.signals.PrintInfo.connect(self.on_text_log_add)
 
-    def onTextLogAdd(self, QString):
+    def on_text_log_add(self, QString):
         self.textEdit.append(QString + '\n')
         self.repaint()
 
-    def onUpdateProgressBar(self, value):
+    def on_update_progress_bar(self, value):
         self.progressBar.setValue(value)
         self.repaint()
 
-    def onCalculationFinish(self):
+    def on_calculation_finish(self):
         QApplication.restoreOverrideCursor()
         self.buttonProcess.setEnabled(True)
         QMessageBox.information(self, "Внимание", "Автоматическое аннотирование завершено!")
 
-
-    def processIt(self):
+    def process_it(self):
         self.buttonProcess.setEnabled(False)
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.progressBar.setValue(0)
