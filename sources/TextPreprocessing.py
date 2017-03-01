@@ -86,9 +86,9 @@ def loadInputFilesFromList(filenames):
 
 
 def tokenizeSingleText(text, configurations):
-    minimal_words_in_sentence = 3
+    minimal_words_in_sentence = 1
     if(configurations != None):
-        minimal_words_in_sentence = configurations.get("minimal_words_in_sentence", 3)
+        minimal_words_in_sentence = configurations.get("minimal_words_in_sentence", 1)
 
     remove_index_list = []
 
@@ -170,8 +170,6 @@ def removeStopWordsFromSentences(sentences, morph, configurations):
     cut_ADJ = configurations.get("cut_ADJ", False)
     for sentence in sentences:
         i = 0
-        if(len(sentence) < 2):
-            continue
 
         while i < len(sentence):
             current_word = sentence[i]
