@@ -108,9 +108,22 @@ def tokenizeSingleText(text, configurations):
         else:
             remove_index_list.append(index);
 
+    # Печать предложений перед вырезкой предложений
+    # string_for_print = ''
+    # for index, sentence in enumerate(text.original_sentences):
+    #     string_for_print = string_for_print + str(index) + ')' + sentence + '\n'
+    # writeStringToFile(string_for_print, 'output_files/preProcessing_before_cut.txt')
+    #
+
     sorted_remove_index_list = sorted(remove_index_list, key=lambda x: x, reverse=True)
     for index in sorted_remove_index_list:
         text.original_sentences.pop(index)
+
+    # Печать предложений после вырезки
+    # string_for_print = ''
+    # for index, sentence in enumerate(text.original_sentences):
+    #     string_for_print = string_for_print + str(index) + ')' + sentence + '\n'
+    # writeStringToFile(string_for_print, 'output_files/preProcessing_after_cut.txt')
 
     return text.tokenized_sentences
 

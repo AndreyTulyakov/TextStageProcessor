@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from collections import namedtuple
 import numpy as np
+import pandas as pd
+from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QThread
 from PyQt5.QtCore import Qt
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
 from PyQt5 import QtCore, QtGui, uic
 from sources.TextPreprocessing import *
@@ -13,38 +17,33 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 
 
-class DialogAnnotationMaker(QDialog):
-    MIN_DIMENSIONS = 3
-    REDUCTION_RATIO = 1 / 1
+class AnnotationMakerCalculatorSignals(QObject):
+    PrintInfo = pyqtSignal(str)
+    Finished = pyqtSignal()
+    UpdateProgressBar = pyqtSignal(int)
 
-    def __init__(self, filename, morph, configurations, parent):
+class AnnotationMakerCalculator(QThread):
+    def __init__(self, filename, morph, configurations):
         super().__init__()
-        uic.loadUi('sources/DialogAnnotationMaker.ui', self)
-
         self.filename = filename
         self.morph = morph
         self.configurations = configurations
-        self.parent = parent
-
-        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint;
-        self.setWindowFlags(flags)
-
-        self.all_idf_word_keys = []
         self.texts = []
+        self.categories = dict()
+        self.signals = AnnotationMakerCalculatorSignals()
+        self.result_sentence_count = 1
 
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-
-        self.buttonProcess.clicked.connect(self.processIt)
-        self.textEdit.setText("")
-
-    def processIt(self):
-        self.textEdit.setText("")
-        result_sentence_count = self.spinBoxOutputSentenceCount.value()
+    def run(self):
+        self.signals.UpdateProgressBar.emit(0)
+        # Считываем файл с информацией о категории и файлах
+        self.signals.PrintInfo.emit('Чтение файла с категориям...')
 
         # Загрузка текста
         self.text = TextData(self.filename)
         self.text.original_sentences = readSentencesFromInputText(self.filename, None)
         original_sentences = tuple(self.text.original_sentences)
+
+        self.signals.UpdateProgressBar.emit(5)
 
         # Разделение текста на слова
         self.configurations["minimal_words_in_sentence"] = 4
@@ -56,6 +55,8 @@ class DialogAnnotationMaker(QDialog):
                                                                          self.configurations)
         np.set_printoptions(suppress=False)
 
+        self.signals.UpdateProgressBar.emit(20)
+
         # Нормализация
         texts, log_string = normalizeTexts([self.text], self.morph)
         self.text = texts[0]
@@ -64,58 +65,47 @@ class DialogAnnotationMaker(QDialog):
         texts, log_string = fixRegisterInTexts(texts, self.morph)
         self.text = texts[0]
 
+        self.signals.UpdateProgressBar.emit(30)
+
         # Расчет частотной таблицы слов
         texts, log_string = calculateWordsFrequencyInTexts(texts)
         self.text = texts[0]
 
+        self.signals.UpdateProgressBar.emit(40)
+
         matrix, all_word_keys = self.CreateLSAMatrixForSummarization(self.text)
         matrix = self._compute_term_frequency(matrix)
+
+        self.signals.UpdateProgressBar.emit(50)
+
         u, sigma, v = singular_value_decomposition(matrix, full_matrices=False)
         u = u + np.abs(np.min(u))
         v = v + np.abs(np.min(v))
         u, sigma, v = self.cutSingularValue(u, sigma, v)
 
-        #print('U-MATRIX:\n', printMatrixToString(u, None, all_word_keys))
-        #print('V-MATRIX:\n', printMatrixToString(v, range(v.shape[1]), None))
+        self.signals.UpdateProgressBar.emit(70)
 
-        self.calculateBySentenceValues(v, result_sentence_count)
-        self.calculateByWordsValues(all_word_keys, u, result_sentence_count)
+        self.calculateBySentenceValues(v, self.result_sentence_count)
 
-        # Готовая библиотека суммаризации
-        # from sumy.nlp.stemmers import Stemmer
-        # from sumy.nlp.tokenizers import Tokenizer
-        # from sumy.parsers.plaintext import PlaintextParser
-        # from sumy.utils import get_stop_words
-        # from sumy.summarizers.lsa import LsaSummarizer as Summarizer
-        # LANGUAGE = "russian"
-        #
-        # parser = PlaintextParser.from_file(self.filename, Tokenizer(LANGUAGE))
-        # print(type(parser))
-        # stemmer = Stemmer(LANGUAGE)
-        #
-        # summarizer = Summarizer(stemmer)
-        # summarizer.stop_words = get_stop_words(LANGUAGE)
-        #
-        # self.textEdit.append('\nРезультирующие предложения:')
-        # i = 1
-        # for sentence in summarizer(parser.document, result_sentence_count):
-        #     self.textEdit.append(str(i) + ') ' + str(sentence) + '\n')
-        #     i = i + 1
+        self.signals.UpdateProgressBar.emit(80)
+        self.calculateByWordsValues(all_word_keys, u, self.result_sentence_count)
 
-        self.textEdit.append('\nУспешно завершено.')
-        QMessageBox.information(self, "Внимание", "Автоматическое аннотирование завершено!")
+        self.signals.UpdateProgressBar.emit(100)
+        self.signals.PrintInfo.emit('\nУспешно завершено.')
+        self.signals.Finished.emit()
+
 
     def calculateBySentenceValues(self, v, sentence_count_need):
         sentences_score = tuple((i, np.mean(v[0, i])) for i in range(v.shape[1]))
         sorted_sentences_score = sorted(sentences_score, key=lambda x: x[1], reverse=True)
         result_sentences = []
-        self.textEdit.append('\nРезультирующие предложения (По весу предложения):')
+        self.signals.PrintInfo.emit('\nРезультирующие предложения (По весу предложения):')
         for i in range(min(sentence_count_need, len(sorted_sentences_score))):
             item = sorted_sentences_score[i]
             result_sentences.append(self.text.original_sentences[item[0]])
         i = 1
         for sentence in result_sentences:
-            self.textEdit.append(str(i) + ') ' + str(sentence) + '\n')
+            self.signals.PrintInfo.emit(str(i) + ') ' + str(sentence) + '\n')
             i += 1
 
     def calculateByWordsValues(self, all_word_keys, u, sentence_count_need):
@@ -135,13 +125,13 @@ class DialogAnnotationMaker(QDialog):
         sorted_sentences_score2 = sorted(sentences_res2, key=lambda x: x[1], reverse=True)
 
         result_sentences2 = []
-        self.textEdit.append('\nРезультирующие предложения (По весам слов):')
+        self.signals.PrintInfo.emit('\nРезультирующие предложения (По весам слов):')
         for i in range(min(sentence_count_need, len(sorted_sentences_score2))):
             item = sorted_sentences_score2[i]
             result_sentences2.append(self.text.original_sentences[item[0]])
         i = 1
         for sentence in result_sentences2:
-            self.textEdit.append(str(i) + ') ' + str(sentence) + '\n')
+            self.signals.PrintInfo.emit(str(i) + ') ' + str(sentence) + '\n')
             i += 1
 
     # Сингулярное разложение на a = u, s, v (S - восстановленный до диагональной матрицы вектор)
@@ -203,7 +193,7 @@ class DialogAnnotationMaker(QDialog):
 
     def cutSingularValue(self, u, sigma, v):
 
-        #print('SING SIZE:', sigma.shape[0], str(sigma))
+        # print('SING SIZE:', sigma.shape[0], str(sigma))
         singular_minimal_transfer = 3
         m = np.median(sigma)
         for i in range(sigma.shape[0]):
@@ -213,7 +203,61 @@ class DialogAnnotationMaker(QDialog):
         nu = u[0:, 0:(singular_minimal_transfer)]
         ns = sigma[0:(singular_minimal_transfer)]
         nv = v[0:(singular_minimal_transfer), 0:]
-        #print('SING SIZE AFTER:', singular_minimal_transfer, str(ns))
+        # print('SING SIZE AFTER:', singular_minimal_transfer, str(ns))
 
         return nu, ns, nv
+
+
+
+
+class DialogAnnotationMaker(QDialog):
+
+    def __init__(self, filename, morph, configurations, parent):
+        super().__init__()
+        uic.loadUi('sources/DialogAnnotationMaker.ui', self)
+
+        self.filename = filename
+        self.morph = morph
+        self.configurations = configurations
+        self.parent = parent
+
+        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint;
+        self.setWindowFlags(flags)
+
+        self.all_idf_word_keys = []
+        self.texts = []
+
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+
+        self.buttonProcess.clicked.connect(self.processIt)
+        self.textEdit.setText("")
+        self.progressBar.setValue(0)
+
+        self.calculator = AnnotationMakerCalculator(filename, morph, self.configurations)
+        self.calculator.signals.Finished.connect(self.onCalculationFinish)
+        self.calculator.signals.UpdateProgressBar.connect(self.onUpdateProgressBar)
+        self.calculator.signals.PrintInfo.connect(self.onTextLogAdd)
+
+    def onTextLogAdd(self, QString):
+        self.textEdit.append(QString + '\n')
+        self.repaint()
+
+    def onUpdateProgressBar(self, value):
+        self.progressBar.setValue(value)
+        self.repaint()
+
+    def onCalculationFinish(self):
+        QApplication.restoreOverrideCursor()
+        self.buttonProcess.setEnabled(True)
+        QMessageBox.information(self, "Внимание", "Автоматическое аннотирование завершено!")
+
+
+    def processIt(self):
+        self.buttonProcess.setEnabled(False)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self.progressBar.setValue(0)
+        self.textEdit.setText("")
+        self.calculator.result_sentence_count = self.spinBoxOutputSentenceCount.value()
+        self.calculator.start()
+
 
