@@ -208,6 +208,10 @@ class DialogConfigClasterization(QDialog):
         self.configurations["minimal_word_size"] = self.spinBoxMinimalWordsLen.value()
         self.textEdit.append('Иерархическая кластеризация' + '\n')
         texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
+
+        for text in texts:
+            print('*******:', str(text.original_sentences))
+
         output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/Hierarchical/"
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)

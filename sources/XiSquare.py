@@ -87,7 +87,8 @@ class XiCalculator(QThread):
         self.signals.PrintInfo.emit('Предварительная обработка текстов...')
 
         # Предварительная обработка
-        self.texts = tokenizeTextData(self.texts)
+        self.configurations['need_agresive_filtration'] = True
+        self.texts = tokenizeTextData(self.texts, self.configurations)
         self.signals.UpdateProgressBar.emit(25)
         self.texts, log_string = removeStopWordsInTexts(self.texts, self.morph, self.configurations)
         self.signals.UpdateProgressBar.emit(30)

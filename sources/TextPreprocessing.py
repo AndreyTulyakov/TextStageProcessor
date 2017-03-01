@@ -114,10 +114,14 @@ def tokenizeSingleText(text, configurations):
     #     string_for_print = string_for_print + str(index) + ')' + sentence + '\n'
     # writeStringToFile(string_for_print, 'output_files/preProcessing_before_cut.txt')
     #
+    need_agresive_filtration = False
+    if(configurations != None):
+        need_agresive_filtration = configurations.get("need_agresive_filtration", False)
 
     sorted_remove_index_list = sorted(remove_index_list, key=lambda x: x, reverse=True)
-    for index in sorted_remove_index_list:
-        text.original_sentences.pop(index)
+    if(need_agresive_filtration):
+        for index in sorted_remove_index_list:
+            text.original_sentences.pop(index)
 
     # Печать предложений после вырезки
     # string_for_print = ''

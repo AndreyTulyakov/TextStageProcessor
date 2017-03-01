@@ -47,6 +47,7 @@ class AnnotationMakerCalculator(QThread):
 
         # Разделение текста на слова
         self.configurations["minimal_words_in_sentence"] = 4
+        self.configurations['need_agresive_filtration'] = True
         self.text.tokenized_sentences = tokenizeSingleText(self.text, self.configurations)
 
         # Удаление стоп-слов
