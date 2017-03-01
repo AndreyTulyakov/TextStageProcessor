@@ -170,7 +170,7 @@ class AnnotationMakerCalculator(QThread):
                 lsa_matrix[i][s] = math.sqrt(word_frequency_in_current_sentence)
         return lsa_matrix, all_word_list_keys
 
-    def _compute_term_frequency(matrix, smooth=0.4):
+    def _compute_term_frequency(self, matrix, smooth=0.4):
         """
         Computes TF metrics for each sentence (column) in the given matrix.
         You can read more about smoothing parameter at URL below:
