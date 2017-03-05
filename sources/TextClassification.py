@@ -68,49 +68,84 @@ class DialogConfigClassification(QDialog):
     # Алгоритм наивного Байеса
     def classification_naive_bayes(self, needPreprocessing):
 
-        # Обучение
-        self.textEdit.append('Обучение...')
-        traindir = self.input_dir + "train/"
-        DClasses = os.listdir(traindir)
+        def dictToCsv(dct, fpath):
+            with open(fpath, 'w') as csv_file:
+                writer = csv.writer(csv_file, delimiter = ';', lineterminator = '\n')
+                for key, value in dct.items():
+                   writer.writerow([key, str(value)]) 
 
-        p = Pool()
-        for i in DClasses:
-            p.learn(traindir + i, i)
+        def count_words(words):
+            wc = {}
+            for word in words:
+                wc[word] = wc.get(word, 0.0) + 1.0
+            return wc
 
+        ##############PARAMS###################
+        output_dir = self.output_dir + 'nb_out/'
+        input_dir = self.input_dir
+        ###############ALGO##################
+
+        self.textEdit.append("Алгоритм наивного байеса")
         # Классификация
-        self.textEdit.append('Классификация...')
-        testdir = self.input_dir + "test/"
+        fdata, fclass, split = makeFileList(input_dir)
 
-        log_string = "Вероятности документов:\n"
-        log_string_rates = "Процент похожих слов:\n"
 
-        for i in DClasses:
-            dir = os.listdir(testdir + i)
-            correct = 0
-            for file in dir:
-                res = p.Probability(testdir + i + "/" + file)
-                str_out = i + ": " + file + ": " + str(res)
-                if i == res[0][0]:
-                    correct = correct + 1
-                log_string = log_string + str_out + '\n'
-                log_string_rates += str(p.DocumentIntersectionWithClasses(testdir + i + "/" + file)) + "\n"
-            log_string = log_string + 'Верных классов:' + i + ': ' + str(correct) + '\n'
+        trainingSet = fdata[:split]
+        trainingClass = fclass[:split]
+        testSet = fdata[split:]
+        test_fnames = makeFileList(input_dir, fread = False)[0][split:]
 
-        log_string_learn = "Словарь классов обучения:\n"
-        for c in DClasses:
-            log_string_learn += c + "\n"
-            log_string_learn += str(p.BagOfWords_in_class(c)) + "\n"
+        vocab = {}
+        word_counts = defaultdict(dict)
+        priors = dict.fromkeys(set(trainingClass), 0.)
+        for cl in priors.keys():
+            priors[cl] = trainingClass.count(cl)
+        docs = []
 
+        for i in range(len(trainingSet)):
+            counts = count_words(trainingSet[i])
+            cl = trainingClass[i]
+            for word, count in counts.items():
+                if word not in vocab:
+                    vocab[word] = 0.0
+                if word not in word_counts[cl]:
+                    word_counts[cl][word] = 0.0
+                vocab[word] += count
+                word_counts[cl][word] += count
+
+        scores = {}
+        V = len(vocab) 
+        for i in range(len(testSet)):
+            scores[test_fnames[i]] = []
+            counts = count_words(testSet[i])
+            Lc = sum(word_counts[cl].values())
+            for cl in priors.keys():
+                prior_cl = math.log10(priors[cl] / sum(priors.values()))
+                log_prob = 0.0
+                for w, cnt in counts.items():
+                    Wic = word_counts[cl].get(w, 0.0)
+                    log_prob += math.log10((Wic + 1)/(V + Lc))
+        #            if not w in vocab:
+        #                continue
+        #            
+        #            p_word = vocab[w] / sum(vocab.values())
+        #            p_w_given = word_counts[cl].get(w, 0.0) / sum(word_counts[cl].values())
+        #            
+        #            if p_w_given > 0:
+        #                log_prob += math.log(cnt * p_w_given / p_word)
+                scores[test_fnames[i]].append([cl, round((log_prob + prior_cl), 3)])
+
+        
         self.textEdit.append("Выходные файлы:")
         out_dir = self.output_dir + 'nb_out/'
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
-        self.textEdit.append(out_dir + 'output_naive_bayes.csv')
-        writeStringToFile(log_string, out_dir + 'output_naive_bayes.csv')
-        self.textEdit.append(out_dir + 'naive_bayes_learn.csv')
-        writeStringToFile(log_string_learn, out_dir + 'naive_bayes_learn.csv')
-        self.textEdit.append(out_dir + 'naive_bayes_rates.csv')
-        writeStringToFile(log_string_rates, out_dir + 'naive_bayes_rates.csv')
+        self.textEdit.append(out_dir + 'Словарь всех.csv')
+        dictToCsv(vocab, output_dir + 'Словарь всех.csv')
+        self.textEdit.append(out_dir + 'Вероятности документов.csv')
+        dictToCsv(scores, output_dir + 'Вероятности документов.csv')
+        self.textEdit.append(out_dir + 'Словарь по классам.csv')
+        dictToCsv(word_counts, output_dir + 'Словарь по классам.csv')
 
     # Алгоритм Рочио
     def classification_rocchio(self, needPreprocessing):
