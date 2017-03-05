@@ -28,8 +28,12 @@ def makeFileList(root_path = 'input_files/classification/', fread = True, fproce
     
     
     path_test = root_path + "test/"
+
+    for cl in class_titles:
+         if not os.path.exists(path_test + cl):
+            os.makedirs(path_test + cl)
+
     folders = [path_test + folder + '/' for folder in os.listdir(path_test)]
-    
     files_tst = []
     for folder, title in zip(folders, class_titles):
         new_files = [folder + f for f in os.listdir(folder)]
