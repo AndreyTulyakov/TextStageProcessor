@@ -232,7 +232,7 @@ class DialogConfigClassification(QDialog):
         input_dir = self.input_dir
         sep = ";"
         eol = "\n"
-        k = self.doubleSpinBox_KNN_K.value()
+        k = self.spinBox_KNN_K.value()
         ###############ALGO##################
 
         fdata, fclass, split = makeFileList(input_dir)

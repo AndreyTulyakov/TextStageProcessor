@@ -74,12 +74,18 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayoutKNN">
         <item>
-         <widget class="QDoubleSpinBox" name="doubleSpinBox_KNN_K">
+         <widget class="QSpinBox" name="spinBox_KNN_K">
+          <property name="minimumSize">
+           <size>
+            <width>60</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="maximum">
-           <double>99999999.000000000000000</double>
+           <number>99999999</number>
           </property>
           <property name="value">
-           <double>1.000000000000000</double>
+           <number>1</number>
           </property>
          </widget>
         </item>
