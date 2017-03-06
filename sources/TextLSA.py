@@ -123,19 +123,27 @@ class DialogPlotter(QDialog, Ui_DialogPlotter):
     def viewLSAGraphics2D(self, plt, nu, nv, need_words, all_idf_word_keys, texts):
 
         fig = plt.figure()
-        plt.plot(nu[0], nu[1], 'go')
+        nuxx = []
+        nuxy = []
+        min_value = 0.1
+
+        for i in range(nu.shape[1]):
+            if abs(nu[0][i]) > min_value or abs(nu[1][i]) > min_value or nu.shape[1] < 25:
+                nuxx.append(nu[0][i])
+                nuxy.append(nu[1][i])
+
+        if need_words:
+            plt.plot(nuxx, nuxy, 'go')
+
         plt.plot(nv[0], nv[1], 'go')
         plt.xlabel('x')
         plt.ylabel('y')
         plt.title('LSA 2D')
         plt.grid(True)
 
-        min_value = 0.1
-
         if (need_words):
-            for i in range(int(nu.shape[0])):
-                if (abs(nu[i][0]) > min_value or abs(nu[i][1]) > min_value or abs(nu[i][2]) > min_value):
-                    plt.annotate(str(all_idf_word_keys[i]), xy=(nu[i][0], nu[i][1]), textcoords='data')
+            for i in range(len(nuxx)):
+                    plt.annotate(str(all_idf_word_keys[i]), xy=(nuxx[i], nuxy[i]), textcoords='data')
 
         for i in range(len(texts)):
             plt.annotate(str(texts[i].filename), xy=(nv[0][i], nv[1][i]), textcoords='data')
@@ -336,6 +344,11 @@ class DialogConfigLSA(QDialog):
         plot_dialog.exec_()
 
     def make3DView(self):
+
+        if self.nu.shape[0] < 3:
+            QMessageBox.information(self, "Внимание", "Недостаточно пространств для 3D представления!")
+            return
+
         need_words = self.checkBoxShowWords.isChecked();
         plot_dialog = DialogPlotter()
         plot_dialog.viewLSAGraphics3D(plt, self.nu, self.nv, need_words, self.all_idf_word_keys, self.texts)
