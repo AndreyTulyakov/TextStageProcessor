@@ -207,12 +207,21 @@ class ClasterizationCalculator(QThread):
         self.signals = ClasterizationCalculatorSignals()
         self.method = '1'
         self.minimalWordsLen = 3
+        self.clusterCount = 2
+        self.eps = 0.01
+        self.m = 2
 
     def setMethod(self, method_name):
         self.method = method_name
 
     def setMinimalWordsLen(self, value):
         self.minimalWordsLen = value
+    def setEps(self, value):
+        self.eps = value
+    def setM(self,value):
+        self.m = value
+    def setClusterCount(self,value):
+        self.clusterCount = value
 
     def run(self):
         self.signals.UpdateProgressBar.emit(0)
@@ -221,13 +230,10 @@ class ClasterizationCalculator(QThread):
             self.makeClasterization()
 
         if(self.method == '2'):
-            self.makeClasterizationKMiddle()
+            self.makeClasterizationKMiddle(self.clusterCount)
 
         if(self.method == '3'):
-            self.makeClasterizationDBscan()
-
-        if(self.method == '4'):
-            self.makeClasterizationSMiddle()
+            self.makeClasterizationSMiddle(self.clusterCount,self.eps,self.m)
 
         self.signals.PrintInfo.emit('Рассчеты закончены!')
         self.signals.Finished.emit()
@@ -415,12 +421,12 @@ class ClasterizationCalculator(QThread):
 
         writeStringToFile(result.replace('\n ', '\n'), output_dir + 'stepsSim.csv')
 
-        for i in range(len(texts)):
-            self.signals.PrintInfo.emit(str(doc2cluster[i])+'\n')
-            print(doc2cluster[i])
+        # for i in range(len(texts)):
+        #     self.signals.PrintInfo.emit(str(doc2cluster[i])+'\n')
+        #     print(doc2cluster[i])
         self.signals.UpdateProgressBar.emit(100)
 
-    def makeClasterizationKMiddle(self):
+    def makeClasterizationKMiddle(self,ClusterCount):
         self.signals.UpdateProgressBar.emit(0)
         self.configurations["minimal_word_size"] = self.minimalWordsLen
         self.signals.PrintInfo.emit('Кластеризация к-средних' + '\n')
@@ -534,7 +540,9 @@ class ClasterizationCalculator(QThread):
         writeStringToFile(dist_string.replace('\n ', '\n').replace('.', ','), output_dir + 'dist.csv')
         self.signals.UpdateProgressBar.emit(75)
         # Проверим для каждого уровня
-        for centroidCount in range(len(texts), 0, -1):
+        centroidCount = ClusterCount
+        # for centroidCount in range(len(texts), 0, -1):
+        if(centroidCount>0):
             result += 'Кол-во кастеров - ' + str(i) + '\n'
 
             clusterCenteroids = dict()
@@ -632,7 +640,7 @@ class ClasterizationCalculator(QThread):
         self.signals.UpdateProgressBar.emit(100)
         self.signals.PrintInfo.emit('Кластеризация DBscan завершена' + '\n')
 
-    def makeClasterizationSMiddle(self):
+    def makeClasterizationSMiddle(self, ClusterCount, m, eps):
         self.signals.UpdateProgressBar.emit(0)
         self.configurations["minimal_word_size"] = self.minimalWordsLen
         self.signals.PrintInfo.emit('Нечёткий алгоритм с-средних' + '\n')
@@ -640,9 +648,10 @@ class ClasterizationCalculator(QThread):
         output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/SMiddle/"
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
+        m = int(m)
+        eps = float(eps)
 
-        eps = 0.01
-
+        # eps = 0.01
         result = ''
         # легенда в ответ
         for doc in range(len(self.filenames)):
@@ -712,11 +721,11 @@ class ClasterizationCalculator(QThread):
         # for centroidCount in range(len(texts), 0, -1):
         #     print('Finding clusters - ' + str(centroidCount))
         if(True):
-            centroidCount = 2
+            centroidCount = ClusterCount
             result += 'Кол-во кластеров - ' + str(centroidCount) + '\n'
 
             #степень нечеткости 1<m< infinity
-            m = 2
+            # m = 2
 
             #номер итерации
             t=0
@@ -781,8 +790,6 @@ class ClasterizationCalculator(QThread):
                     for j in range(centroidCount):
                         result += str(U1[i][j]) + ';'
                     result += '\n'
-
-
 
                 #проверим условие остановки
                 Udiff = 0
@@ -851,13 +858,13 @@ class DialogConfigClasterization(QDialog):
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
-        self.buttonClasterization.clicked.connect(self.makeClasterization)
-        self.pushButtonKMiddle.clicked.connect(self.makeClasterizationKMiddle)
-        self.pushButtonDBSCAN.clicked.connect(self.makeClasterizationDBscan)
-        self.pushButtonCMiddle.clicked.connect(self.makeClasterizationSMiddle)
-        self.startMethod.clicked.connect(self.startMethod)
+        # self.buttonClasterization.clicked.connect(self.makeClasterization)
+        # self.pushButtonKMiddle.clicked.connect(self.makeClasterizationKMiddle)
+        # self.pushButtonDBSCAN.clicked.connect(self.makeClasterizationDBscan)
+        # self.pushButtonCMiddle.clicked.connect(self.makeClasterizationSMiddle)
+        self.startMethod.clicked.connect(self.OnStartMethod)
         self.textEdit.setText("")
-
+        self.parameters.setVisible(False)
         output_dir = self.configurations.get("output_files_directory", "output_files")
         self.progressBar.setValue(0)
 
@@ -874,7 +881,14 @@ class DialogConfigClasterization(QDialog):
         if (self.radioButton_Hierarhy.isChecked()):
             self.parameters.setVisible(False)
         else:
-            self.parameters.setVisible(False)
+            self.parameters.setVisible(True)
+
+        if (self.radioButton_Hierarhy.isChecked()):
+            self.calculator.setMethod('1')
+        if(self.radioButton_KMiddle.isChecked()):
+            self.calculator.setMethod('2')
+        if (self.radioButton_SMiddle.isChecked()):
+            self.calculator.setMethod('3')
 
 
     def onTextLogAdd(self, QString):
@@ -886,7 +900,7 @@ class DialogConfigClasterization(QDialog):
         self.repaint()
 
     def onCalculationFinish(self):
-        self.groupButtonsBox.setEnabled(True)
+        # self.groupButtonsBox.setEnabled(True)
         QApplication.restoreOverrideCursor()
         QMessageBox.information(self, "Внимание", "Кластеризация завершена!")
 
@@ -898,18 +912,13 @@ class DialogConfigClasterization(QDialog):
         self.calculator.setMinimalWordsLen(self.spinBoxMinimalWordsLen.value())
         self.calculator.start()
 
-    def startMethod(self):
-        self.groupButtonsBox.setEnabled(False)
+    def OnStartMethod(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.textEdit.setText("")
-        if (self.radioButton_KMiddle.isChecked):
-            self.calculator.setMethod('1')
-        else:
-            if(self.radioButton_Hierarhy.isChecked):
-                self.calculator.setMethod('2')
-            else:
-                self.calculator.setMethod('3')
-        self.calculator.setMinimalWordsLen(self.spinBoxMinimalWordsLen.value())
+        self.calculator.setClusterCount(self.spinBox.value())
+        self.calculator.setEps(self.lineEdit.text())
+        self.calculator.setM(self.lineEdit_2.text())
+        # self.calculator.setMinimalWordsLen(self.spinBoxMinimalWordsLen.value())
         self.calculator.start()
 
     def makeClasterizationKMiddle(self):

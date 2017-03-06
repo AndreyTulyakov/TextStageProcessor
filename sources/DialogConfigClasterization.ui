@@ -25,6 +25,9 @@
      <property name="title">
       <string>Методы</string>
      </property>
+     <property name="flat">
+      <bool>false</bool>
+     </property>
      <widget class="QRadioButton" name="radioButton_Hierarhy">
       <property name="geometry">
        <rect>
@@ -59,6 +62,15 @@
       <property name="text">
        <string>К-средних</string>
       </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+      <property name="autoRepeat">
+       <bool>false</bool>
+      </property>
+      <property name="autoRepeatDelay">
+       <number>300</number>
+      </property>
      </widget>
      <widget class="QRadioButton" name="radioButton_SMiddle">
       <property name="geometry">
@@ -72,11 +84,17 @@
       <property name="text">
        <string>С-средних</string>
       </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
      </widget>
     </widget>
    </item>
    <item>
     <widget class="QGroupBox" name="parameters">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -100,6 +118,9 @@
         <width>42</width>
         <height>22</height>
        </rect>
+      </property>
+      <property name="value">
+       <number>2</number>
       </property>
      </widget>
      <widget class="QLabel" name="label_2">
@@ -193,110 +214,17 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupButtonsBox">
-     <property name="title">
-      <string>Алгоритмы классификации:</string>
+    <widget class="QTextEdit" name="textEdit">
+     <property name="readOnly">
+      <bool>true</bool>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QPushButton" name="buttonClasterization">
-        <property name="text">
-         <string>Иерархический алгоритм</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonKMiddle">
-        <property name="text">
-         <string>Алгоритм к-средних</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonDBSCAN">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Плотностный алгоритм DBSCAN</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonCMiddle">
-        <property name="text">
-         <string>Нечеткий алгоритм с-средних</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonC2ICM">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Инкрементный алгоритм C2ICM</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonSOM">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Нейросетевой алгоритм SOM</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QTextEdit" name="textEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QProgressBar" name="progressBar">
-        <property name="value">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout"/>
-      </item>
-      <item>
-       <widget class="QSpinBox" name="spinBoxMinimalWordsLen">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="value">
-         <number>3</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Минимальное количество символов в слове</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QProgressBar" name="progressBar">
+     <property name="value">
+      <number>0</number>
+     </property>
     </widget>
    </item>
   </layout>
