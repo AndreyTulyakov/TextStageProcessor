@@ -37,10 +37,21 @@ class DialogConfigClassification(QDialog):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.buttonClassify.clicked.connect(self.makeClassification)
         self.textEdit.setText("")
+        self.groupBox_KNN.setVisible(False)
+
+        self.radioButtonNaiveBayes.toggled.connect(self.onChangeMethod)
+        self.radioButtonRocchio.toggled.connect(self.onChangeMethod)
+        self.radioButtonKNN.toggled.connect(self.onChangeMethod)
 
         self.output_dir = configurations.get("output_files_directory", "output_files/classification") + "/"
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
+
+    def onChangeMethod(self):
+        if(self.radioButtonKNN.isChecked()):
+            self.groupBox_KNN.setVisible(True)
+        else:
+            self.groupBox_KNN.setVisible(False)
 
     # Вызов при нажатии на кнопку "Классифицировать"
     def makeClassification(self):
@@ -221,7 +232,7 @@ class DialogConfigClassification(QDialog):
         input_dir = self.input_dir
         sep = ";"
         eol = "\n"
-        k = 1
+        k = self.doubleSpinBox_KNN_K.value()
         ###############ALGO##################
 
         fdata, fclass, split = makeFileList(input_dir)

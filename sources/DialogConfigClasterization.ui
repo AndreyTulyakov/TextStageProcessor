@@ -53,54 +53,70 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="buttonClasterization">
-     <property name="text">
-      <string>Иерархический алгоритм</string>
+    <widget class="QProgressBar" name="progressBar">
+     <property name="value">
+      <number>0</number>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="pushButtonKMiddle">
-     <property name="text">
-      <string>Алгоритм к-средних</string>
+    <widget class="QGroupBox" name="groupButtonsBox">
+     <property name="title">
+      <string>Алгоритмы классификации:</string>
      </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="pushButtonDBSCAN">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Плотностный алгоритм DBSCAN</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="pushButtonCMiddle">
-     <property name="text">
-      <string>Нечеткий алгоритм с-средних</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="pushButtonC2ICM">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Инкрементный алгоритм C2ICM</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="pushButtonSOM">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Нейросетевой алгоритм SOM</string>
-     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QPushButton" name="buttonClasterization">
+        <property name="text">
+         <string>Иерархический алгоритм</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonKMiddle">
+        <property name="text">
+         <string>Алгоритм к-средних</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonDBSCAN">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Плотностный алгоритм DBSCAN</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonCMiddle">
+        <property name="text">
+         <string>Нечеткий алгоритм с-средних</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonC2ICM">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Инкрементный алгоритм C2ICM</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonSOM">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Нейросетевой алгоритм SOM</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>

@@ -66,6 +66,49 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="groupBox_KNN">
+     <property name="title">
+      <string>Параметры метода KNN</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayoutKNN">
+        <item>
+         <widget class="QDoubleSpinBox" name="doubleSpinBox_KNN_K">
+          <property name="maximum">
+           <double>99999999.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Параметр К</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QCheckBox" name="checkBoxNeedPreprocessing">
      <property name="text">
       <string>Производить предварительную обработку</string>

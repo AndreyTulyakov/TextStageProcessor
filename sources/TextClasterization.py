@@ -4,7 +4,11 @@
 import pymorphy2
 import math
 
+from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QThread
 from PyQt5.QtCore import Qt
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QApplication
 from pymorphy2 import tokenizers
 import os
 import random
@@ -68,26 +72,26 @@ def agglomerative_hierarchical_clustering(D):
         F[k] = 1
 
     return 0
-
-
-def CombineAll():
-    # Объединить все тексты
-    for filename in input_filenames:
-        with open(filename, 'r') as text_file:
-            data = text_file.read()
-            with open('combined.txt', 'a') as out_text_file:
-                out_text_file.write(data)
-    return 0
-
-
-def dist(w1, w2):
-    k = len(w1)
-    dist = [0 for x in range(k)]
-    summ = 0
-    for k in range(len(t_all)):
-        summ += math.pow(w1[k] - w2[k], 2)
-    dist[k] = math.sqrt(summ)
-    return dist
+#
+#
+# def CombineAll():
+#     # Объединить все тексты
+#     for filename in input_filenames:
+#         with open(filename, 'r') as text_file:
+#             data = text_file.read()
+#             with open('combined.txt', 'a') as out_text_file:
+#                 out_text_file.write(data)
+#     return 0
+#
+#
+# def dist(w1, w2):
+#     k = len(w1)
+#     dist = [0 for x in range(k)]
+#     summ = 0
+#     for k in range(len(t_all)):
+#         summ += math.pow(w1[k] - w2[k], 2)
+#     dist[k] = math.sqrt(summ)
+#     return dist
 
 
 def FindUnionDist(Dist, F):
@@ -179,34 +183,60 @@ def Cluster2StringNames(clusters, cluster, filenames):
 
     return res
 
-class DialogConfigClasterization(QDialog):
 
-    def __init__(self, filenames, morph, configurations, parent):
+
+
+# Сигналы для потока вычисления
+class ClasterizationCalculatorSignals(QObject):
+    PrintInfo = pyqtSignal(str)
+    Finished = pyqtSignal()
+    UpdateProgressBar = pyqtSignal(int)
+
+# Класс-поток вычисления
+class ClasterizationCalculator(QThread):
+
+    def __init__(self, filenames, output_dir, morph, configurations, textEdit):
         super().__init__()
-        uic.loadUi('sources/DialogConfigClasterization.ui', self)
-
-        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint;
-        self.setWindowFlags(flags)
-
         self.filenames = filenames
+        self.output_dir = output_dir
         self.morph = morph
         self.configurations = configurations
-        self.parent = parent
+        self.textEdit = textEdit
+        self.texts = []
+        self.categories = dict()
+        self.signals = ClasterizationCalculatorSignals()
+        self.method = '1'
+        self.minimalWordsLen = 3
 
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+    def setMethod(self, method_name):
+        self.method = method_name
 
-        self.buttonClasterization.clicked.connect(self.makeClasterization)
-        self.pushButtonKMiddle.clicked.connect(self.makeClasterizationKMiddle)
-        self.pushButtonDBSCAN.clicked.connect(self.makeClasterizationDBscan)
-        self.pushButtonCMiddle.clicked.connect(self.makeClasterizationSMiddle)
-        self.textEdit.setText("")
+    def setMinimalWordsLen(self, value):
+        self.minimalWordsLen = value
+
+    def run(self):
+        self.signals.UpdateProgressBar.emit(0)
+
+        if(self.method == '1'):
+            self.makeClasterization()
+
+        if(self.method == '2'):
+            self.makeClasterizationKMiddle()
+
+        if(self.method == '3'):
+            self.makeClasterizationDBscan()
+
+        if(self.method == '4'):
+            self.makeClasterizationSMiddle()
+
+        self.signals.PrintInfo.emit('Рассчеты закончены!')
+        self.signals.Finished.emit()
 
 
     def makeClasterization(self):
-
-        self.textEdit.setText("")
-        self.configurations["minimal_word_size"] = self.spinBoxMinimalWordsLen.value()
-        self.textEdit.append('Иерархическая кластеризация' + '\n')
+        self.signals.UpdateProgressBar.emit(0)
+        self.configurations["minimal_word_size"] = self.minimalWordsLen
+        self.signals.PrintInfo.emit('Иерархическая кластеризация' + '\n')
         texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
 
         output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/Hierarchical/"
@@ -386,17 +416,20 @@ class DialogConfigClasterization(QDialog):
         writeStringToFile(result.replace('\n ', '\n'), output_dir + 'stepsSim.csv')
 
         for i in range(len(texts)):
-            self.textEdit.append(str(doc2cluster[i])+'\n')
+            self.signals.PrintInfo.emit(str(doc2cluster[i])+'\n')
             print(doc2cluster[i])
+        self.signals.UpdateProgressBar.emit(100)
 
     def makeClasterizationKMiddle(self):
-        self.textEdit.setText("")
-        self.configurations["minimal_word_size"] = self.spinBoxMinimalWordsLen.value()
-        self.textEdit.append('Кластеризация к-средних' + '\n')
+        self.signals.UpdateProgressBar.emit(0)
+        self.configurations["minimal_word_size"] = self.minimalWordsLen
+        self.signals.PrintInfo.emit('Кластеризация к-средних' + '\n')
         texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
         output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/KMiddle/"
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
+
+        self.signals.UpdateProgressBar.emit(20)
 
         result = ''
         #легенда в ответ
@@ -405,7 +438,7 @@ class DialogConfigClasterization(QDialog):
         result += '\n'
 
         # Нахождение матрицы весов
-        self.textEdit.append('Нахождение матрицы весов' + '\n')
+        self.signals.PrintInfo.emit('Нахождение матрицы весов' + '\n')
         t_all = dict()
 
         for text in texts:
@@ -418,6 +451,7 @@ class DialogConfigClasterization(QDialog):
         for key, value in t_all.items():
             df_string = df_string + key + ';' + str(value) + '\n'
         writeStringToFile(df_string.replace('\n ', '\n'), output_dir + 'df.csv')
+        self.signals.UpdateProgressBar.emit(25)
 
         W = [[0 for x in range(len(t_all))] for y in range(len(texts))]
         print('len(texts)=' + str(len(texts)))
@@ -477,6 +511,8 @@ class DialogConfigClasterization(QDialog):
         m = len(texts)
         S = [[0 for x in range(n)] for y in range(m)]
 
+        self.signals.UpdateProgressBar.emit(50)
+
         for i in range(n):
             for j in range(m):
                 summ = 0
@@ -496,7 +532,7 @@ class DialogConfigClasterization(QDialog):
                 dist_string = dist_string + ';' + str(round(S[i][j], 2))
             dist_string += '\n'
         writeStringToFile(dist_string.replace('\n ', '\n').replace('.', ','), output_dir + 'dist.csv')
-
+        self.signals.UpdateProgressBar.emit(75)
         # Проверим для каждого уровня
         for centroidCount in range(len(texts), 0, -1):
             result += 'Кол-во кастеров - ' + str(i) + '\n'
@@ -579,12 +615,13 @@ class DialogConfigClasterization(QDialog):
                     break
 
         writeStringToFile(result.replace('\n ', '\n'), output_dir + 'steps.csv')
-        self.textEdit.append('Кластеризация к-средних завершена' + '\n')
+        self.signals.UpdateProgressBar.emit(100)
+        self.signals.PrintInfo.emit('Кластеризация к-средних завершена' + '\n')
 
     def makeClasterizationDBscan(self):
-        self.textEdit.setText("")
-        self.configurations["minimal_word_size"] = self.spinBoxMinimalWordsLen.value()
-        self.textEdit.append('Плотностный алгоритм DBScan' + '\n')
+        self.signals.UpdateProgressBar.emit(0)
+        self.configurations["minimal_word_size"] = self.minimalWordsLen
+        self.signals.PrintInfo.emit('Плотностный алгоритм DBScan' + '\n')
         texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
         output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/DBSCAN/"
         if not os.path.exists(output_dir):
@@ -592,14 +629,13 @@ class DialogConfigClasterization(QDialog):
 
         eps = 0.001
         minPt = 0.001
-
-
-        self.textEdit.append('Кластеризация DBscan завершена' + '\n')
+        self.signals.UpdateProgressBar.emit(100)
+        self.signals.PrintInfo.emit('Кластеризация DBscan завершена' + '\n')
 
     def makeClasterizationSMiddle(self):
-        self.textEdit.setText("")
-        self.configurations["minimal_word_size"] = self.spinBoxMinimalWordsLen.value()
-        self.textEdit.append('Нечёткий алгоритм с-средних' + '\n')
+        self.signals.UpdateProgressBar.emit(0)
+        self.configurations["minimal_word_size"] = self.minimalWordsLen
+        self.signals.PrintInfo.emit('Нечёткий алгоритм с-средних' + '\n')
         texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
         output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/SMiddle/"
         if not os.path.exists(output_dir):
@@ -614,13 +650,14 @@ class DialogConfigClasterization(QDialog):
         result += '\n'
 
         # Нахождение матрицы весов
-        self.textEdit.append('Нахождение матрицы весов' + '\n')
+        self.signals.PrintInfo.emit('Нахождение матрицы весов' + '\n')
         t_all = dict()
 
         for text in texts:
             for key, value in text.sorted_word_frequency:
                 t_all[key] = t_all.get(key, 0) + 1
 
+        self.signals.UpdateProgressBar.emit(15)
         # Найти df
         df_string = ''
         df_string = df_string + "Слово;Используется в документах\n"
@@ -669,6 +706,7 @@ class DialogConfigClasterization(QDialog):
             W_string += '\n'
             i += 1
         writeStringToFile(W_string.replace('\n ', '\n'), output_dir + 'W.csv')
+        self.signals.UpdateProgressBar.emit(25)
 
         # Проверим для каждого уровня
         # for centroidCount in range(len(texts), 0, -1):
@@ -699,6 +737,7 @@ class DialogConfigClasterization(QDialog):
                     result += str(U0[i][j]) + ';'
                 result += '\n'
             changes = False
+            self.signals.UpdateProgressBar.emit(50)
             while True:
                 t = t+1
                 result += '\nИтерация' + str(t) + '\n'
@@ -787,6 +826,86 @@ class DialogConfigClasterization(QDialog):
                     break
                 U0 = U1
                 # print('continue iterations ')
-
+        self.signals.UpdateProgressBar.emit(100)
         writeStringToFile(result.replace('\n ', '\n').replace('.', ','), output_dir + 'steps.csv')
-        self.textEdit.append('Кластеризация Нечёткий алгоритм с-средних завершена' + '\n')
+        self.signals.PrintInfo.emit('Кластеризация Нечёткий алгоритм с-средних завершена' + '\n')
+
+
+
+
+
+
+class DialogConfigClasterization(QDialog):
+
+    def __init__(self, filenames, morph, configurations, parent):
+        super().__init__()
+        uic.loadUi('sources/DialogConfigClasterization.ui', self)
+
+        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint;
+        self.setWindowFlags(flags)
+
+        self.filenames = filenames
+        self.morph = morph
+        self.configurations = configurations
+        self.parent = parent
+
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+
+        self.buttonClasterization.clicked.connect(self.makeClasterization)
+        self.pushButtonKMiddle.clicked.connect(self.makeClasterizationKMiddle)
+        self.pushButtonDBSCAN.clicked.connect(self.makeClasterizationDBscan)
+        self.pushButtonCMiddle.clicked.connect(self.makeClasterizationSMiddle)
+        self.textEdit.setText("")
+
+        output_dir = self.configurations.get("output_files_directory", "output_files")
+        self.progressBar.setValue(0)
+
+        self.calculator = ClasterizationCalculator(filenames, output_dir, morph, self.configurations, self.textEdit)
+        self.calculator.signals.Finished.connect(self.onCalculationFinish)
+        self.calculator.signals.UpdateProgressBar.connect(self.onUpdateProgressBar)
+        self.calculator.signals.PrintInfo.connect(self.onTextLogAdd)
+
+    def onTextLogAdd(self, QString):
+        self.textEdit.append(QString + '\n')
+        self.repaint()
+
+    def onUpdateProgressBar(self, value):
+        self.progressBar.setValue(value)
+        self.repaint()
+
+    def onCalculationFinish(self):
+        self.groupButtonsBox.setEnabled(True)
+        QApplication.restoreOverrideCursor()
+        QMessageBox.information(self, "Внимание", "Кластеризация завершена!")
+
+    def makeClasterization(self):
+        self.groupButtonsBox.setEnabled(False)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self.textEdit.setText("")
+        self.calculator.setMethod('1')
+        self.calculator.setMinimalWordsLen(self.spinBoxMinimalWordsLen.value())
+        self.calculator.start()
+
+    def makeClasterizationKMiddle(self):
+        self.groupButtonsBox.setEnabled(False)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self.textEdit.setText("")
+        self.calculator.setMethod('2')
+        self.calculator.setMinimalWordsLen(self.spinBoxMinimalWordsLen.value())
+        self.calculator.start()
+
+    def makeClasterizationDBscan(self):
+        self.groupButtonsBox.setEnabled(False)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self.textEdit.setText("")
+        self.calculator.setMethod('3')
+        self.calculator.setMinimalWordsLen(self.spinBoxMinimalWordsLen.value())
+        self.calculator.start()
+
+    def makeClasterizationSMiddle(self):
+        self.groupButtonsBox.setEnabled(False)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self.textEdit.setText("")
+        self.calculator.setMethod('4')
+        self.calculator.setMinimalWordsLen(self.spinBoxMinimalWordsLen.value())
+        self.calculator.start()
