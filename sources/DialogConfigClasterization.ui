@@ -25,7 +25,7 @@
      <property name="title">
       <string>Методы</string>
      </property>
-     <widget class="QRadioButton" name="radioButton">
+     <widget class="QRadioButton" name="radioButton_Hierarhy">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -47,7 +47,7 @@
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QRadioButton" name="radioButton_2">
+     <widget class="QRadioButton" name="radioButton_KMiddle">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -60,7 +60,7 @@
        <string>К-средних</string>
       </property>
      </widget>
-     <widget class="QRadioButton" name="radioButton_3">
+     <widget class="QRadioButton" name="radioButton_SMiddle">
       <property name="geometry">
        <rect>
         <x>10</x>

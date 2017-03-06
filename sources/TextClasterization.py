@@ -855,6 +855,7 @@ class DialogConfigClasterization(QDialog):
         self.pushButtonKMiddle.clicked.connect(self.makeClasterizationKMiddle)
         self.pushButtonDBSCAN.clicked.connect(self.makeClasterizationDBscan)
         self.pushButtonCMiddle.clicked.connect(self.makeClasterizationSMiddle)
+        self.startMethod.clicked.connect(self.startMethod)
         self.textEdit.setText("")
 
         output_dir = self.configurations.get("output_files_directory", "output_files")
@@ -864,6 +865,17 @@ class DialogConfigClasterization(QDialog):
         self.calculator.signals.Finished.connect(self.onCalculationFinish)
         self.calculator.signals.UpdateProgressBar.connect(self.onUpdateProgressBar)
         self.calculator.signals.PrintInfo.connect(self.onTextLogAdd)
+
+        self.radioButton_Hierarhy.toggled.connect(self.onChangeMethod)
+        self.radioButton_KMiddle.toggled.connect(self.onChangeMethod)
+        self.radioButton_SMiddle.toggled.connect(self.onChangeMethod)
+
+    def onChangeMethod(self):
+        if (self.radioButton_Hierarhy.isChecked()):
+            self.parameters.setVisible(False)
+        else:
+            self.parameters.setVisible(False)
+
 
     def onTextLogAdd(self, QString):
         self.textEdit.append(QString + '\n')
@@ -883,6 +895,20 @@ class DialogConfigClasterization(QDialog):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.textEdit.setText("")
         self.calculator.setMethod('1')
+        self.calculator.setMinimalWordsLen(self.spinBoxMinimalWordsLen.value())
+        self.calculator.start()
+
+    def startMethod(self):
+        self.groupButtonsBox.setEnabled(False)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self.textEdit.setText("")
+        if (self.radioButton_KMiddle.isChecked):
+            self.calculator.setMethod('1')
+        else:
+            if(self.radioButton_Hierarhy.isChecked):
+                self.calculator.setMethod('2')
+            else:
+                self.calculator.setMethod('3')
         self.calculator.setMinimalWordsLen(self.spinBoxMinimalWordsLen.value())
         self.calculator.start()
 
