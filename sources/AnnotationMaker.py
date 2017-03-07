@@ -23,6 +23,10 @@ class AnnotationMakerCalculatorSignals(QObject):
     UpdateProgressBar = pyqtSignal(int)
 
 class AnnotationMakerCalculator(QThread):
+
+    METHOD_BY_WORDS_SUM = 0
+    METHOD_BY_SENTENCE_VALUE = 1
+
     def __init__(self, filename, morph, configurations):
         super().__init__()
         self.filename = filename
@@ -32,6 +36,10 @@ class AnnotationMakerCalculator(QThread):
         self.categories = dict()
         self.signals = AnnotationMakerCalculatorSignals()
         self.result_sentence_count = 1
+        self.calculation_method = AnnotationMakerCalculator.METHOD_BY_WORDS_SUM
+
+    def setCalculationMethod(self, method_type):
+        self.calculation_method = method_type
 
     def run(self):
         self.signals.UpdateProgressBar.emit(0)
@@ -86,10 +94,11 @@ class AnnotationMakerCalculator(QThread):
 
         self.signals.UpdateProgressBar.emit(70)
 
-        self.calculateBySentenceValues(v, self.result_sentence_count)
+        if(self.calculation_method == AnnotationMakerCalculator.METHOD_BY_SENTENCE_VALUE):
+            self.calculateBySentenceValues(v, self.result_sentence_count)
 
-        self.signals.UpdateProgressBar.emit(80)
-        self.calculateByWordsValues(all_word_keys, u, self.result_sentence_count)
+        if (self.calculation_method == AnnotationMakerCalculator.METHOD_BY_WORDS_SUM):
+            self.calculateByWordsValues(all_word_keys, u, self.result_sentence_count)
 
         self.signals.UpdateProgressBar.emit(100)
         self.signals.PrintInfo.emit('\nУспешно завершено.')
@@ -97,6 +106,9 @@ class AnnotationMakerCalculator(QThread):
 
 
     def calculateBySentenceValues(self, v, sentence_count_need):
+        if(v.shape[0] == 0):
+            self.signals.PrintInfo.emit('Слишком мало предложений! Прерывание...')
+            return
         sentences_score = tuple((i, np.mean(v[0, i])) for i in range(v.shape[1]))
         sorted_sentences_score = sorted(sentences_score, key=lambda x: x[1], reverse=True)
         result_sentences = []
@@ -191,9 +203,11 @@ class AnnotationMakerCalculator(QThread):
 
     def cutSingularValue(self, u, sigma, v):
         singular_minimal_transfer = 3
-        m = np.median(sigma)
+        m = np.mean(sigma)
+
+        q = min(sigma.shape[0], singular_minimal_transfer)
         for i in range(sigma.shape[0]):
-            if (sigma[i] > m):
+            if (sigma[i] > m or i < q):
                 singular_minimal_transfer = i
         nu = u[0:, 0:(singular_minimal_transfer)]
         ns = sigma[0:(singular_minimal_transfer)]
@@ -248,6 +262,13 @@ class DialogAnnotationMaker(QDialog):
         self.progressBar.setValue(0)
         self.textEdit.setText("")
         self.calculator.result_sentence_count = self.spinBoxOutputSentenceCount.value()
+
+        if(self.radioButtonMethodWordsSum.isChecked()):
+            self.calculator.setCalculationMethod(AnnotationMakerCalculator.METHOD_BY_WORDS_SUM)
+
+        if (self.radioButtonMethodSentenceValue.isChecked()):
+            self.calculator.setCalculationMethod(AnnotationMakerCalculator.METHOD_BY_SENTENCE_VALUE )
+
         self.calculator.start()
 
 
