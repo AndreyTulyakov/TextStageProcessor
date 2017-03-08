@@ -832,14 +832,13 @@ class ClasterizationCalculator(QThread):
                                 result += '; ' + str(doc)
                     break
                 U0 = U1
+                if(t>1000):
+                    self.signals.PrintInfo.emit('АЛГОРИТМ РАСХОДИТСЯ! ВЫБЕРИТЕ ДРУГИЕ ПАРАМЕТРЫ' + '\n')
+                    return
                 # print('continue iterations ')
         self.signals.UpdateProgressBar.emit(100)
         writeStringToFile(result.replace('\n ', '\n').replace('.', ','), output_dir + 'steps.csv')
         self.signals.PrintInfo.emit('Кластеризация Нечёткий алгоритм с-средних завершена' + '\n')
-
-
-
-
 
 
 class DialogConfigClasterization(QDialog):
