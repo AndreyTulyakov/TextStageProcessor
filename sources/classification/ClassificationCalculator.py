@@ -30,10 +30,10 @@ class ClassificationCalculator(QThread):
 
     def __init__(self, input_dir, output_dir, morph, configurations):
         super().__init__()
-        self.input_dir = input_dir
-        if(len(self.input_dir)>0 and self.input_dir[-1] != '/'):
-            self.input_dir = self.input_dir + '/'
-        self.output_dir = output_dir
+        self.input_dir = input_dir + '/'
+        self.output_dir = output_dir + '/classification/'
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
         self.morph = morph
         self.configurations = configurations
         self.texts = []
