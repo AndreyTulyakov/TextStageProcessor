@@ -1,9 +1,24 @@
 # -*- coding: utf-8 -*-
-
+import csv
 import re, os
 #import csv
 #import operator
 import pymorphy2
+
+
+def dictToCsv(dct, fpath):
+    with open(fpath, 'w') as csv_file:
+        writer = csv.writer(csv_file, delimiter=';', lineterminator='\n')
+        for key, value in dct.items():
+            writer.writerow([key, str(value)])
+
+
+def count_words(words):
+    wc = {}
+    for word in words:
+        wc[word] = wc.get(word, 0.0) + 1.0
+    return wc
+
 
 #класс для хранения наборов слов
 class BagOfWords(object):

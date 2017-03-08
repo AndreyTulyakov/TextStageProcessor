@@ -17,8 +17,8 @@ def getFilenamesFromUserSelection():
     else:
         return None
 
-def getDirFromUserSelection():
-    dir_name = QFileDialog.getExistingDirectory(None, "Выбрать каталог", "")
+def getDirFromUserSelection(path):
+    dir_name = QFileDialog.getExistingDirectory(None, "Выбрать каталог", path)
     if (len(dir_name) > 0):
         return dir_name
     else:

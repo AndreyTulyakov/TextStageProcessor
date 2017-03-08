@@ -22,7 +22,12 @@ if(os.name != 'posix'):
 
 
 configurations = readConfigurationFile("configuration.cfg")
+input_dir = configurations.get("input_files_directory", "input_files") + "/"
 output_dir = configurations.get("output_files_directory", "output_files") + "/"
+
+if not os.path.exists(input_dir):
+    os.makedirs(input_dir)
+
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -94,10 +99,10 @@ class MainWindow(QMainWindow):
 
     def classification(self):
         print("Классификация")
-        QMessageBox.information(self, "Выберите входной каталог", "Выбранный каталог должен содержать\n каталоги test и train!")
-        dirname = getDirFromUserSelection()
+        #QMessageBox.information(self, "Выберите входной каталог", "Выбранный каталог должен содержать\n каталоги test и train!")
+        dirname = getDirFromUserSelection(input_dir + 'classification')
         if(dirname != None):
-            dialogConfigClassification = DialogConfigClassification(morph, configurations, self)
+            dialogConfigClassification = DialogConfigClassification(dirname, morph, configurations, self)
             self.hide()
             dialogConfigClassification.destroyed.connect(self.show)
             dialogConfigClassification.exec_()
