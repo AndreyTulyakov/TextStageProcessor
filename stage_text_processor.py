@@ -11,6 +11,7 @@ from sources.TextClassification import *
 from sources.TextLSA import *
 from sources.TextDecomposeAndRuleApply import *
 from sources.AnnotationMaker import *
+from sources.utils import *
 
 
 # Для корректного отображение шрифтов на графиках в Windows
@@ -81,23 +82,10 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Этапный текстовый процессор')    
         self.show()
 
-    def getFilenameFromUserSelection(self, file_types = "Any Files (*.*)"):
-        filenames, _ = QFileDialog.getOpenFileName(self, "Открыть файлы для анализа", "", file_types, None)
-        if(len(filenames) > 0):
-            return filenames
-        else:
-            return None
-
-    def getFilenamesFromUserSelection(self):
-        filenames, _ = QFileDialog.getOpenFileNames(self, "Открыть файлы для анализа", "", "Text Files (*.txt)", None)
-        if(len(filenames) > 0):
-            return filenames
-        else:
-            return None
 
     def clasterization(self):
         print("Кластеризация")
-        filenames = self.getFilenamesFromUserSelection()
+        filenames = getFilenamesFromUserSelection()
         if(filenames != None):
             dialogConfigClasterization = DialogConfigClasterization(filenames, morph, configurations, self)
             self.hide()
@@ -106,8 +94,9 @@ class MainWindow(QMainWindow):
 
     def classification(self):
         print("Классификация")
-        filenames = []
-        if(filenames != None):
+        QMessageBox.information(self, "Выберите входной каталог", "Выбранный каталог должен содержать\n каталоги test и train!")
+        dirname = getDirFromUserSelection()
+        if(dirname != None):
             dialogConfigClassification = DialogConfigClassification(morph, configurations, self)
             self.hide()
             dialogConfigClassification.destroyed.connect(self.show)
@@ -115,7 +104,7 @@ class MainWindow(QMainWindow):
 
     def makeLSA(self):
         print("LSA")
-        filenames = self.getFilenamesFromUserSelection()
+        filenames = getFilenamesFromUserSelection()
         if(filenames != None):
             dialogConfigLSA = DialogConfigLSA(filenames, morph, configurations, self)
             self.hide()
@@ -124,7 +113,7 @@ class MainWindow(QMainWindow):
 
     def analyze_and_rule_apply(self):
         print("Анализ и применение правил вывода")
-        filenames = self.getFilenamesFromUserSelection()
+        filenames = getFilenamesFromUserSelection()
         if(filenames != None):
             dialogConfigDRA = DialogConfigDRA(filenames, morph, configurations, self)
             self.hide()
@@ -133,7 +122,7 @@ class MainWindow(QMainWindow):
 
     def makeXiSquare(self):
         print("Применение критерия Хи-Квадрат")
-        filename = self.getFilenameFromUserSelection("CSV Files (*.csv)")
+        filename = getFilenameFromUserSelection("CSV Files (*.csv)")
         if(filename != None):
             dialogXiSquare = DialogXiSquare(filename, morph, configurations, self)
             self.hide()
@@ -142,7 +131,7 @@ class MainWindow(QMainWindow):
 
     def makeTextAnnotation(self):
         print("Аннотирование текста")
-        filename = self.getFilenameFromUserSelection("Text file (*.txt)")
+        filename = getFilenameFromUserSelection("Text file (*.txt)")
         if (filename != None):
             dialogAnnotationMaker = DialogAnnotationMaker(filename, morph, configurations, self)
             self.hide()
