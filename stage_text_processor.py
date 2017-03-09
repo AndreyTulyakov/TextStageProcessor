@@ -87,10 +87,9 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Этапный текстовый процессор')    
         self.show()
 
-
     def clasterization(self):
         print("Кластеризация")
-        filenames = getFilenamesFromUserSelection()
+        filenames = getFilenamesFromUserSelection(input_dir + 'clasterization')
         if(filenames != None):
             dialogConfigClasterization = DialogConfigClasterization(filenames, morph, configurations, self)
             self.hide()
@@ -99,7 +98,6 @@ class MainWindow(QMainWindow):
 
     def classification(self):
         print("Классификация")
-        #QMessageBox.information(self, "Выберите входной каталог", "Выбранный каталог должен содержать\n каталоги test и train!")
         dirname = getDirFromUserSelection(input_dir + 'classification')
         if(dirname != None):
             dialogConfigClassification = DialogConfigClassification(dirname, morph, configurations, self)

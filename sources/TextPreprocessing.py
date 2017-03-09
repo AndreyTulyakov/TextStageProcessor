@@ -48,7 +48,7 @@ def loadInputFilesFromList(input_files_list):
     texts = []
     for filename in input_files_list:
         text_data = TextData(filename)
-        text_data.original_sentences = readSentencesFromInputText(filename, input_dir_name)
+        text_data.original_sentences = readSentencesFromInputText(filename)
         texts.append(text_data)
 
     return texts
