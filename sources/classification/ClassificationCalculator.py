@@ -5,6 +5,7 @@ import csv
 import math
 import copy
 import numpy as np
+import shutil
 
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import QThread
@@ -14,6 +15,7 @@ from sources.TextPreprocessing import writeStringToFile
 from sources.classification.KNN import getResponse
 from sources.classification.NaiveBayes import *
 from sources.classification.clsf_util import *
+from sources.utils import makePreprocessingForAllFilesInFolder, clear_dir
 
 
 class ClassificationCalculatorSignals(QObject):
@@ -32,6 +34,13 @@ class ClassificationCalculator(QThread):
         super().__init__()
         self.input_dir = input_dir + '/'
         self.output_dir = output_dir + '/classification/'
+
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        clear_dir(self.output_dir)
+
+        self.output_preprocessing_dir = self.output_dir + 'preprocessing/'
+        self.first_call = True
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         self.morph = morph
@@ -42,12 +51,36 @@ class ClassificationCalculator(QThread):
         self.method = ClassificationCalculator.METHOD_NAIVE_BAYES
         self.need_preprocessing = False
 
+        if len(self.input_dir) > 0 and self.input_dir[-1] == '/':
+            self.input_dir = self.input_dir[:-1]
+        last_slash_index = self.input_dir.rfind('/')
+        self.input_dir_short = ''
+        if last_slash_index != -1:
+            self.input_dir_short = self.input_dir[last_slash_index+1:]
+
     def setMethod(self, method_name, arg_need_preprocessing):
         self.method = method_name
         self.need_preprocessing = arg_need_preprocessing
 
     def run(self):
         self.signals.UpdateProgressBar.emit(0)
+
+        # Делаем препроцессинг 1 раз
+        if self.first_call and self.need_preprocessing:
+            self.signals.PrintInfo.emit("Препроцессинг...")
+            makePreprocessingForAllFilesInFolder(self.configurations,
+                                                 self.input_dir,
+                                                 self.output_preprocessing_dir,
+                                                 self.output_dir,
+                                                 self.morph)
+        else:
+            self.signals.PrintInfo.emit("Препроцессинг - пропускается")
+        self.signals.UpdateProgressBar.emit(10)
+
+        if self.need_preprocessing:
+            self.method_input_dir = self.output_preprocessing_dir + self.input_dir_short + '/'
+        else:
+            self.method_input_dir = self.input_dir
 
         if self.method == ClassificationCalculator.METHOD_NAIVE_BAYES:
             self.classification_naive_bayes(self.need_preprocessing)
@@ -58,6 +91,9 @@ class ClassificationCalculator(QThread):
         if self.method == ClassificationCalculator.METHOD_KNN:
             self.classification_knn(self.need_preprocessing)
 
+        if self.first_call and self.need_preprocessing:
+            self.first_call = False
+
         self.signals.UpdateProgressBar.emit(100)
         self.signals.PrintInfo.emit('Рассчеты закончены!')
         self.signals.Finished.emit()
@@ -65,15 +101,13 @@ class ClassificationCalculator(QThread):
     # Алгоритм наивного Байеса
     def classification_naive_bayes(self, needPreprocessing):
 
-        ##############PARAMS###################
         output_dir = self.output_dir + 'nb_out/'
-        input_dir = self.input_dir
-        ###############ALGO##################
+        input_dir = self.method_input_dir
 
         self.signals.PrintInfo.emit("Алгоритм наивного Байеса")
         # Классификация
         fdata, fclass, split = makeFileList(input_dir)
-        self.signals.UpdateProgressBar.emit(10)
+        self.signals.UpdateProgressBar.emit(15)
 
         trainingSet = fdata[:split]
         trainingClass = fclass[:split]
@@ -141,7 +175,7 @@ class ClassificationCalculator(QThread):
 
         ##############PARAMS###################
         output_dir = self.output_dir + 'roc_out/'
-        input_dir = self.input_dir
+        input_dir = self.method_input_dir
         sep = ";"
         eol = "\n"
         ###############ALGO##################
@@ -204,7 +238,7 @@ class ClassificationCalculator(QThread):
 
         ##############PARAMS###################
         output_dir = self.output_dir + 'knn_out/'
-        input_dir = self.input_dir
+        input_dir = self.method_input_dir
         sep = ";"
         eol = "\n"
         k = self.configurations.get('classification_knn_k')

@@ -15,8 +15,10 @@ def makeFileList(root_path = 'input_files/classification/', fread = True, fproce
     type_data = []
     split = 0
     files = []
-    
-    path_train = root_path + "train/"
+    train_folder = "train/"
+    if len(root_path)>0 and root_path[-1] != '/':
+        train_folder = '/' + train_folder
+    path_train = root_path + train_folder
     folders = [path_train + folder + '/' for folder in os.listdir(path_train)]
     class_titles = os.listdir(path_train)
     
@@ -25,9 +27,11 @@ def makeFileList(root_path = 'input_files/classification/', fread = True, fproce
         files.append(new_files)
         type_data.append([title] * len(new_files))
         split += len(new_files)
-    
-    
-    path_test = root_path + "test/"
+
+    test_folder = "test/"
+    if len(root_path) > 0 and root_path[-1] != '/':
+        test_folder = '/' + test_folder
+    path_test = root_path + test_folder
 
     for cl in class_titles:
          if not os.path.exists(path_test + cl):
@@ -91,10 +95,12 @@ def writeStringToFile2(data_str, filename):
         out_text_file.write(data_str)
     print(filename)
 
+
 # длина вектора
 def normVec(nparray):
     return(np.sqrt(np.sum(np.power(nparray, 2))))
-    
+
+
 #матрица tf-idf
 def makeTFIDF(data_train, data_test = None):
     words_in_doc = []

@@ -72,7 +72,7 @@ def loadInputFilesFromList(filenames):
     texts = []
     for filename in filenames:
         text_data = TextData(filename[filename.rfind('/')+1:])
-
+        text_data.full_filename = filename
         with codecs.open(filename, 'r', "utf-8") as text_file:
             data=text_file.read().replace('\n', ' ')
             sentences = data.split('.')

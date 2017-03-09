@@ -29,8 +29,6 @@ class DialogConfigClassification(QDialog):
         self.input_dir = dirname
         self.lineEditInputDir.setText(dirname)
 
-        self.checkBoxNeedPreprocessing.setEnabled(False)
-
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.buttonClassify.clicked.connect(self.makeClassification)
         self.textEdit.setText("")
@@ -41,14 +39,15 @@ class DialogConfigClassification(QDialog):
         self.radioButtonKNN.toggled.connect(self.onChangeMethod)
 
         output_dir = self.configurations.get("output_files_directory", "output_files")
+
         self.calculator = ClassificationCalculator(self.input_dir, output_dir, morph, self.configurations)
         self.calculator.signals.Finished.connect(self.onCalculationFinish)
         self.calculator.signals.UpdateProgressBar.connect(self.onUpdateProgressBar)
         self.calculator.signals.PrintInfo.connect(self.onTextLogAdd)
 
         self.output_dir = configurations.get("output_files_directory", "output_files/classification") + "/"
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
+
+
 
     def onChangeMethod(self):
         if(self.radioButtonKNN.isChecked()):

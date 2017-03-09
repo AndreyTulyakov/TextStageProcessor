@@ -9,6 +9,10 @@ class TextData:
     def __init__(self, filename):
         # Имя файла с текстом
         self.filename = filename
+        # Имя файла с полным путем
+        self.full_filename = filename
+        # Относительное имя файла (для древовидных алгоритмов), (заполняется отдельно)
+        self.short_filename = ''
         # Исходные предложения не разделенные на слова
         self.original_sentences = []
         # Разделенные по словам предложения
