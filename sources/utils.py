@@ -98,7 +98,7 @@ def makePreprocessingForAllFilesInFolder(configurations,
     for text in texts:
         text_filename = output_files_dir + text.short_filename
         os.makedirs(os.path.dirname(text_filename), exist_ok=True)
-        with open(text_filename, 'w') as out_text_file:
+        with open(text_filename, 'w', encoding='utf-8') as out_text_file:
             for sentence in text.register_pass_centences:
                 for word in sentence:
                     out_text_file.write(word)

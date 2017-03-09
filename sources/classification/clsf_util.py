@@ -73,8 +73,8 @@ def tokenizeDoc(doc_address, fprocess = True):
         r = re.compile("[^a-zA-z]+")
         tokens = [w for w in filter(r.match, words)]
         f.close()
-    except:
-        print("Ошибка чтения!", doc_address)
+    except Exception as err:
+        print("Ошибка чтения!", doc_address, err)
     finally:
         return tokens
 
