@@ -82,7 +82,11 @@ class DialogConfigClasterization(QDialog):
 
     def OnStartMethod(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
+
         self.textEdit.setText("")
+
+        self.calculator.need_preprocessing = self.checkBoxNeedPreprocessing.isChecked()
+        self.checkBoxNeedPreprocessing.setEnabled(False)
         self.calculator.setClusterCount(self.spinBox.value())
         self.calculator.setEps(self.lineEdit.text())
         self.calculator.setM(self.lineEdit_2.text())

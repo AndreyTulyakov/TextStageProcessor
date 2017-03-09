@@ -13,7 +13,8 @@ from PyQt5.QtCore import QObject
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 
-from sources.TextPreprocessing import writeStringToFile, makePreprocessing
+from sources.TextPreprocessing import writeStringToFile, makePreprocessing, makeFakePreprocessing
+from sources.utils import makePreprocessingForAllFilesInFolder
 
 
 def sim(D, i, j):
@@ -188,6 +189,9 @@ class ClasterizationCalculator(QThread):
         self.clusterCount = 2
         self.eps = 0.01
         self.m = 2
+        self.need_preprocessing = False
+        self.first_call = True
+        self.texts = []
 
     def setMethod(self, method_name):
         self.method = method_name
@@ -207,6 +211,20 @@ class ClasterizationCalculator(QThread):
     def run(self):
         self.signals.UpdateProgressBar.emit(0)
 
+        if self.first_call:
+            if self.need_preprocessing:
+                self.signals.PrintInfo.emit("Препроцессинг...")
+                self.texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
+            else:
+                self.signals.PrintInfo.emit("Препроцессинг - пропускается")
+                self.texts = makeFakePreprocessing(self.filenames)
+        else:
+            if self.need_preprocessing:
+                self.signals.PrintInfo.emit("Препроцессинг - использование предыдущих результатов.")
+            else:
+                self.signals.PrintInfo.emit("Препроцессинг - пропускается")
+
+
         if(self.method == '1'):
             self.makeHierarhyClasterization()
 
@@ -216,20 +234,24 @@ class ClasterizationCalculator(QThread):
         if(self.method == '3'):
             self.makeClasterizationSMiddle(self.clusterCount,self.eps,self.m)
 
+        if self.first_call and self.need_preprocessing:
+            self.first_call = False
+
         self.signals.PrintInfo.emit('Рассчеты закончены!')
         self.signals.Finished.emit()
 
     def makeHierarhyClasterization(self):
         self.signals.UpdateProgressBar.emit(0)
-        self.configurations["minimal_word_size"] = self.minimalWordsLen
         self.signals.PrintInfo.emit('Иерархическая кластеризация' + '\n')
-        texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
+
+        texts = self.texts
 
         output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/Hierarchical/"
+
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        # Нахождение матрицы весов
 
+        # Нахождение матрицы весов
         t_all = dict()
 
         for text in texts:
@@ -408,9 +430,9 @@ class ClasterizationCalculator(QThread):
 
     def makeClasterizationKMiddle(self,ClusterCount):
         self.signals.UpdateProgressBar.emit(0)
-        self.configurations["minimal_word_size"] = self.minimalWordsLen
         self.signals.PrintInfo.emit('Кластеризация к-средних' + '\n')
-        texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
+
+        texts = self.texts
         output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/KMiddle/"
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -608,9 +630,9 @@ class ClasterizationCalculator(QThread):
 
     def makeClasterizationSMiddle(self, ClusterCount, m, eps):
         self.signals.UpdateProgressBar.emit(0)
-        self.configurations["minimal_word_size"] = self.minimalWordsLen
         self.signals.PrintInfo.emit('Нечёткий алгоритм с-средних' + '\n')
-        texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
+
+        texts = self.texts
         output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/SMiddle/"
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)

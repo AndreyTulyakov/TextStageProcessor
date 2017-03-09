@@ -437,6 +437,18 @@ def makePreprocessing(filenames, morph, configurations, additional_output):
 
     return texts
 
+# Для алгоритмов не требующих нормализации, удаления стоп-слов каких-либо модификаций слов
+def makeFakePreprocessing(filenames):
+    # Загружаем предложения из нескольких файлов
+    texts = loadInputFilesFromList(filenames)
+    texts = tokenizeTextData(texts)
+    for text in texts:
+        text.no_stop_words_sentences = text.tokenized_sentences
+        text.normalized_sentences = text.tokenized_sentences
+        text.register_pass_centences = text.tokenized_sentences
+    texts, log_string = calculateWordsFrequencyInTexts(texts)
+    return texts
+
 
 def printMatrixToString(matrix, horizontal_header=None, vertical_header=None):
     result_string = ''
