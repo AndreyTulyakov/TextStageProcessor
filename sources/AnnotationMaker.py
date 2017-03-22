@@ -124,7 +124,8 @@ class AnnotationMakerCalculator(QThread):
 
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
-        filename = self.output_dir + 'annotationBySentenceValues.txt'
+
+        filename = self.output_dir + 'BySentenceValues_' + self.filename[1+self.filename.rfind('/'):]
         self.signals.PrintInfo.emit('Сохранено в файл:' + filename)
         writeStringToFile(result_string, filename)
 
@@ -158,7 +159,8 @@ class AnnotationMakerCalculator(QThread):
 
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
-        filename = self.output_dir + 'annotationByWordsValues.txt'
+        print('lalala:', self.filename[self.filename.rfind('/'):])
+        filename = self.output_dir + 'ByWordsValues_' + self.filename[1+self.filename.rfind('/'):]
         self.signals.PrintInfo.emit('Сохранено в файл:' + filename)
         writeStringToFile(result_string, filename)
 
