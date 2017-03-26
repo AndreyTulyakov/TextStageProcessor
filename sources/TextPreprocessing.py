@@ -140,9 +140,13 @@ def tokenizeTextData(texts, configurations = None):
 
 
 # Записывает/перезаписывает строку любой длины c переносами (data_str) в файл (filename)
-def writeStringToFile(data_str, filename):
-    with open(filename, 'w') as out_text_file:
-        out_text_file.write(data_str)
+def writeStringToFile(data_str, filename, strict_utf8_encoding=False):
+    if(strict_utf8_encoding):
+        with open(filename, 'w', encoding='utf-8') as out_text_file:
+            out_text_file.write(data_str)
+    else:
+        with open(filename, 'w') as out_text_file:
+            out_text_file.write(data_str)
 
 # Определяет является ли слово частью ФИО (с вероятностью score)
 def wordPersonDetector(word, morph):

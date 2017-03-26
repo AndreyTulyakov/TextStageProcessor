@@ -37,14 +37,13 @@ class AnnotationMakerCalculator(QThread):
         self.signals = AnnotationMakerCalculatorSignals()
         self.result_sentence_count = 1
         self.calculation_method = AnnotationMakerCalculator.METHOD_BY_WORDS_SUM
+        self.output_dir = self.configurations.get("output_files_directory", "output_files") + '/auto_annotation/'
 
     def setCalculationMethod(self, method_type):
         self.calculation_method = method_type
 
     def run(self):
         self.signals.UpdateProgressBar.emit(0)
-        # Считываем файл с информацией о категории и файлах
-        self.signals.PrintInfo.emit('Чтение файла с категориям...')
 
         # Загрузка текста
         self.text = TextData(self.filename)
@@ -113,13 +112,22 @@ class AnnotationMakerCalculator(QThread):
         sorted_sentences_score = sorted(sentences_score, key=lambda x: x[1], reverse=True)
         result_sentences = []
         self.signals.PrintInfo.emit('\nРезультирующие предложения (По весу предложения):')
+        result_string = 'Результирующие предложения (По весу предложения):\n'
         for i in range(min(sentence_count_need, len(sorted_sentences_score))):
             item = sorted_sentences_score[i]
             result_sentences.append(self.text.original_sentences[item[0]])
         i = 1
         for sentence in result_sentences:
             self.signals.PrintInfo.emit(str(i) + ') ' + str(sentence) + '\n')
+            result_string = result_string + (str(i) + ') ' + str(sentence) + '\n')
             i += 1
+
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+
+        filename = self.output_dir + 'BySentenceValues_' + self.filename[1+self.filename.rfind('/'):]
+        self.signals.PrintInfo.emit('Сохранено в файл:' + filename)
+        writeStringToFile(result_string, filename)
 
     def calculateByWordsValues(self, all_word_keys, u, sentence_count_need):
         words_score = dict()
@@ -139,13 +147,23 @@ class AnnotationMakerCalculator(QThread):
 
         result_sentences2 = []
         self.signals.PrintInfo.emit('\nРезультирующие предложения (По весам слов):')
+        result_string = 'Результирующие предложения (По весам слов):\n'
         for i in range(min(sentence_count_need, len(sorted_sentences_score2))):
             item = sorted_sentences_score2[i]
             result_sentences2.append(self.text.original_sentences[item[0]])
         i = 1
         for sentence in result_sentences2:
             self.signals.PrintInfo.emit(str(i) + ') ' + str(sentence) + '\n')
+            result_string += str(i) + ') ' + str(sentence) + '\n'
             i += 1
+
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        print('lalala:', self.filename[self.filename.rfind('/'):])
+        filename = self.output_dir + 'ByWordsValues_' + self.filename[1+self.filename.rfind('/'):]
+        self.signals.PrintInfo.emit('Сохранено в файл:' + filename)
+        writeStringToFile(result_string, filename)
+
 
     # Сингулярное разложение на a = u, s, v (S - восстановленный до диагональной матрицы вектор)
     def divideSingular(self, matrix):
