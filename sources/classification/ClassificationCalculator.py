@@ -139,21 +139,13 @@ class ClassificationCalculator(QThread):
         for i in range(len(testSet)):
             scores[test_fnames[i]] = []
             counts = count_words(testSet[i])
-            Lc = sum(word_counts[cl].values())
             for cl in priors.keys():
+                Lc = sum(word_counts[cl].values())
                 prior_cl = math.log10(priors[cl] / sum(priors.values()))
                 log_prob = 0.0
                 for w, cnt in counts.items():
                     Wic = word_counts[cl].get(w, 0.0)
-                    log_prob += math.log10((Wic + 1) / (V + Lc))
-                    #            if not w in vocab:
-                    #                continue
-                    #
-                    #            p_word = vocab[w] / sum(vocab.values())
-                    #            p_w_given = word_counts[cl].get(w, 0.0) / sum(word_counts[cl].values())
-                    #
-                    #            if p_w_given > 0:
-                    #                log_prob += math.log(cnt * p_w_given / p_word)
+                    log_prob += math.log10((Wic + 1)/(V + Lc)) * cnt
                 scores[test_fnames[i]].append([cl, round((log_prob + prior_cl), 3)])
         self.signals.UpdateProgressBar.emit(60)
         self.signals.PrintInfo.emit("Выходные файлы:")
