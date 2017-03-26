@@ -29,6 +29,7 @@ class ClassificationCalculator(QThread):
     METHOD_NAIVE_BAYES = 1
     METHOD_ROCCHIO = 2
     METHOD_KNN = 3
+    METHOD_LLSF = 4
 
     def __init__(self, input_dir, output_dir, morph, configurations):
         super().__init__()
@@ -90,6 +91,9 @@ class ClassificationCalculator(QThread):
 
         if self.method == ClassificationCalculator.METHOD_KNN:
             self.classification_knn(self.need_preprocessing)
+
+        if self.method == ClassificationCalculator.METHOD_LLSF:
+            self.classification_llsf(self.need_preprocessing)
 
         if self.first_call and self.need_preprocessing:
             self.first_call = False
@@ -282,4 +286,71 @@ class ClassificationCalculator(QThread):
         writeStringToFile(log_votes, output_dir + 'Голоса.csv')
 
 
+    def classification_llsf(self, needPreprocessing):
 
+        def listToCsv(lst, fpath):
+            with open(fpath, 'w') as csv_file:
+                writer = csv.writer(csv_file, delimiter = ';', lineterminator = '\n')
+                writer.writerows(lst)
+
+        ##############PARAMS###################
+        output_dir = self.output_dir + 'llsf_out/'
+        input_dir = self.method_input_dir
+        sep = ";"
+        eol = "\n"
+        ###############ALGO##################
+        fdata, fclass, split = makeFileList(input_dir)
+        tfidf, uniq_words = makeTFIDF(fdata[:split], fdata[split:])
+        class_titles = list(set(fclass))
+        self.signals.UpdateProgressBar.emit(20)
+        A = np.array(tfidf[:split])
+        B = []
+        for cl in fclass[:len(A)]:
+            row = [0] * len(class_titles)
+            row[class_titles.index(cl)] = 1
+            B.append(row)
+        B = np.array(B)
+
+        Fls = np.dot(np.transpose(B), np.transpose(np.linalg.pinv(A)))
+
+        self.signals.UpdateProgressBar.emit(40)
+        class_table = [class_titles]
+        for d in tfidf[split:]:
+            d_class = np.round(np.dot(Fls, np.transpose(np.array(d))), 2).tolist()
+            class_table.append(d_class) 
+        
+        self.signals.UpdateProgressBar.emit(60)
+
+        self.signals.PrintInfo.emit("Алгоритм наименьших квадратов")
+
+        ###############LOGS##################
+        split_names = makeFileList(input_dir, fread = False)[0]
+
+        A = A.tolist()
+        B = B.tolist()
+        B.insert(0, class_titles)
+        Fls = addClassToTFIDF(Fls.tolist(), class_titles)
+        Fls.insert(0, uniq_words)
+
+        test_files= split_names[split:]
+        test_files.insert(0, "")
+        class_table = addClassToTFIDF(class_table, test_files)
+
+        log_tfidf = sep.join(uniq_words) + eol
+        for i in range(len(tfidf)):
+            row = tfidf[i]
+            log_tfidf += sep.join(map(str, row)) + sep + split_names[i] + eol
+
+        self.signals.PrintInfo.emit('Выходные файлы:')
+
+        self.signals.UpdateProgressBar.emit(80)
+        self.signals.PrintInfo.emit(output_dir + 'A.csv')
+        listToCsv(A, output_dir + 'A.csv')
+        self.signals.PrintInfo.emit(output_dir + 'B.csv')
+        listToCsv(B, output_dir + 'B.csv')
+        self.signals.PrintInfo.emit(output_dir + 'Fls.csv')
+        listToCsv(Fls, output_dir + 'Fls.csv')
+        self.signals.PrintInfo.emit(output_dir + 'output_class.csv')
+        listToCsv(class_table, output_dir + 'output_class.csv')
+        self.signals.PrintInfo.emit(output_dir + 'tfidf_matrix.csv')
+        writeStringToFile2(log_tfidf, output_dir + 'tfidf_matrix.csv')

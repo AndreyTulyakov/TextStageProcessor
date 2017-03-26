@@ -37,6 +37,7 @@ class DialogConfigClassification(QDialog):
         self.radioButtonNaiveBayes.toggled.connect(self.onChangeMethod)
         self.radioButtonRocchio.toggled.connect(self.onChangeMethod)
         self.radioButtonKNN.toggled.connect(self.onChangeMethod)
+        self.radioButtonLLSF.toggled.connect(self.onChangeMethod)
 
         output_dir = self.configurations.get("output_files_directory", "output_files")
 
@@ -83,5 +84,8 @@ class DialogConfigClassification(QDialog):
 
         if self.radioButtonKNN.isChecked():
             self.calculator.setMethod(ClassificationCalculator.METHOD_KNN, need_preprocessing)
+
+        if self.radioButtonLLSF.isChecked():
+            self.calculator.setMethod(ClassificationCalculator.METHOD_LLSF, need_preprocessing)
 
         self.calculator.start()
