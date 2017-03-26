@@ -295,6 +295,9 @@ class ClassificationCalculator(QThread):
 
         ##############PARAMS###################
         output_dir = self.output_dir + 'llsf_out/'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
         input_dir = self.method_input_dir
         sep = ";"
         eol = "\n"
