@@ -360,7 +360,7 @@ class ClasterizationCalculator(QThread):
             secondCluster = ClusterByDoc(union[1], clusters)
             print('found clusters = ' + str(firstCluster) + ' and ' + str(secondCluster))
             # print(str(union[0] + 1) + ' + ' + str(union[1] + 1) + ' with dist= ' + str(dist[union[0]][union[1]]))
-            result += 'Step' + str(k) + '\nUnion --->;' + Cluster2String(clusters, firstCluster) + ';+;' \
+            result += '\n\nStep' + str(k) + '\nUnion --->;' + Cluster2String(clusters, firstCluster) + ';+;' \
                       + Cluster2String(clusters, secondCluster) + ';=;'
             UnionClusters(firstCluster, secondCluster, clusters)
             result += Cluster2String(clusters, ClusterByDoc(union[0], clusters)) + ';dist = ' + str(currDist) + '\n'
@@ -377,13 +377,25 @@ class ClasterizationCalculator(QThread):
                 for j in range(len(texts)):
                     new_sim[i][j] = S[i][j]
 
+            #Запишем новую таблицу расстояний
+            result+="New Dist\n"
+            for name in self.filenames:
+                result += ';' + str(name)[str(name).rfind('/') + 1:str(name).find('.')]
+            result += '\n'
+            for i in range(len(texts)):
+                result += '' + str(self.filenames[i])[
+                                       str(self.filenames[i]).rfind('/') + 1:str(self.filenames[i]).find('.')]
+                for j in range(len(texts)):
+                    result += ';' + str(round(new_sim[i][j], 2))
+                result += '\n'
+
             for j in range(len(texts)):
                 for i in range(2):
                     new_sim[j][union[i]] = 0.5 * (S[j][union[0]]) + 0.5 * (S[j][union[1]])
 
             S = new_sim
 
-        writeStringToFile(result.replace('\n ', '\n'), output_dir + 'stepsDist.csv')
+        writeStringToFile(result.replace('\n ', '\n').replace('.',','), output_dir + 'stepsDist.csv')
 
         # Find unions with Sim
         F = [1 for x in range(len(texts))]
@@ -399,7 +411,7 @@ class ClasterizationCalculator(QThread):
             secondCluster = ClusterByDoc(union[1], clusters)
             print('found clusters = ' + str(firstCluster) + ' and ' + str(secondCluster))
             # print(str(union[0] + 1) + ' + ' + str(union[1] + 1) + ' with dist= ' + str(sim[union[0]][union[1]]))
-            result += 'Step' + str(k) + '\nUnion --->;' + Cluster2String(clusters, firstCluster) + ';+;' \
+            result += '\n\nStep' + str(k) + '\nUnion --->;' + Cluster2String(clusters, firstCluster) + ';+;' \
                       + Cluster2String(clusters, secondCluster) + ';=;'
             UnionClusters(firstCluster, secondCluster, clusters)
             result += Cluster2String(clusters, ClusterByDoc(union[0], clusters)) + ';sim = ' + str(currSim) + '\n'
@@ -458,7 +470,7 @@ class ClasterizationCalculator(QThread):
         df_string = df_string + "Слово;Используется в документах\n"
         for key, value in t_all.items():
             df_string = df_string + key + ';' + str(value) + '\n'
-        writeStringToFile(df_string.replace('\n ', '\n'), output_dir + 'df.csv')
+        writeStringToFile(df_string.replace('\n ', '\n').replace('.', ','), output_dir + 'df.csv')
         self.signals.UpdateProgressBar.emit(25)
 
         W = [[0 for x in range(len(t_all))] for y in range(len(texts))]
@@ -501,7 +513,7 @@ class ClasterizationCalculator(QThread):
                 W_string = W_string + ';' + str(round(item, 10))
             W_string += '\n'
             i += 1
-        writeStringToFile(W_string.replace('\n ', '\n'), output_dir + 'W.csv')
+        writeStringToFile(W_string.replace('\n ', '\n').replace('.', ','), output_dir + 'W.csv')
 
         S = GetS(W)
         sim_string = ''
@@ -544,28 +556,42 @@ class ClasterizationCalculator(QThread):
         # Проверим для каждого уровня
         centroidCount = ClusterCount
         # for centroidCount in range(len(texts), 0, -1):
-        if(centroidCount>0):
-            result += 'Кол-во кастеров - ' + str(i) + '\n'
+        calc_string = ''
 
+        if(centroidCount>0):
+            result += 'Кол-во кластеров - ' + str(centroidCount) + '\n'
+            calc_string += 'k=' + str(centroidCount) + '\n'
             clusterCenteroids = dict()
             # Шаг 1. Инициализация центров кластеров $, j = 1,k, например, случайными числами.
             clusterCenteroids = [[random.randrange(0, 100, 1)/10000 for x in range(len(t_all))] for y in range(centroidCount)]
+
+            #запишем исходные кластеры
+            calc_string += 'Изначальные кластеры\n'
+            for i in range(centroidCount):
+                calc_string += 'C' + str(i)+';'
+                for j in range(len(t_all)):
+                    calc_string+= str(clusterCenteroids[i][j])+';'
+                calc_string+='\n'
 
             #Шаг 2. Cj={} , j=1,k.
             doc2cluster = [0 for x in range(len(texts))]
             for i in range(len(texts)):
                 doc2cluster[i] = -1
 
-            for i in range(len(texts)):
-                clusterDist = [[0 for x in range(len(texts))] for y in range(centroidCount)]
+            # for i in range(len(texts)):
+            clusterDist = [[0 for x in range(len(texts))] for y in range(centroidCount)]
 
             # Находим таблицу Dist для центроидов
+            calc_string += '\n\nРасстояния между кластерами(row) и документами(col)\n'
             for i in range(centroidCount):
                 for j in range(len(texts)):
                     summ = 0
                     for k in range(len(t_all)):
                         summ += math.pow(W[j][k] - clusterCenteroids[i][k], 2)
-                        clusterDist[i][j] = math.sqrt(summ)
+                    clusterDist[i][j] = math.sqrt(summ)
+                    calc_string += str(clusterDist[i][j])+';'
+                calc_string+='\n'
+
 
             while True:
                 changes = False
@@ -586,30 +612,53 @@ class ClasterizationCalculator(QThread):
                         doc2cluster[doc] = minCluster
                         changes = True
 
+                # запишем результаты
+                calc_string += '\n\nРаспределение документов по кластерам\n'
+                for cluster in range(centroidCount):
+                    calc_string += ';C' + str(cluster)
+                    for doc in range(len(texts)):
+                        if (doc2cluster[doc] == cluster):
+                            calc_string += '; ' + str(doc)
+                    calc_string += '\n'
+                calc_string += '\n'
+
                 docCount=0
                 newDistance = 0
                 for cluster in range(centroidCount):
                     summ = 0
-
-                    for doc in range(len(texts)-1):
+                    for doc in range(len(texts)):
                         if(doc2cluster[doc] == cluster):
                             if(docCount==0):
                                 clusterCenteroids[cluster] = [0 for x in range(len(t_all))]
                             docCount+=1
                             for k in range(len(t_all)):
-                                clusterCenteroids[cluster][k] += W[cluster][k]
+                                clusterCenteroids[cluster][k] += W[doc][k]
                     if(docCount!=0):
                         for k in range(len(t_all)):
                             clusterCenteroids[cluster][k] /= docCount
                     docCount=0
 
-                # Находим таблицу Dist для центроидов
+                #обновим центры кластеров
+                calc_string += '\n\nНовые центроиды кластеров\n;'
+                for key, value in t_all.items():
+                    calc_string += key + ';'
+                calc_string += '\n'
+                for i in range(centroidCount):
+                    calc_string += 'C' + str(i) + ';'
+                    for j in range(len(t_all)):
+                        calc_string += str(clusterCenteroids[i][j]) + ';'
+                    calc_string += '\n'
+
+                # Обновляем таблицу Dist для центроидов
+                calc_string += '\n\nРасстояния между кластерами(row) и документами(col)\n'
                 for i in range(centroidCount):
                     for j in range(len(texts)):
                         summ = 0
                         for k in range(len(t_all)):
                             summ += math.pow(W[j][k] - clusterCenteroids[i][k], 2)
-                            clusterDist[i][j] = math.sqrt(summ)
+                        clusterDist[i][j] = math.sqrt(summ)
+                        calc_string += str(clusterDist[i][j]) + ';'
+                    calc_string += '\n'
 
                 if(changes==False):
                     print("Найдены кластеры в количестве " + str(centroidCount))
@@ -624,7 +673,8 @@ class ClasterizationCalculator(QThread):
                     result += '\n'
                     break
 
-        writeStringToFile(result.replace('\n ', '\n'), output_dir + 'steps.csv')
+        writeStringToFile(result.replace('\n ', '\n').replace('.',','), output_dir + 'steps.csv')
+        writeStringToFile(calc_string.replace('\n ', '\n').replace('.',','), output_dir + 'calc.csv')
         self.signals.UpdateProgressBar.emit(100)
         self.signals.PrintInfo.emit('Кластеризация к-средних завершена' + '\n')
 
@@ -743,15 +793,16 @@ class ClasterizationCalculator(QThread):
                 # Находим таблицу центроидов
                 result += '\nЦентроиды\n'
                 for j in range(centroidCount):
-                    summU = 0
-                    for i in range(len(texts)):
-                       summU = summU + math.pow(U0[i][j],m)
-                    for i in range(len(texts)):
+                    for w_kl in range(len(t_all)):
+                        summU = 0
                         summUD = 0
-                        for k in range(len(t_all)):
-                            summUD += math.pow(U0[i][j],m) * W[j][k]
-                        centroids[j][i] = summUD/summU
-                        result += str(centroids[j][i]) + ';'
+                        for i in range(len(texts)):
+                           summU = summU + math.pow(U0[i][j],m)
+                        for i in range(len(texts)):
+                            #for k in range(len(t_all)):
+                            summUD += math.pow(U0[i][j],m) * W[i][w_kl]
+                        centroids[j][w_kl] = summUD/summU
+                        result += str(centroids[j][w_kl]) + ';'
                     result += '\n'
                 # print('centroids founded ')
 
