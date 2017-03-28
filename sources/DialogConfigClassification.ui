@@ -68,6 +68,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QRadioButton" name="radioButtonLLSF">
+        <property name="text">
+         <string>LLSF</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
