@@ -201,7 +201,7 @@ class ClassificationCalculator(QThread):
         log_main = "Расстояние до центроидов" + eol
         predictions = []
         for doc in testSet:
-            neighbors, dist = getNeighbors(centroids, testSet[0], len(centroids))
+            neighbors, dist = getNeighbors(centroids, doc, len(centroids))
             log_main += str(doc) + eol + sep.join([x[0][-1] for x in dist]) + eol + sep.join(
                 map(str, [x[1] for x in dist])) + eol
             self.signals.PrintInfo.emit('> результат =' + repr(dist[0][0][-1]) + ', на самом деле=' + repr(doc[-1]))
