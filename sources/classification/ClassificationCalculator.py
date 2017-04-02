@@ -116,7 +116,7 @@ class ClassificationCalculator(QThread):
         trainingSet = fdata[:split]
         trainingClass = fclass[:split]
         testSet = fdata[split:]
-        test_fnames = makeFileList(input_dir, fread=False)[0][split:]
+        test_fnames = getBasePath(makeFileList(input_dir, fread=False)[0][split:])
         self.signals.UpdateProgressBar.emit(20)
         vocab = {}
         word_counts = defaultdict(dict)
@@ -183,6 +183,8 @@ class ClassificationCalculator(QThread):
         combiSet = addClassToTFIDF(copy.deepcopy(tfidf), fclass)
         trainSet = combiSet[:split]
         testSet = combiSet[split:]
+        split_names = getBasePath(makeFileList(input_dir, fread=False)[0])
+
         self.signals.UpdateProgressBar.emit(20)
         centroids = []
         for cl in class_titles:
@@ -200,18 +202,19 @@ class ClassificationCalculator(QThread):
         self.signals.PrintInfo.emit("Алгоритм Роккио")
         log_main = "Расстояние до центроидов" + eol
         predictions = []
-        for doc in testSet:
-            neighbors, dist = getNeighbors(centroids, doc, len(centroids))
-            log_main += str(doc) + eol + sep.join([x[0][-1] for x in dist]) + eol + sep.join(
+
+        test_fnames = split_names[split:]
+        for i in range(len(testSet)):
+            neighbors, dist = getNeighbors(centroids, testSet[i], len(centroids))
+            log_main += test_fnames[i] + eol + sep.join([x[0][-1] for x in dist]) + eol + sep.join(
                 map(str, [x[1] for x in dist])) + eol
-            self.signals.PrintInfo.emit('> результат =' + repr(dist[0][0][-1]) + ', на самом деле=' + repr(doc[-1]))
+            self.signals.PrintInfo.emit('> результат =' + repr(dist[0][0][-1]) + ', на самом деле=' + repr(testSet[i][-1]))
             predictions.append(dist[0][0][-1])
         accuracy = getAccuracy(testSet, predictions)
         self.signals.PrintInfo.emit('Точность: ' + repr(accuracy) + '%')
         self.signals.UpdateProgressBar.emit(60)
         ###############LOGS##################
         log_tfidf = sep.join(uniq_words) + eol
-        split_names = makeFileList(input_dir, fread=False)[0]
         for i in range(len(combiSet)):
             row = combiSet[i]
             log_tfidf += sep.join(map(str, row)) + sep + split_names[i] + eol
@@ -246,18 +249,20 @@ class ClassificationCalculator(QThread):
         trainingSet = addClassToTFIDF(tfidf[:split], fclass[:split])
         testSet = addClassToTFIDF(tfidf[split:], fclass[split:])
         self.signals.UpdateProgressBar.emit(30)
+        split_names = getBasePath(makeFileList(input_dir, fread=False)[0])
 
         self.signals.PrintInfo.emit("Алгоритм KNN")
         predictions = []
         log_neighbors = "Соседи и расстояния до них:" + eol
         log_votes = "Голоса соседей:" + eol
+        test_fnames = split_names[split:]
         for x in range(len(testSet)):
             neighbors, dist = getNeighbors(trainingSet, testSet[x], k)
             result = getResponse(neighbors)
-            log_neighbors += "Документ:;" + str(testSet[x]) + eol
+            log_neighbors += "Документ:;" + str(test_fnames[x]) + eol
             for p in dist:
                 log_neighbors += sep.join(map(str, p)) + eol
-            log_votes += "Документ:;" + str(testSet[x]) + eol + str(result).strip("[]") + eol
+            log_votes += "Документ:;" + str(test_fnames[x]) + eol + str(result).strip("[]") + eol
             predictions.append(result[0][0])
             self.signals.PrintInfo.emit('> результат =' + repr(result[0][0]) + ', на самом деле=' + repr(testSet[x][-1]))
         accuracy = getAccuracy(testSet, predictions)
@@ -266,7 +271,7 @@ class ClassificationCalculator(QThread):
         ###############LOGS##################
         log_tfidf = sep.join(uniq_words) + eol
         combiSet = trainingSet + testSet
-        split_names = makeFileList(input_dir, fread=False)[0]
+
         for i in range(len(combiSet)):
             row = combiSet[i]
             log_tfidf += sep.join(map(str, row)) + sep + split_names[i] + eol
@@ -327,7 +332,7 @@ class ClassificationCalculator(QThread):
         self.signals.PrintInfo.emit("Алгоритм наименьших квадратов")
 
         ###############LOGS##################
-        split_names = makeFileList(input_dir, fread = False)[0]
+        split_names = getBasePath(makeFileList(input_dir, fread=False)[0])
 
         A = A.tolist()
         B = B.tolist()

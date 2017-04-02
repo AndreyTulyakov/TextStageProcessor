@@ -168,3 +168,8 @@ def getAccuracy(testSet, predictions):
         if testSet[x][-1] == predictions[x]:
             correct += 1
     return (correct/float(len(testSet))) * 100.0
+
+def getBasePath(pathList):
+    for i in range(len(pathList)):
+        pathList[i] = os.path.basename(pathList[i])
+    return pathList
