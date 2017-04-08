@@ -24,6 +24,7 @@ if(os.name != 'posix'):
 configurations = readConfigurationFile("configuration.cfg")
 input_dir = configurations.get("input_files_directory", "input_files") + "/"
 output_dir = configurations.get("output_files_directory", "output_files") + "/"
+stop_words_filename = configurations.get("stop_words_file", "sources/russian_stop_words.txt")
 
 if not os.path.exists(input_dir):
     os.makedirs(input_dir)
@@ -107,7 +108,7 @@ class MainWindow(QMainWindow):
 
     def makeLSA(self):
         print("LSA")
-        filenames = getFilenamesFromUserSelection()
+        filenames = getFilenamesFromUserSelection(input_dir)
         if(filenames != None):
             dialogConfigLSA = DialogConfigLSA(filenames, morph, configurations, self)
             self.hide()
