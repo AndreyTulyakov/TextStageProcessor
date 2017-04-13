@@ -77,6 +77,16 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QRadioButton" name="radioButton_DBSCAN">
+        <property name="text">
+         <string>DBSCAN</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -262,6 +272,9 @@
     <widget class="QCheckBox" name="checkBoxNeedPreprocessing">
      <property name="text">
       <string>Производить предварительную обработку</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

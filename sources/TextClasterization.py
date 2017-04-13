@@ -65,6 +65,8 @@ class DialogConfigClasterization(QDialog):
             self.calculator.setMethod('2')
         if (self.radioButton_SMiddle.isChecked()):
             self.calculator.setMethod('3')
+        if (self.radioButton_DBSCAN.isChecked()):
+            self.calculator.setMethod('4')
 
     def onTextLogAdd(self, QString):
         self.textEdit.append(QString + '\n')
