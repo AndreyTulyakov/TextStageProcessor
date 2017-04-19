@@ -579,7 +579,7 @@ class ClasterizationCalculator(QThread):
             #запишем исходные кластеры
             calc_string += 'Изначальные кластеры\n'
             for i in range(centroidCount):
-                calc_string += 'C' + str(i)+';'
+                calc_string += 'C' + str(i+1)+';'
                 for j in range(len(t_all)):
                     calc_string+= str(clusterCenteroids[i][j])+';'
                 calc_string+='\n'
@@ -594,6 +594,8 @@ class ClasterizationCalculator(QThread):
 
             # Находим таблицу Dist для центроидов
             calc_string += '\n\nРасстояния между кластерами(row) и документами(col)\n'
+
+            #Евклидово
             for i in range(centroidCount):
                 for j in range(len(texts)):
                     summ = 0
@@ -603,6 +605,15 @@ class ClasterizationCalculator(QThread):
                     calc_string += str(clusterDist[i][j])+';'
                 calc_string+='\n'
 
+            #Манхеттен
+            # for i in range(centroidCount):
+            #     for j in range(len(texts)):
+            #         summ = 0
+            #         for k in range(len(t_all)):
+            #             summ += math.fabs(W[j][k] - clusterCenteroids[i][k])
+            #         clusterDist[i][j] = summ
+            #         calc_string += str(clusterDist[i][j])+';'
+            #     calc_string+='\n'
 
             while True:
                 changes = False
@@ -626,10 +637,10 @@ class ClasterizationCalculator(QThread):
                 # запишем результаты
                 calc_string += '\n\nРаспределение документов по кластерам\n'
                 for cluster in range(centroidCount):
-                    calc_string += ';C' + str(cluster)
+                    calc_string += ';C' + str(cluster+1)
                     for doc in range(len(texts)):
                         if (doc2cluster[doc] == cluster):
-                            calc_string += '; ' + str(doc)
+                            calc_string += '; ' + str(doc+1)
                     calc_string += '\n'
                 calc_string += '\n'
 
@@ -655,7 +666,7 @@ class ClasterizationCalculator(QThread):
                     calc_string += key + ';'
                 calc_string += '\n'
                 for i in range(centroidCount):
-                    calc_string += 'C' + str(i) + ';'
+                    calc_string += 'C' + str(i+1) + ';'
                     for j in range(len(t_all)):
                         calc_string += str(clusterCenteroids[i][j]) + ';'
                     calc_string += '\n'
@@ -676,10 +687,10 @@ class ClasterizationCalculator(QThread):
                     #запишем результаты
                     clusters += 'Кластеров -'+ str(centroidCount) + '\n'
                     for cluster in range (centroidCount):
-                        clusters += ';Кластер'+ str(cluster)
+                        clusters += ';Кластер'+ str(cluster+1)
                         for doc in range (len(texts)):
                             if (doc2cluster[doc] == cluster):
-                                clusters += '; ' + str(doc)
+                                clusters += '; ' + str(doc+1)
                         clusters += '\n'
                     clusters += '\n'
                     break
@@ -880,10 +891,10 @@ class ClasterizationCalculator(QThread):
                     # запишем результаты
                     # result += 'Кластеров -'+ str(centroidCount) + '\n'
                     for cluster in range(centroidCount):
-                        clusters += '\nКластер' + str(cluster)
+                        clusters += '\nКластер' + str(cluster+1)
                         for doc in range(len(texts)):
                             if (doc2cluster[doc] == cluster):
-                                clusters += '; ' + str(doc)
+                                clusters += '; ' + str(doc+1)
                     break
                 U0 = U1
                 if(t>1000):
