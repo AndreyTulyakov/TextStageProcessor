@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         button_analyze_and_rule_apply.setMinimumHeight(32)
         button_analyze_and_rule_apply.clicked.connect(self.analyze_and_rule_apply)
 
-        button_xi_square = QPushButton("Критерий Хи-Квадрат")
+        button_xi_square = QPushButton("Рассчет критериев для выделения термов")
         button_xi_square.setMinimumHeight(32)
         button_xi_square.clicked.connect(self.makeXiSquare)
 
@@ -125,7 +125,7 @@ class MainWindow(QMainWindow):
             dialogConfigDRA.exec_()
 
     def makeXiSquare(self):
-        print("Применение критерия Хи-Квадрат")
+        print("Рассчет критериев для выделения термов")
         filename = getFilenameFromUserSelection("CSV Files (*.csv)")
         if(filename != None):
             dialogXiSquare = DialogXiSquare(filename, morph, configurations, self)

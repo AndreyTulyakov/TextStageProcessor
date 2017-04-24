@@ -36,6 +36,8 @@ class XiCalculator(QThread):
         self.texts = []
         self.categories = dict()
         self.signals = XiCalculatorSignals()
+        self.need_preprocessing = True
+
 
     def printMatrixToCsv(self, filename, header1, header2, matrix):
         matrix_csv_str = ';'
@@ -54,8 +56,9 @@ class XiCalculator(QThread):
             matrix_csv_str = matrix_csv_str + '\n'
 
         matrix_csv_str = matrix_csv_str.replace('nan','')
-
+        matrix_csv_str = matrix_csv_str.replace('.',',')
         writeStringToFile(matrix_csv_str, filename)
+
 
     def run(self):
         self.signals.UpdateProgressBar.emit(0)
@@ -73,31 +76,40 @@ class XiCalculator(QThread):
                     self.categories[category].append(value)
 
         self.signals.UpdateProgressBar.emit(10)
+
         self.signals.PrintInfo.emit('Загрузка текстовых файлов...')
         # Загрузка текстовых файлов
         for key in self.categories.keys():
             for filename in self.categories[key]:
-                if(filename != None and filename != 'nan' and len(filename) != 0):
+                if (filename != None and filename != 'nan' and len(filename) != 0):
                     text = TextData(filename)
                     text.readSentencesFromInputText(self.input_path)
                     text.category = key
                     self.texts.append(text)
 
         self.signals.UpdateProgressBar.emit(20)
-        self.signals.PrintInfo.emit('Предварительная обработка текстов...')
 
-        # Предварительная обработка
-        self.configurations['need_agresive_filtration'] = True
-        self.texts = tokenizeTextData(self.texts, self.configurations)
-        self.signals.UpdateProgressBar.emit(25)
-        self.texts, log_string = removeStopWordsInTexts(self.texts, self.morph, self.configurations)
-        self.signals.UpdateProgressBar.emit(30)
-        self.texts, log_string = normalizeTexts(self.texts, self.morph)
-        self.signals.UpdateProgressBar.emit(35)
-        self.texts, log_string = fixRegisterInTexts(self.texts, self.morph)
-        self.signals.UpdateProgressBar.emit(40)
-        self.texts, log_string = calculateWordsFrequencyInTexts(self.texts)
-        self.signals.UpdateProgressBar.emit(45)
+        if self.need_preprocessing :
+            self.signals.PrintInfo.emit('Предварительная обработка текстов...')
+            self.configurations['need_agresive_filtration'] = True
+            self.texts = tokenizeTextData(self.texts, self.configurations)
+            self.signals.UpdateProgressBar.emit(25)
+            self.texts, log_string = removeStopWordsInTexts(self.texts, self.morph, self.configurations)
+            self.signals.UpdateProgressBar.emit(30)
+            self.texts, log_string = normalizeTexts(self.texts, self.morph)
+            self.signals.UpdateProgressBar.emit(35)
+            self.texts, log_string = fixRegisterInTexts(self.texts, self.morph)
+            self.signals.UpdateProgressBar.emit(40)
+            self.texts, log_string = calculateWordsFrequencyInTexts(self.texts)
+            self.signals.UpdateProgressBar.emit(45)
+        else:
+            self.signals.PrintInfo.emit('Предварительная обработка текстов: Пропускается')
+            texts = tokenizeTextData(self.texts)
+            for text in self.texts:
+                text.no_stop_words_sentences = text.tokenized_sentences
+                text.normalized_sentences = text.tokenized_sentences
+                text.register_pass_centences = text.tokenized_sentences
+                self.texts, log_string = calculateWordsFrequencyInTexts(texts)
 
 
         self.signals.PrintInfo.emit('Рассчет списка уникальных слов для матриц...')
@@ -246,6 +258,7 @@ class DialogXiSquare(QDialog):
         self.buttonProcess.setEnabled(False)
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.textEdit.setText("")
+        self.calculator.need_preprocessing = self.checkBoxEnablePreprocessing.isChecked()
         self.calculator.start()
 
 

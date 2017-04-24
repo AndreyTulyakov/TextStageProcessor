@@ -15,6 +15,16 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QCheckBox" name="checkBoxEnablePreprocessing">
+     <property name="text">
+      <string>Использовать предварительную обработку</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QTextEdit" name="textEdit">
      <property name="readOnly">
       <bool>true</bool>
