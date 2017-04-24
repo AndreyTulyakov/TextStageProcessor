@@ -14,6 +14,8 @@ from sources.TextPreprocessing import *
 from numpy.linalg import svd as singular_value_decomposition
 import matplotlib
 
+from sources.utils import Profiler
+
 matplotlib.use('Qt5Agg')
 
 
@@ -250,6 +252,8 @@ class DialogAnnotationMaker(QDialog):
         self.all_idf_word_keys = []
         self.texts = []
 
+        self.profiler = Profiler()
+
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
         self.buttonProcess.clicked.connect(self.process_it)
@@ -270,6 +274,7 @@ class DialogAnnotationMaker(QDialog):
         self.repaint()
 
     def on_calculation_finish(self):
+        self.textEdit.append('Выполнено за ' + self.profiler.stop() + ' с.')
         QApplication.restoreOverrideCursor()
         self.buttonProcess.setEnabled(True)
         QMessageBox.information(self, "Внимание", "Автоматическое аннотирование завершено!")
@@ -286,7 +291,7 @@ class DialogAnnotationMaker(QDialog):
 
         if (self.radioButtonMethodSentenceValue.isChecked()):
             self.calculator.setCalculationMethod(AnnotationMakerCalculator.METHOD_BY_SENTENCE_VALUE )
-
+        self.profiler.start()
         self.calculator.start()
 
 

@@ -20,6 +20,7 @@ from PyQt5 import QtCore, QtGui, uic
 from sources.TextData import TextData
 from sources.TextPreprocessing import *
 from sources.clasterization.ClasterizationCalculator import ClasterizationCalculator
+from sources.utils import Profiler
 
 
 class DialogConfigClasterization(QDialog):
@@ -42,6 +43,7 @@ class DialogConfigClasterization(QDialog):
         self.parameters.setVisible(False)
         output_dir = self.configurations.get("output_files_directory", "output_files")
         self.progressBar.setValue(0)
+        self.profiler = Profiler()
 
         self.calculator = ClasterizationCalculator(filenames, output_dir, morph, self.configurations, self.textEdit)
         self.calculator.setMethod('1')
@@ -79,6 +81,7 @@ class DialogConfigClasterization(QDialog):
     def onCalculationFinish(self):
         self.methods.setEnabled(True)
         self.parameters.setEnabled(True)
+        self.textEdit.append('Выполнено за ' + self.profiler.stop() + ' с.')
         QApplication.restoreOverrideCursor()
         QMessageBox.information(self, "Внимание", "Кластеризация завершена!")
 
@@ -92,4 +95,5 @@ class DialogConfigClasterization(QDialog):
         self.calculator.setClusterCount(self.spinBox.value())
         self.calculator.setEps(self.lineEdit.text())
         self.calculator.setM(self.lineEdit_2.text())
+        self.profiler.start()
         self.calculator.start()

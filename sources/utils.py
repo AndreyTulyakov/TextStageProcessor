@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import shutil
-
+import time
 from PyQt5.QtWidgets import QFileDialog
 
 from sources.TextPreprocessing import loadInputFilesFromList, tokenizeTextData, removeStopWordsInTexts, \
@@ -103,3 +103,16 @@ def makePreprocessingForAllFilesInFolder(configurations,
                 for word in sentence:
                     out_text_file.write(word)
                     out_text_file.write(' ')
+
+
+# Измерение времени выполнения блока кода
+class Profiler(object):
+
+    def __init__(self):
+        self._startTime = 0
+
+    def start(self):
+        self._startTime = time.time()
+
+    def stop(self):
+        return str("{:.3f}").format(time.time() - self._startTime)

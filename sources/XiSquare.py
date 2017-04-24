@@ -13,6 +13,7 @@ from PyQt5 import QtCore, QtGui, uic
 from PyQt5.QtCore import QThread
 
 from sources.TextPreprocessing import *
+from sources.utils import Profiler
 
 
 def slog2(x):
@@ -232,6 +233,8 @@ class DialogXiSquare(QDialog):
         self.buttonProcess.clicked.connect(self.processIt)
         self.textEdit.setText("")
 
+        self.profiler = Profiler()
+
         self.configurations["minimal_word_size"] = 4
         self.configurations["cut_ADJ"] = False
         output_dir = self.configurations.get("output_files_directory", "output_files")
@@ -251,6 +254,7 @@ class DialogXiSquare(QDialog):
         self.repaint()
 
     def onCalculationFinish(self):
+        self.textEdit.append('Выполнено за ' + self.profiler.stop() + ' с.')
         QApplication.restoreOverrideCursor()
         QMessageBox.information(self, "Внимание", "Расчет: MI, IG, Хи-Квадрат завершен!")
 
@@ -259,10 +263,6 @@ class DialogXiSquare(QDialog):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.textEdit.setText("")
         self.calculator.need_preprocessing = self.checkBoxEnablePreprocessing.isChecked()
+        self.profiler.start()
         self.calculator.start()
-
-
-
-
-
 

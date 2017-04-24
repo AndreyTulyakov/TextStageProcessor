@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, uic
 
 from sources.TextData import TextData
 from sources.TextPreprocessing import *
-
+from sources.utils import Profiler
 
 person_counter = 0
 essence_counter = 0
@@ -64,16 +64,6 @@ def en2ruPosName(enPosName):
         'PRCL':'Частица',
         'INTJ':'Междометие'})
     return translated_words[enPosName]
-
-
-def showAllWordPOS(morph, tokenized_sentences):
-    i = 0
-    for word in tsen:
-        result = morph.parse(word)[0]
-        if(result.tag.POS):
-            print(str(i) + ') ' + word + ' (' + en2ruPosName(result.tag.POS) + ')')
-        i = i + 1
-    pass
 
 
 """
@@ -539,6 +529,8 @@ class DialogConfigDRA(QDialog):
         self.configurations = configurations
         self.parent = parent
 
+        self.profiler = Profiler()
+
         self.nu = []
         self.ns = []
         self.nv = []
@@ -554,6 +546,8 @@ class DialogConfigDRA(QDialog):
     def process(self):
         self.textEdit.setText("")
         self.configurations["minimal_word_size"] = 1
+
+        self.profiler.start()
         self.texts = makePreprocessing(self.filenames, self.morph, self.configurations, self.textEdit)
         output_dir = self.configurations.get("output_files_directory", "output_files")
 
@@ -639,3 +633,4 @@ class DialogConfigDRA(QDialog):
 
 
         self.textEdit.append('Успешно завершено.')
+        self.textEdit.append('Выполнено за ' + self.profiler.stop() + ' с.')

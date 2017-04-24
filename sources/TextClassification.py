@@ -12,6 +12,7 @@ from sources.classification.ClassificationCalculator import *
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5 import QtCore, uic
 from sources.classification.clsf_util import *
+from sources.utils import Profiler
 
 
 class DialogConfigClassification(QDialog):
@@ -28,6 +29,8 @@ class DialogConfigClassification(QDialog):
         self.parent = parent
         self.input_dir = dirname
         self.lineEditInputDir.setText(dirname)
+
+        self.profiler = Profiler()
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.buttonClassify.clicked.connect(self.makeClassification)
@@ -66,6 +69,7 @@ class DialogConfigClassification(QDialog):
 
     def onCalculationFinish(self):
         # self.groupButtonsBox.setEnabled(True)
+        self.textEdit.append('Выполнено за ' + self.profiler.stop() + ' с.')
         QApplication.restoreOverrideCursor()
         QMessageBox.information(self, "Внимание", "Процесс классификации завершен!")
 
@@ -88,4 +92,5 @@ class DialogConfigClassification(QDialog):
         if self.radioButtonLLSF.isChecked():
             self.calculator.setMethod(ClassificationCalculator.METHOD_LLSF, need_preprocessing)
 
+        self.profiler.start()
         self.calculator.start()

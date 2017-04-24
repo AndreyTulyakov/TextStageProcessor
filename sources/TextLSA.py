@@ -29,6 +29,8 @@ from PyQt5.uic import loadUiType
 
 import matplotlib
 import matplotlib.pyplot as plt
+
+from sources.utils import Profiler
 from stage_text_processor import stop_words_filename
 
 matplotlib.use('Qt5Agg')
@@ -254,6 +256,7 @@ class DialogConfigLSA(QDialog):
         self.ys = []
         self.short_filenames = []
         self.similarity = None
+        self.profiler = Profiler()
 
         flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint;
         self.setWindowFlags(flags)
@@ -291,12 +294,12 @@ class DialogConfigLSA(QDialog):
         self.repaint()
 
     def onCalculationFinish(self, xs, ys, similarity, short_filenames):
+        self.textEdit.append('Выполнено за ' + self.profiler.stop() + ' с.')
         self.xs = xs
         self.ys = ys
         self.similarity = similarity
         self.short_filenames = short_filenames
         QApplication.restoreOverrideCursor()
-        self.textEdit.append('Успешно завершено.')
         self.button2DView.setEnabled(True)
         self.buttonRelationTable.setEnabled(True)
         QMessageBox.information(self, "Внимание", "Латентно-семантический анализ завершен!")
@@ -311,6 +314,7 @@ class DialogConfigLSA(QDialog):
         self.configurations['need_full_preprocessing'] = self.radio_preprocessing_full.isChecked()
         self.configurations["minimal_word_size"] = self.spinBoxMinimalWordsLen.value()
         self.configurations["cut_ADJ"] = self.checkBoxPrilag.isChecked()
+        self.profiler.start()
         self.calculator.start()
 
     def make2DView(self):
