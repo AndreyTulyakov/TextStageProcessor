@@ -1043,8 +1043,8 @@ class ClasterizationCalculator(QThread):
         id=0
         for doc in W:
             for cluster in clusters:
-                for pts in cluster.pts[1]:
-                    if(doc==pts):
+                for pts in cluster.pts:
+                    if(doc==pts[1]):
                         cluster.addDoc(id+1)
                         if(noiseDocs.count(id+1)!=0):
                             noiseDocs.remove(id+1)
