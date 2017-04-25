@@ -11,6 +11,13 @@ def dictToCsv(dct, fpath):
         writer = csv.writer(csv_file, delimiter=';', lineterminator='\n')
         for key, value in dct.items():
             writer.writerow([key, str(value)])
+            
+def dictListToCsv(dct, fpath):
+    with open(fpath, 'w') as csv_file:
+        writer = csv.writer(csv_file, delimiter = ';', lineterminator = '\n')
+        for key, value in dct.items():
+           writer.writerow([key])
+           writer.writerows(value)
 
 
 def count_words(words):

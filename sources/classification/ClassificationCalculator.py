@@ -159,7 +159,7 @@ class ClassificationCalculator(QThread):
         self.signals.PrintInfo.emit(out_dir + 'Словарь всех.csv')
         dictToCsv(vocab, output_dir + 'Словарь всех.csv')
         self.signals.PrintInfo.emit(out_dir + 'Вероятности документов.csv')
-        dictToCsv(scores, output_dir + 'Вероятности документов.csv')
+        dictListToCsv(scores, output_dir + 'Вероятности документов.csv')
         self.signals.PrintInfo.emit(out_dir + 'Словарь по классам.csv')
         dictToCsv(word_counts, output_dir + 'Словарь по классам.csv')
 
@@ -206,7 +206,8 @@ class ClassificationCalculator(QThread):
         test_fnames = split_names[split:]
         for i in range(len(testSet)):
             neighbors, dist = getNeighbors(centroids, testSet[i], len(centroids))
-            log_main += test_fnames[i] + eol + sep.join([x[0][-1] for x in dist]) + eol + sep.join(
+            log_main += test_fnames[i] + sep + "Результат:" + str(dist[0][0][-1]) + sep + eol 
+            log_main += sep.join([x[0][-1] for x in dist]) + eol + sep.join(
                 map(str, [x[1] for x in dist])) + eol
             self.signals.PrintInfo.emit('> результат =' + repr(dist[0][0][-1]) + ', на самом деле=' + repr(testSet[i][-1]))
             predictions.append(dist[0][0][-1])
@@ -259,10 +260,10 @@ class ClassificationCalculator(QThread):
         for x in range(len(testSet)):
             neighbors, dist = getNeighbors(trainingSet, testSet[x], k)
             result = getResponse(neighbors)
-            log_neighbors += "Документ:;" + str(test_fnames[x]) + eol
-            for p in dist:
-                log_neighbors += sep.join(map(str, p)) + eol
-            log_votes += "Документ:;" + str(test_fnames[x]) + eol + str(result).strip("[]") + eol
+            log_neighbors += "Документ:;" + str(test_fnames[x]) + eol + "Сосед" + sep + "Расстояние" + eol
+            for j in range(len(dist)):
+                log_neighbors += split_names[j] + sep + str(dist[j][1]) + eol
+            log_votes += "Документ:;" + str(test_fnames[x]) + eol + sep.join([str(x[0]) + sep + str(x[1]) for x in result]) + eol
             predictions.append(result[0][0])
             self.signals.PrintInfo.emit('> результат =' + repr(result[0][0]) + ', на самом деле=' + repr(testSet[x][-1]))
         accuracy = getAccuracy(testSet, predictions)
