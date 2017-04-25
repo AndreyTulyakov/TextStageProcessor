@@ -581,42 +581,27 @@ class ClasterizationCalculator(QThread):
             #случайные числа
             clusterCenteroids = [[random.randrange(0, 100, 1)/10000 for x in range(len(t_all))] for y in range(centroidCount)]
             #китайцы - китайский пекин шанхай макао япония токио
-            index=0
-            for key, value in t_all.items():
-                if(key == 'китайский'):
-                    clusterCenteroids[0][index] = 0.96
-                    clusterCenteroids[1][index] = 0.49
-                if (key == 'пекин'):
-                    clusterCenteroids[0][index] = 0.8
-                    clusterCenteroids[1][index] = 0.14
-                if (key == 'шанхай'):
-                    clusterCenteroids[0][index] = 0.42
-                    clusterCenteroids[1][index] = 0.91
-                if (key == 'макао'):
-                    clusterCenteroids[0][index] = 0.79
-                    clusterCenteroids[1][index] = 0.96
-                if (key == 'япония'):
-                    clusterCenteroids[0][index] = 0.66
-                    clusterCenteroids[1][index] = 0.04
-                if (key == 'токио'):
-                    clusterCenteroids[0][index] = 0.85
-                    clusterCenteroids[1][index] = 0.93
-                index = index + 1
-            # clusterCenteroids[0][0] = 0
-            # clusterCenteroids[0][1] = 0
-            # clusterCenteroids[0][2] = 0
-            # clusterCenteroids[0][3] = 0
-            # clusterCenteroids[0][4] = 0
-            # clusterCenteroids[0][5] = 0
-            #
-            # clusterCenteroids[1][0] = 0
-            # clusterCenteroids[1][1] = 0
-            # clusterCenteroids[1][2] = 0
-            # clusterCenteroids[1][3] = 0
-            # clusterCenteroids[1][4] = 0
-            # clusterCenteroids[1][5] = 0
-
-
+            # index=0
+            # for key, value in t_all.items():
+            #     if(key == 'китайский'):
+            #         clusterCenteroids[0][index] = 0.96
+            #         clusterCenteroids[1][index] = 0.49
+            #     if (key == 'пекин'):
+            #         clusterCenteroids[0][index] = 0.8
+            #         clusterCenteroids[1][index] = 0.14
+            #     if (key == 'шанхай'):
+            #         clusterCenteroids[0][index] = 0.42
+            #         clusterCenteroids[1][index] = 0.91
+            #     if (key == 'макао'):
+            #         clusterCenteroids[0][index] = 0.79
+            #         clusterCenteroids[1][index] = 0.96
+            #     if (key == 'япония'):
+            #         clusterCenteroids[0][index] = 0.66
+            #         clusterCenteroids[1][index] = 0.04
+            #     if (key == 'токио'):
+            #         clusterCenteroids[0][index] = 0.85
+            #         clusterCenteroids[1][index] = 0.93
+            #     index = index + 1
 
             #запишем исходные кластеры
             calc_string += 'Изначальные кластеры\n;'
@@ -1025,55 +1010,67 @@ class ClasterizationCalculator(QThread):
         W_string += '\n'
         i = 0
         for row in W:
-            D.append(row)
+            D.append([i+1,row])
             W_string += self.filenames[i]
             for item in row:
                 W_string = W_string + ';' + str(round(item, 10))
             W_string += '\n'
             i += 1
-        writeStringToFile(W_string.replace('\n ', '\n'), output_dir + 'W.csv')
+        writeStringToFile(W_string.replace('\n ', '\n').replace('.', ','), output_dir + 'W.csv')
         self.signals.UpdateProgressBar.emit(25)
 
         pt = ()
-
+        stepsString=''
         # lines = open(csv, 'r').read().splitlines()
 
         # Remember to set a value for eps and minPts. Here
         # they are set to 0.3 and 3.
+        stepsString += 'Steps\n'
+        stepsString+= 'eps =;' + str(eps) + '\nminPts=;' +str(minPts) + '\n\n\n\n'
         myDBSCAN = DBSCAN(D, eps, minPts)
-
-        results = myDBSCAN.run()
+        res = ''
+        results= myDBSCAN.run()
         clusters = results[0]
         noise = results[1]
+        stepsString+=results[2]
+
         noiseDocs =[]
+        for doc in range(len(texts)):
+            noiseDocs.append(doc+1)
 
         # Teting printClusters()
         #myDBSCAN.printClusters()
         id=0
         for doc in W:
             for cluster in clusters:
-                for pts in cluster.pts:
+                for pts in cluster.pts[1]:
                     if(doc==pts):
                         cluster.addDoc(id+1)
+                        if(noiseDocs.count(id+1)!=0):
+                            noiseDocs.remove(id+1)
             id = id + 1
-        id = 0
-        for doc in W:
-            for noisedoc in noise:
-                    if (doc == noisedoc):
-                        noiseDocs.append(id + 1)
+        # id = 0
+        # for doc in W:
+        #     for noisedoc in noise:
+        #             if (doc == noisedoc):
+        #                 noiseDocs.append(id + 1)
 
-            id=id+1
+            # id=id+1
         # Manually printing
         # print('Clusters')
+        clustersString += 'Clusters\n'
         for cluster in clusters:
-            clustersString+= 'C' + str(cluster.cid) + ':;'
+            clustersString+= 'C' + str(cluster.cid+1) + ':;'
             for doc in cluster.docs:
                 clustersString+=str(doc)+';'
             clustersString += '\n'
-        writeStringToFile(clustersString.replace('\n ', '\n').replace('.', ','), output_dir + 'clusters.csv')
-        print('Noise')
-        print(noiseDocs)
-        strPause='end'
+
+        clustersString +='\nNoise\n'
+        for noiceDoc in noiseDocs:
+            clustersString += str(noiceDoc) + ';'
+        writeStringToFile(clustersString.replace('\n ', '\n').replace('.', ','), output_dir + 'Clusters.csv')
+        stepsString+='\n\n' + clustersString
+        writeStringToFile(stepsString.replace('\n ', '\n').replace('.', ','), output_dir + 'Steps.csv')
 
 class Cluster(object):
     """ A Cluster is just a wrapper for a list of points.
@@ -1145,6 +1142,7 @@ class DBSCAN(object):
         self.Clusters = []  # Results stored here
         self.NOISE = []  # Noise points
         self.visited = []  # For keeping track of pts
+        self.stepsString = ''
 
     def __regionQuery(self, pt):
         eps = self.eps
@@ -1157,16 +1155,18 @@ class DBSCAN(object):
         for p in D:
             if(p!=pt):
                 res = 0
-                for k in range(len(pt)):
-                    res += math.pow(p[k] - pt[k], 2)
+                for k in range(len(pt[1])):
+                    res += math.pow(p[1][k] - pt[1][k], 2)
                 res = math.sqrt(res)
                 if (res<= eps):
-                     NeighborhoodPts.append(p)
+                    NeighborhoodPts.append(p)
+                    self.stepsString += 'Founded Neighborhood doc' + str(p[0]) + '\n'
+
         return NeighborhoodPts
 
     def __expandCluster(self, pt, NeighborhoodPts, C):
         C.addPoint(pt)
-
+        self.stepsString+='Expand C'+str(C.cid+1)+'\n'
         # Localize for some performance boost.
         visited = self.visited
         appendVisited = visited.append
@@ -1177,11 +1177,13 @@ class DBSCAN(object):
 
         for p in NeighborhoodPts:
             if p not in visited:
+                self.stepsString += 'Visit Neighborhood doc' + str(p[0]) + '\n'
                 appendVisited(p)
                 NewNeighborhoodPts = regionQuery(p)
                 if len(NewNeighborhoodPts) >= minPts:
                     for n in NewNeighborhoodPts:
                         if n not in NeighborhoodPts:
+                            self.stepsString += 'Add Neighborhood doc' +str(n[0]) + '\n'
                             appendNeighborhoodPts(n)
 
             # Check if p in any clusters
@@ -1189,6 +1191,7 @@ class DBSCAN(object):
                 if p not in cluster.pts:
                     if p not in C.pts:
                         C.addPoint(p)
+                        self.stepsString += 'Added doc' + str(p[0]) + ' to cluster C' + str(C.cid+1) + '\n'
                         break
 
     def printClusters(self):
@@ -1203,20 +1206,25 @@ class DBSCAN(object):
                 )
 
     def run(self):
+        index=0
         for pt in self.D:
+            self.stepsString+='See doc'+str(index+1)+'\n'
             if pt not in self.visited:
+                self.stepsString += 'Visit doc' + str(index + 1) + '\n'
                 self.visited.append(pt)
                 NeighborhoodPts = self.__regionQuery(pt)
                 if len(NeighborhoodPts) < self.minPts:
+                    self.stepsString += 'Add to Noise doc' + str(index + 1) + '\n'
                     self.NOISE.append(pt)
                 else:
                     C = Cluster()  # new cluster
                     self.Clusters.append(C)
+                    self.stepsString += 'Create new cluster C' + str(C.cid + 1) + '\n'
                     self.__expandCluster(
                         pt, NeighborhoodPts, C
                     )
-
-        return (self.Clusters, self.NOISE)
+            index += 1
+        return (self.Clusters, self.NOISE, self.stepsString)
 
 # Test
 def IrisTest(csv):
