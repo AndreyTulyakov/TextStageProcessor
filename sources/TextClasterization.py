@@ -41,6 +41,7 @@ class DialogConfigClasterization(QDialog):
         self.startMethod.clicked.connect(self.OnStartMethod)
         self.textEdit.setText("")
         self.parameters.setVisible(False)
+        self.parameters_DBSCAN.setVisible(False)
         output_dir = self.configurations.get("output_files_directory", "output_files")
         self.progressBar.setValue(0)
         self.profiler = Profiler()
@@ -54,12 +55,19 @@ class DialogConfigClasterization(QDialog):
         self.radioButton_Hierarhy.toggled.connect(self.onChangeMethod)
         self.radioButton_KMiddle.toggled.connect(self.onChangeMethod)
         self.radioButton_SMiddle.toggled.connect(self.onChangeMethod)
+        self.radioButton_DBSCAN.toggled.connect(self.onChangeMethod)
 
     def onChangeMethod(self):
         if (self.radioButton_Hierarhy.isChecked()):
             self.parameters.setVisible(False)
+            self.parameters_DBSCAN.setVisible(False)
         else:
-            self.parameters.setVisible(True)
+            if(self.radioButton_DBSCAN.isChecked()):
+                self.parameters.setVisible(False)
+                self.parameters_DBSCAN.setVisible(True)
+            else:
+                self.parameters_DBSCAN.setVisible(False)
+                self.parameters.setVisible(True)
 
         if (self.radioButton_Hierarhy.isChecked()):
             self.calculator.setMethod('1')
@@ -93,7 +101,11 @@ class DialogConfigClasterization(QDialog):
         self.calculator.need_preprocessing = self.checkBoxNeedPreprocessing.isChecked()
         self.checkBoxNeedPreprocessing.setEnabled(False)
         self.calculator.setClusterCount(self.spinBox.value())
-        self.calculator.setEps(self.lineEdit.text())
+        if(self.radioButton_DBSCAN.isChecked()):
+            self.calculator.setEps(self.lineEdit_4.text())
+        else:
+            self.calculator.setEps(self.lineEdit.text())
         self.calculator.setM(self.lineEdit_2.text())
+        self.calculator.setMinPts(self.lineEdit_3.text())
         self.profiler.start()
         self.calculator.start()

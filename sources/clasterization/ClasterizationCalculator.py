@@ -189,6 +189,7 @@ class ClasterizationCalculator(QThread):
         self.clusterCount = 2
         self.eps = 0.01
         self.m = 2
+        self.minPts = 0.3
         self.need_preprocessing = False
         self.first_call = True
         self.texts = []
@@ -204,6 +205,9 @@ class ClasterizationCalculator(QThread):
 
     def setM(self,value):
         self.m = value
+
+    def setMinPts(self,value):
+        self.minPts = value
 
     def setClusterCount(self,value):
         self.clusterCount = value
@@ -235,7 +239,7 @@ class ClasterizationCalculator(QThread):
             self.makeClasterizationSMiddle(self.clusterCount,self.eps,self.m)
 
         if (self.method == '4'):
-            self.makeDBSCANClasterization()
+            self.makeDBSCANClasterization(self.eps,self.minPts)
 
         if self.first_call and self.need_preprocessing:
             self.first_call = False
@@ -278,7 +282,7 @@ class ClasterizationCalculator(QThread):
             j = 0
             for key, value in t_all.items():
                 text = texts[row]
-                if (key in text.word_frequency):
+                if (key in text.word_frequency.keys()):
                     frequency_in_this_doc = text.word_frequency[key]
                 else:
                     frequency_in_this_doc = 0
@@ -464,7 +468,7 @@ class ClasterizationCalculator(QThread):
         #легенда в ответ
         for doc in range(len(self.filenames)):
             result += str(doc) + ' = ' + os.path.basename(self.filenames[doc]) + '\n'
-            clusters += str(doc) + ' = ' + os.path.basename(self.filenames[doc]) + '\n'
+            clusters += str(doc+1) + ' = ' + os.path.basename(self.filenames[doc]) + '\n'
         result += '\n'
         clusters += '\n'
 
@@ -574,10 +578,51 @@ class ClasterizationCalculator(QThread):
             calc_string += 'k=' + str(centroidCount) + '\n'
             clusterCenteroids = dict()
             # Шаг 1. Инициализация центров кластеров $, j = 1,k, например, случайными числами.
+            #случайные числа
             clusterCenteroids = [[random.randrange(0, 100, 1)/10000 for x in range(len(t_all))] for y in range(centroidCount)]
+            #китайцы - китайский пекин шанхай макао япония токио
+            index=0
+            for key, value in t_all.items():
+                if(key == 'китайский'):
+                    clusterCenteroids[0][index] = 0.96
+                    clusterCenteroids[1][index] = 0.49
+                if (key == 'пекин'):
+                    clusterCenteroids[0][index] = 0.8
+                    clusterCenteroids[1][index] = 0.14
+                if (key == 'шанхай'):
+                    clusterCenteroids[0][index] = 0.42
+                    clusterCenteroids[1][index] = 0.91
+                if (key == 'макао'):
+                    clusterCenteroids[0][index] = 0.79
+                    clusterCenteroids[1][index] = 0.96
+                if (key == 'япония'):
+                    clusterCenteroids[0][index] = 0.66
+                    clusterCenteroids[1][index] = 0.04
+                if (key == 'токио'):
+                    clusterCenteroids[0][index] = 0.85
+                    clusterCenteroids[1][index] = 0.93
+                index = index + 1
+            # clusterCenteroids[0][0] = 0
+            # clusterCenteroids[0][1] = 0
+            # clusterCenteroids[0][2] = 0
+            # clusterCenteroids[0][3] = 0
+            # clusterCenteroids[0][4] = 0
+            # clusterCenteroids[0][5] = 0
+            #
+            # clusterCenteroids[1][0] = 0
+            # clusterCenteroids[1][1] = 0
+            # clusterCenteroids[1][2] = 0
+            # clusterCenteroids[1][3] = 0
+            # clusterCenteroids[1][4] = 0
+            # clusterCenteroids[1][5] = 0
+
+
 
             #запишем исходные кластеры
-            calc_string += 'Изначальные кластеры\n'
+            calc_string += 'Изначальные кластеры\n;'
+            for key, value in t_all.items():
+                calc_string += key + ';'
+            calc_string += '\n'
             for i in range(centroidCount):
                 calc_string += 'C' + str(i+1)+';'
                 for j in range(len(t_all)):
@@ -906,39 +951,129 @@ class ClasterizationCalculator(QThread):
         writeStringToFile(clusters.replace('\n ', '\n').replace('.', ','), output_dir + 'clusters.csv')
         self.signals.PrintInfo.emit('Кластеризация Нечёткий алгоритм с-средних завершена' + '\n')
 
-    def makeDBSCANClasterization(self):
+    def makeDBSCANClasterization(self,eps, minPts):
         D = []
+
+        self.signals.UpdateProgressBar.emit(0)
+        self.signals.PrintInfo.emit('Алгоритм DBSCAN' + '\n')
+
+        texts = self.texts
+        output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/DBScan/"
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        minPts = float(minPts)
+        eps = float(eps)
+
+        # eps = 0.01
+        result = 'Алгоритм DBSCAN\n'
+        clustersString = 'Кластеры\n'
+        # легенда в ответ
+        for doc in range(len(self.filenames)):
+            result += str(doc+1) + ' = ' + os.path.basename(self.filenames[doc]) + '\n'
+            clustersString += str(doc+1) + ' = ' + os.path.basename(self.filenames[doc]) + '\n'
+        result += '\n'
+        clustersString += '\n'
+
+        # Нахождение матрицы весов
+        self.signals.PrintInfo.emit('Нахождение матрицы весов' + '\n')
+        t_all = dict()
+
+        for text in texts:
+            for key, value in text.sorted_word_frequency:
+                t_all[key] = t_all.get(key, 0) + 1
+
+        self.signals.UpdateProgressBar.emit(15)
+        # Найти df
+        df_string = ''
+        df_string = df_string + "Слово;Используется в документах\n"
+        for key, value in t_all.items():
+            df_string = df_string + key + ';' + str(value) + '\n'
+        writeStringToFile(df_string.replace('\n ', '\n'), output_dir + 'df.csv')
+
+        W = [[0 for x in range(len(t_all))] for y in range(len(texts))]
+        print('len(texts)=' + str(len(texts)))
+        print('len(t_all)=' + str(len(t_all)))
+        W_norm = [0 for x in range(len(texts))]
+        i = 0
+        j = 0
+        for row in range(len(texts)):
+            j = 0
+            for key, value in t_all.items():
+                text = texts[row]
+                if (key in text.word_frequency):
+                    frequency_in_this_doc = text.word_frequency[key]
+                else:
+                    frequency_in_this_doc = 0
+                W[i][j] = frequency_in_this_doc * math.log10(len(texts) / value)
+                W_norm[i] += math.pow(W[i][j], 2)
+                # print('W[' + key + '][' + filenames[i] + '] = ' + str(frequency_in_this_doc) + '*Log(' + str(
+                #    len(texts)) + '/' + str(value) + ') = ' + str(W[i][j]))
+
+                j += 1
+            W_norm[i] = math.sqrt(W_norm[i])
+            # print('wnorm = ' + str(W_norm[i]))
+            i += 1
+
+        for i in range(len(texts)):
+            for j in range(len(t_all)):
+                W[i][j] /= W_norm[i]
+
+        W_string = ''
+        W_string = W_string + "Нормированные веса\n"
+        for key, value in t_all.items():
+            W_string = W_string + ';' + key
+        W_string += '\n'
+        i = 0
+        for row in W:
+            D.append(row)
+            W_string += self.filenames[i]
+            for item in row:
+                W_string = W_string + ';' + str(round(item, 10))
+            W_string += '\n'
+            i += 1
+        writeStringToFile(W_string.replace('\n ', '\n'), output_dir + 'W.csv')
+        self.signals.UpdateProgressBar.emit(25)
+
         pt = ()
 
-        lines = open(csv, 'r').read().splitlines()
-
-        # If using the sample iris.data included in the
-        # repository, each line is structured:
-        #
-        # <float sl>, <float sw>, <float pl>, <float pw>, <string id>
-        #
-        # For sepal length vs petal length comparison, use:
-        #
-        # pt = (cols[4], float(cols[2]), float(cols[0])
-        for line in lines:
-            cols = line.split(',')
-            pt = (cols[4], float(cols[2]), float(cols[0]))
-            D.append(pt)
+        # lines = open(csv, 'r').read().splitlines()
 
         # Remember to set a value for eps and minPts. Here
         # they are set to 0.3 and 3.
-        myDBSCAN = DBSCAN(D, 0.3, 3)
+        myDBSCAN = DBSCAN(D, eps, minPts)
 
         results = myDBSCAN.run()
         clusters = results[0]
         noise = results[1]
+        noiseDocs =[]
 
         # Teting printClusters()
-        myDBSCAN.printClusters()
+        #myDBSCAN.printClusters()
+        id=0
+        for doc in W:
+            for cluster in clusters:
+                for pts in cluster.pts:
+                    if(doc==pts):
+                        cluster.addDoc(id+1)
+            id = id + 1
+        id = 0
+        for doc in W:
+            for noisedoc in noise:
+                    if (doc == noisedoc):
+                        noiseDocs.append(id + 1)
 
+            id=id+1
         # Manually printing
+        # print('Clusters')
         for cluster in clusters:
-            print(cluster.cid, cluster.pts)
+            clustersString+= 'C' + str(cluster.cid) + ':;'
+            for doc in cluster.docs:
+                clustersString+=str(doc)+';'
+            clustersString += '\n'
+        writeStringToFile(clustersString.replace('\n ', '\n').replace('.', ','), output_dir + 'clusters.csv')
+        print('Noise')
+        print(noiseDocs)
+        strPause='end'
 
 class Cluster(object):
     """ A Cluster is just a wrapper for a list of points.
@@ -950,12 +1085,15 @@ class Cluster(object):
 
     def __init__(self):
         self.cid = Cluster.cid
+        self.docs = []
         self.pts = []
 
         Cluster.cid += 1  # Increment the global id
 
     def addPoint(self, p):
         self.pts.append(p)
+    def addDoc(self, doc):
+        self.docs.append(doc)
 
 class DBSCAN(object):
     """ Parameters
@@ -1002,7 +1140,7 @@ class DBSCAN(object):
         # so the eps is squared. This is because
         # calculating sqrt for Euclidean distance is much
         # slower than calculating squares.
-        self.eps = eps * eps
+        self.eps = eps
 
         self.Clusters = []  # Results stored here
         self.NOISE = []  # Noise points
@@ -1014,13 +1152,17 @@ class DBSCAN(object):
 
         # This implementation uses Manhattan distance
         # to avoid doing an expensive sqrt calculation.
-        neighborhood = [
-            p for p in D if (
-                (p[1] - pt[1]) ** 2
-                + (p[2] - pt[2]) ** 2 <= eps
-            )
-            ]
-        return neighborhood
+        NeighborhoodPts = []
+
+        for p in D:
+            if(p!=pt):
+                res = 0
+                for k in range(len(pt)):
+                    res += math.pow(p[k] - pt[k], 2)
+                res = math.sqrt(res)
+                if (res<= eps):
+                     NeighborhoodPts.append(p)
+        return NeighborhoodPts
 
     def __expandCluster(self, pt, NeighborhoodPts, C):
         C.addPoint(pt)
@@ -1114,28 +1256,4 @@ def IrisTest(csv):
     for cluster in clusters:
         print(cluster.cid, cluster.pts)
 
-    # Plotting the results
-    import matplotlib.pyplot as plt
-    for cluster in clusters:
-        x = []
-        y = []
-        for pt in cluster.pts:
-            x.append(pt[1])
-            y.append(pt[2])
-        plt.plot(x, y, '.')
-
-    noise_x = []
-    noise_y = []
-    for pt in noise:
-        noise_x.append(pt[1])
-        noise_y.append(pt[2])
-    plt.plot(noise_x, noise_y, 'x')
-
-    plt.axis("equal")
-    plt.xlim(xmin=0.0)
-    plt.ylim(ymin=4.0)
-    plt.xlabel("Petal Length")
-    plt.ylabel("Sepal Length")
-    plt.show()
-    print('plt.show()')
 
