@@ -5,19 +5,33 @@ import re, os
 #import operator
 import pymorphy2
 
+def localize_floats(row):
+    return [
+        str(el).replace('.', ',') if isinstance(el, float) else el 
+        for el in row
+    ]
 
+def dictOfDictToCsv(dct, fpath):
+    with open(fpath, 'w') as csv_file:
+        writer = csv.writer(csv_file, delimiter = ';', lineterminator = '\n')
+        for key, value in dct.items():
+            writer.writerow([key])
+            for key2, value2 in value.items():
+                writer.writerow([key2, str(value2).replace('.',',')])
+                
 def dictToCsv(dct, fpath):
     with open(fpath, 'w') as csv_file:
         writer = csv.writer(csv_file, delimiter=';', lineterminator='\n')
         for key, value in dct.items():
-            writer.writerow([key, str(value)])
+            writer.writerow([key, str(value).replace('.',',')])
             
 def dictListToCsv(dct, fpath):
     with open(fpath, 'w') as csv_file:
         writer = csv.writer(csv_file, delimiter = ';', lineterminator = '\n')
         for key, value in dct.items():
-           writer.writerow([key])
-           writer.writerows(value)
+            writer.writerow([key])
+            for el in value:
+                writer.writerow(localize_floats(el))
 
 
 def count_words(words):

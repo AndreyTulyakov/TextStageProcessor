@@ -161,7 +161,7 @@ class ClassificationCalculator(QThread):
         self.signals.PrintInfo.emit(out_dir + 'Вероятности документов.csv')
         dictListToCsv(scores, output_dir + 'Вероятности документов.csv')
         self.signals.PrintInfo.emit(out_dir + 'Словарь по классам.csv')
-        dictToCsv(word_counts, output_dir + 'Словарь по классам.csv')
+        dictOfDictToCsv(word_counts, output_dir + 'Словарь по классам.csv')
 
     # Алгоритм Рочио
     def classification_rocchio(self, needPreprocessing):
@@ -197,7 +197,7 @@ class ClassificationCalculator(QThread):
         centroids = addClassToTFIDF(centroids, list(class_titles))
         log_centr = "центроиды" + eol + sep.join(uniq_words) + eol
         for row in centroids:
-            log_centr += sep.join(map(str, row)) + eol
+            log_centr += sep.join(map(str, row)).replace('.',',') + eol
         self.signals.UpdateProgressBar.emit(40)
         self.signals.PrintInfo.emit("Алгоритм Роккио")
         log_main = "Расстояние до центроидов" + eol
@@ -206,9 +206,9 @@ class ClassificationCalculator(QThread):
         test_fnames = split_names[split:]
         for i in range(len(testSet)):
             neighbors, dist = getNeighbors(centroids, testSet[i], len(centroids))
-            log_main += test_fnames[i] + sep + "Результат:" + str(dist[0][0][-1]) + sep + eol 
+            log_main += test_fnames[i] + sep + "Принадлежит классу:" + str(dist[0][0][-1]) + sep + eol 
             log_main += sep.join([x[0][-1] for x in dist]) + eol + sep.join(
-                map(str, [x[1] for x in dist])) + eol
+                map(str, [x[1] for x in dist])).replace('.',',') + eol
             self.signals.PrintInfo.emit('> результат =' + repr(dist[0][0][-1]) + ', на самом деле=' + repr(testSet[i][-1]))
             predictions.append(dist[0][0][-1])
         accuracy = getAccuracy(testSet, predictions)
@@ -218,7 +218,7 @@ class ClassificationCalculator(QThread):
         log_tfidf = sep.join(uniq_words) + eol
         for i in range(len(combiSet)):
             row = combiSet[i]
-            log_tfidf += sep.join(map(str, row)) + sep + split_names[i] + eol
+            log_tfidf += sep.join(map(str, row)).replace('.',',') + sep + split_names[i] + eol
 
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -262,8 +262,9 @@ class ClassificationCalculator(QThread):
             result = getResponse(neighbors)
             log_neighbors += "Документ:;" + str(test_fnames[x]) + eol + "Сосед" + sep + "Расстояние" + eol
             for j in range(len(dist)):
-                log_neighbors += split_names[j] + sep + str(dist[j][1]) + eol
-            log_votes += "Документ:;" + str(test_fnames[x]) + eol + sep.join([str(x[0]) + sep + str(x[1]) for x in result]) + eol
+                log_neighbors += split_names[j] + sep + str(dist[j][1]).replace('.',',') + eol
+            log_votes += "Документ:;" + str(test_fnames[x]) + eol + "Принадлежит классу" + sep + result[0][0] + eol
+            log_votes += sep.join([str(x[0]) + sep + str(x[1]) for x in result]) + eol
             predictions.append(result[0][0])
             self.signals.PrintInfo.emit('> результат =' + repr(result[0][0]) + ', на самом деле=' + repr(testSet[x][-1]))
         accuracy = getAccuracy(testSet, predictions)
@@ -275,7 +276,7 @@ class ClassificationCalculator(QThread):
 
         for i in range(len(combiSet)):
             row = combiSet[i]
-            log_tfidf += sep.join(map(str, row)) + sep + split_names[i] + eol
+            log_tfidf += sep.join(map(str, row)).replace('.',',') + sep + split_names[i] + eol
         self.signals.UpdateProgressBar.emit(70)
         self.signals.PrintInfo.emit("Выходные файлы:")
 
@@ -297,7 +298,8 @@ class ClassificationCalculator(QThread):
         def listToCsv(lst, fpath):
             with open(fpath, 'w') as csv_file:
                 writer = csv.writer(csv_file, delimiter = ';', lineterminator = '\n')
-                writer.writerows(lst)
+                for el in lst:
+                    writer.writerow(localize_floats(el))
 
         ##############PARAMS###################
         output_dir = self.output_dir + 'llsf_out/'
@@ -323,10 +325,10 @@ class ClassificationCalculator(QThread):
         Fls = np.dot(np.transpose(B), np.transpose(np.linalg.pinv(A)))
 
         self.signals.UpdateProgressBar.emit(40)
-        class_table = [class_titles]
+        class_table = [class_titles + ["Принадлежит классу"]]
         for d in tfidf[split:]:
             d_class = np.round(np.dot(Fls, np.transpose(np.array(d))), 2).tolist()
-            class_table.append(d_class) 
+            class_table.append(d_class + [class_table[0][d_class.index(max(d_class))]])
         
         self.signals.UpdateProgressBar.emit(60)
 
@@ -342,13 +344,13 @@ class ClassificationCalculator(QThread):
         Fls.insert(0, uniq_words)
 
         test_files= split_names[split:]
-        test_files.insert(0, "")
+        test_files.insert(0, "Файл")
         class_table = addClassToTFIDF(class_table, test_files)
 
         log_tfidf = sep.join(uniq_words) + eol
         for i in range(len(tfidf)):
             row = tfidf[i]
-            log_tfidf += sep.join(map(str, row)) + sep + split_names[i] + eol
+            log_tfidf += sep.join(map(str, row)).replace('.',',') + sep + split_names[i] + eol
 
         self.signals.PrintInfo.emit('Выходные файлы:')
 
