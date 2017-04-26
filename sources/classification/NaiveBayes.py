@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import csv
 import re, os
+import numpy as np
 #import csv
 #import operator
 import pymorphy2
@@ -29,8 +30,10 @@ def dictListToCsv(dct, fpath):
     with open(fpath, 'w') as csv_file:
         writer = csv.writer(csv_file, delimiter = ';', lineterminator = '\n')
         for key, value in dct.items():
-            writer.writerow([key])
-            for el in value:
+           writer.writerow([key])
+           scores = [x[1] for x in value]
+           writer.writerow(["Принадлежит классу:" + value[np.argmax(scores)][0]])
+           for el in value:
                 writer.writerow(localize_floats(el))
 
 
