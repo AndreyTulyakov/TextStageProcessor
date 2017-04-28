@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
 
     def makeXiSquare(self):
         print("Рассчет критериев для выделения термов")
-        filename = getFilenameFromUserSelection("CSV Files (*.csv)")
+        filename = getFilenameFromUserSelection("CSV Files (*.csv)", input_dir)
         if(filename != None):
             dialogXiSquare = DialogXiSquare(filename, morph, configurations, self)
             self.hide()
@@ -135,7 +135,7 @@ class MainWindow(QMainWindow):
 
     def makeTextAnnotation(self):
         print("Аннотирование текста")
-        filename = getFilenameFromUserSelection("Text file (*.txt)")
+        filename = getFilenameFromUserSelection("Text file (*.txt)", input_dir)
         if (filename != None):
             dialogAnnotationMaker = DialogAnnotationMaker(filename, morph, configurations, self)
             self.hide()

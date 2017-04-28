@@ -9,8 +9,8 @@ from sources.TextPreprocessing import loadInputFilesFromList, tokenizeTextData, 
     calculateWordsFrequencyInTexts, fixRegisterInTexts, normalizeTexts, writeStringToFile
 
 
-def getFilenameFromUserSelection(file_types="Any Files (*.*)"):
-    filenames, _ = QFileDialog.getOpenFileName(None, "Выбрать файл", "", file_types, None)
+def getFilenameFromUserSelection(file_types="Any Files (*.*)", path = ''):
+    filenames, _ = QFileDialog.getOpenFileName(None, "Выбрать файл", path, file_types, None)
     if (len(filenames) > 0):
         return filenames
     else:

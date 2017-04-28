@@ -16,18 +16,36 @@ from sources.TextPreprocessing import *
 from sources.utils import Profiler
 
 
-def slog2(x):
-    if x <= 0:
+def right_div(a, b):
+    if a == 0 and b == 0:
+        return float('nan')
+    if a == 0 and b != 0:
         return 0
+    if b == 0:
+        return float('nan')
+    return a / b
+
+
+def slog2(x):
+    if x <= 0 or float(x) == float('nan'):
+        return float('nan')
+
     return math.log(x, 2)
+
+
+def a_log_b_div_c(a, b, c):
+    if a == 0 and b == 0:
+        return 0.0
+    return a * slog2(right_div(b, c))
+
 
 class XiCalculatorSignals(QObject):
     PrintInfo = pyqtSignal(str)
     Finished = pyqtSignal()
     UpdateProgressBar = pyqtSignal(int)
 
-class XiCalculator(QThread):
 
+class XiCalculator(QThread):
     def __init__(self, filename, output_dir, morph, configurations):
         super().__init__()
         self.filename = filename
@@ -38,7 +56,6 @@ class XiCalculator(QThread):
         self.categories = dict()
         self.signals = XiCalculatorSignals()
         self.need_preprocessing = True
-
 
     def printMatrixToCsv(self, filename, header1, header2, matrix):
         matrix_csv_str = ';'
@@ -56,16 +73,15 @@ class XiCalculator(QThread):
                 matrix_csv_str = matrix_csv_str + str(matrix[header1_index][header2_index]) + ';'
             matrix_csv_str = matrix_csv_str + '\n'
 
-        matrix_csv_str = matrix_csv_str.replace('nan','')
-        matrix_csv_str = matrix_csv_str.replace('.',',')
+        # matrix_csv_str = matrix_csv_str.replace('nan','')
+        matrix_csv_str = matrix_csv_str.replace('.', ',')
         writeStringToFile(matrix_csv_str, filename)
-
 
     def run(self):
         self.signals.UpdateProgressBar.emit(0)
         # Считываем файл с информацией о категории и файлах
         self.signals.PrintInfo.emit('Чтение файла с категориям...')
-        learn_groups = pd.read_csv(self.filename, index_col=None,na_values=['nan'], keep_default_na=False)
+        learn_groups = pd.read_csv(self.filename, index_col=None, na_values=['nan'], keep_default_na=False)
         self.input_path = self.filename[0:self.filename.rfind('/')]
 
         # Заполняем словарь КАТЕГОРИЯ:СПИСОК_ФАЙЛОВ
@@ -73,7 +89,7 @@ class XiCalculator(QThread):
             self.categories[category] = []
             for value in learn_groups[category]:
                 value = str(value).strip()
-                if(len(value) > 0):
+                if (len(value) > 0):
                     self.categories[category].append(value)
 
         self.signals.UpdateProgressBar.emit(10)
@@ -90,7 +106,7 @@ class XiCalculator(QThread):
 
         self.signals.UpdateProgressBar.emit(20)
 
-        if self.need_preprocessing :
+        if self.need_preprocessing:
             self.signals.PrintInfo.emit('Предварительная обработка текстов...')
             self.configurations['need_agresive_filtration'] = True
             self.texts = tokenizeTextData(self.texts, self.configurations)
@@ -112,7 +128,6 @@ class XiCalculator(QThread):
                 text.register_pass_centences = text.tokenized_sentences
                 self.texts, log_string = calculateWordsFrequencyInTexts(texts)
 
-
         self.signals.PrintInfo.emit('Рассчет списка уникальных слов для матриц...')
 
         # Рассчет списка уникальных слов для матриц
@@ -131,13 +146,13 @@ class XiCalculator(QThread):
         self.signals.PrintInfo.emit('Создание и заполнение MI, IG, CHI матриц...')
 
         # Создание матриц (Категория * Слова)
-        xi_a_matrix = np.zeros(shape=(categories_count, unique_words_count))
-        xi_b_matrix = np.zeros(shape=(categories_count, unique_words_count))
-        xi_c_matrix = np.zeros(shape=(categories_count, unique_words_count))
-        xi_d_matrix = np.zeros(shape=(categories_count, unique_words_count))
-        xi_mi_matrix = np.zeros(shape=(categories_count, unique_words_count))
-        xi_ig_matrix = np.zeros(shape=(categories_count, unique_words_count))
-        xi_chi_matrix = np.zeros(shape=(categories_count, unique_words_count))
+        a_matrix = np.zeros(shape=(categories_count, unique_words_count))
+        b_matrix = np.zeros(shape=(categories_count, unique_words_count))
+        c_matrix = np.zeros(shape=(categories_count, unique_words_count))
+        d_matrix = np.zeros(shape=(categories_count, unique_words_count))
+        mi_matrix = np.zeros(shape=(categories_count, unique_words_count))
+        ig_matrix = np.zeros(shape=(categories_count, unique_words_count))
+        chi_matrix = np.zeros(shape=(categories_count, unique_words_count))
 
         self.signals.UpdateProgressBar.emit(60)
 
@@ -150,32 +165,31 @@ class XiCalculator(QThread):
                 for text in self.texts:
                     target_category = text.category == category
                     contains_word = text.constainsWord(word)
-                    if(target_category and contains_word):
-                        xi_a_matrix[category_index][word_index] = xi_a_matrix[category_index][word_index] + 1
+                    if (target_category and contains_word):
+                        a_matrix[category_index][word_index] = a_matrix[category_index][word_index] + 1
                     if (not target_category and contains_word):
-                        xi_b_matrix[category_index][word_index] = xi_b_matrix[category_index][word_index] + 1
+                        b_matrix[category_index][word_index] = b_matrix[category_index][word_index] + 1
                     if (target_category and not contains_word):
-                        xi_c_matrix[category_index][word_index] = xi_c_matrix[category_index][word_index] + 1
+                        c_matrix[category_index][word_index] = c_matrix[category_index][word_index] + 1
                     if (not target_category and not contains_word):
-                        xi_d_matrix[category_index][word_index] = xi_d_matrix[category_index][word_index] + 1
+                        d_matrix[category_index][word_index] = d_matrix[category_index][word_index] + 1
 
         self.signals.UpdateProgressBar.emit(80)
 
         for category_index in range(categories_count):
             for word_index in range(unique_words_count):
-
                 u = len(self.texts)
-                a = xi_a_matrix[category_index][word_index]
-                b = xi_b_matrix[category_index][word_index]
-                c = xi_c_matrix[category_index][word_index]
-                d = xi_d_matrix[category_index][word_index]
+                a = a_matrix[category_index][word_index]
+                b = b_matrix[category_index][word_index]
+                c = c_matrix[category_index][word_index]
+                d = d_matrix[category_index][word_index]
+
+                word = all_unique_words_list[word_index]
+                category = categories_list[category_index]
 
                 # Формула-5 стр173
-                mi_value_down = ((a+c)*(a+b))
-                mi_value = 0
-                if(mi_value_down != 0):
-                    mi_value = (a * u) / ((a + c) * (a + b))
-                xi_mi_matrix[category_index][word_index] = slog2(mi_value)
+                mi_value = right_div(a * u, (a + c) * (a + b))
+                mi_matrix[category_index][word_index] = slog2(mi_value)
 
                 # Формула 7 стр174
                 ig_value_1d = (a + b) * (a + c)
@@ -183,29 +197,28 @@ class XiCalculator(QThread):
                 ig_value_3d = (a + b) * (b + d)
                 ig_value_4d = (c + d) * (b + d)
 
-                ig_value_1 = (a / u) * slog2((u * a) / ig_value_1d)
-                ig_value_2 = (c / u) * slog2((u * c) / ig_value_2d)
-                ig_value_3 = (b / u) * slog2((u * b) / ig_value_3d)
-                ig_value_4 = (d / u) * slog2((u * d) / ig_value_4d)
+                ig_value_1 = a_log_b_div_c(a / u, u * a, ig_value_1d)
+                ig_value_2 = a_log_b_div_c(c / u, u * c, ig_value_2d)
+                ig_value_3 = a_log_b_div_c(b / u, u * b, ig_value_3d)
+                ig_value_4 = a_log_b_div_c(d / u, u * d, ig_value_4d)
 
-                xi_ig_matrix[category_index][word_index] = ig_value_1 + ig_value_2 + ig_value_3 + ig_value_4
-
+                ig_matrix[category_index][word_index] = ig_value_1 + ig_value_2 + ig_value_3 + ig_value_4
 
                 # Формула-9 стр174
-                chi_value = u * (((a*d)-(c*b))**2)
-                chi_value = chi_value / ((a+c)*(b+d)*(a+b)*(c+d))
+                chi_value = u * (((a * d) - (c * b)) ** 2)
+                chi_value = right_div(chi_value, ((a + c) * (b + d) * (a + b) * (c + d)))
 
-                xi_chi_matrix[category_index][word_index] = chi_value
+                chi_matrix[category_index][word_index] = chi_value
 
         self.signals.UpdateProgressBar.emit(90)
         # Сохраняем рассчитанные матрицы в CSV файлы
-        self.printMatrixToCsv(self.output_dir + '/mi_matrix.csv', categories_list, all_unique_words_list, xi_mi_matrix)
+        self.printMatrixToCsv(self.output_dir + '/mi_matrix.csv', categories_list, all_unique_words_list, mi_matrix)
         self.signals.PrintInfo.emit('Матрица MI записана в файл:' + self.output_dir + '/mi_matrix.csv')
 
-        self.printMatrixToCsv(self.output_dir + '/ig_matrix.csv', categories_list, all_unique_words_list, xi_ig_matrix)
+        self.printMatrixToCsv(self.output_dir + '/ig_matrix.csv', categories_list, all_unique_words_list, ig_matrix)
         self.signals.PrintInfo.emit('Матрица IG записана в файл:' + self.output_dir + '/ig_matrix.csv')
 
-        self.printMatrixToCsv(self.output_dir + '/chi_matrix.csv', categories_list, all_unique_words_list, xi_chi_matrix)
+        self.printMatrixToCsv(self.output_dir + '/chi_matrix.csv', categories_list, all_unique_words_list, chi_matrix)
         self.signals.PrintInfo.emit('Матрица CHI записана в файл:' + self.output_dir + '/chi_matrix.csv')
 
         self.signals.UpdateProgressBar.emit(100)
@@ -213,10 +226,7 @@ class XiCalculator(QThread):
         self.signals.Finished.emit()
 
 
-
-
 class DialogXiSquare(QDialog):
-
     def __init__(self, filename, morph, configurations, parent):
         super().__init__()
         uic.loadUi('sources/XiSquare.ui', self)
@@ -265,4 +275,3 @@ class DialogXiSquare(QDialog):
         self.calculator.need_preprocessing = self.checkBoxEnablePreprocessing.isChecked()
         self.profiler.start()
         self.calculator.start()
-
