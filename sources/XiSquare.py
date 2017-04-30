@@ -77,6 +77,19 @@ class XiCalculator(QThread):
         matrix_csv_str = matrix_csv_str.replace('.', ',')
         writeStringToFile(matrix_csv_str, filename)
 
+    def printDictToCsv(self, header, data, filename):
+        matrix_csv_str = ''
+
+        for text in header:
+            matrix_csv_str = matrix_csv_str + str(text) + ';'
+        matrix_csv_str = matrix_csv_str + '\n'
+
+        for key, value in data.items():
+            matrix_csv_str = matrix_csv_str + str(key) + ';' + str(value) + '\n'
+
+        matrix_csv_str = matrix_csv_str.replace('.', ',')
+        writeStringToFile(matrix_csv_str, filename)
+
     def run(self):
         self.signals.UpdateProgressBar.emit(0)
         # Считываем файл с информацией о категории и файлах
@@ -140,6 +153,25 @@ class XiCalculator(QThread):
         unique_words_count = len(all_unique_words_list)
         categories_list = list(learn_groups)
         categories_count = len(categories_list)
+
+        self.signals.PrintInfo.emit('Рассчет DF...')
+        df_dict = dict()
+        for word in all_unique_words_list:
+            df_dict[word] = 0
+            for text in self.texts:
+                pre_df = df_dict[word]
+                for sentence in text.register_pass_centences:
+                    for current_text_word in sentence:
+                        if current_text_word == word:
+                            df_dict[word] += 1
+                            break
+                    if df_dict[word] > pre_df:
+                        break
+
+
+
+
+
 
         self.signals.UpdateProgressBar.emit(55)
 
@@ -211,6 +243,11 @@ class XiCalculator(QThread):
                 chi_matrix[category_index][word_index] = chi_value
 
         self.signals.UpdateProgressBar.emit(90)
+
+        self.printDictToCsv(('Слово', 'DF (Кол-во документов в которых встречается слово)'), df_dict, self.output_dir + '/df_table.csv')
+        self.signals.PrintInfo.emit('Таблица DF записана в файл:' + self.output_dir + '/df_table.csv')
+
+
         # Сохраняем рассчитанные матрицы в CSV файлы
         self.printMatrixToCsv(self.output_dir + '/mi_matrix.csv', categories_list, all_unique_words_list, mi_matrix)
         self.signals.PrintInfo.emit('Матрица MI записана в файл:' + self.output_dir + '/mi_matrix.csv')
