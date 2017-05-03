@@ -31,7 +31,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 from sources.utils import Profiler
-from stage_text_processor import stop_words_filename
+from stage_text_processor import stop_words_filename, output_dir
 
 matplotlib.use('Qt5Agg')
 from matplotlib.figure import Figure
@@ -180,6 +180,10 @@ class LsaCalculator(QThread):
             self.signals.PrintInfo.emit('Приведение регистра...')
             self.texts, log_string = fixRegisterInTexts(self.texts, self.morph)
             self.signals.UpdateProgressBar.emit(30)
+
+            #self.signals.PrintInfo.emit('Рассчет Apriori...')
+            #makeAprioriForTexts(self.texts, output_dir + 'apriori.csv')
+            self.signals.PrintInfo.emit('...')
             for text in self.texts:
                 input_texts.append(self.getCompiledFromSentencesText(text.register_pass_centences))
         else:

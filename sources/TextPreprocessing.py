@@ -8,7 +8,7 @@ import pymorphy2
 from pymorphy2 import tokenizers 
 
 from sources.TextData import TextData, readSentencesListFromInputText
-
+from sources.apriori import *
 
 def readConfigurationFile(filename):
     with codecs.open(filename, 'r', "utf-8") as text_file:
