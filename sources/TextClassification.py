@@ -21,7 +21,7 @@ class DialogConfigClassification(QDialog):
         super().__init__()
         uic.loadUi('sources/DialogConfigClassification.ui', self)
 
-        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint;
+        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint
         self.setWindowFlags(flags)
 
         self.morph = morph

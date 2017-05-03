@@ -29,7 +29,7 @@ class DialogConfigClasterization(QDialog):
         super().__init__()
         uic.loadUi('sources/DialogConfigClasterization.ui', self)
 
-        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint;
+        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint
         self.setWindowFlags(flags)
 
         self.filenames = filenames

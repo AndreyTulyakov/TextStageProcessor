@@ -212,7 +212,7 @@ class ClasterizationCalculator(QThread):
         self.clusterCount = value
 
     def run(self):
-        self.signals.UpdateProgressBar.emit(0)
+        self.signals.UpdateProgressBar.emit(1)
 
         if self.first_call:
             if self.need_preprocessing:
@@ -226,7 +226,6 @@ class ClasterizationCalculator(QThread):
                 self.signals.PrintInfo.emit("Препроцессинг - использование предыдущих результатов.")
             else:
                 self.signals.PrintInfo.emit("Препроцессинг - пропускается")
-
 
         if(self.method == '1'):
             self.makeHierarhyClasterization()
@@ -247,7 +246,6 @@ class ClasterizationCalculator(QThread):
         self.signals.Finished.emit()
 
     def makeHierarhyClasterization(self):
-        self.signals.UpdateProgressBar.emit(0)
         self.signals.PrintInfo.emit('Иерархическая кластеризация' + '\n')
 
         texts = self.texts
@@ -264,12 +262,16 @@ class ClasterizationCalculator(QThread):
             for key, value in text.sorted_word_frequency:
                 t_all[key] = t_all.get(key, 0) + 1
 
+        self.signals.UpdateProgressBar.emit(20)
+
         # Найти df
         df_string = ''
         df_string = df_string + "Слово;Используется в документах\n"
         for key, value in t_all.items():
             df_string = df_string + key + ';' + str(value).replace('.',',') + '\n'
         writeStringToFile(df_string.replace('\n ', '\n'), output_dir + 'df.csv')
+
+        self.signals.UpdateProgressBar.emit(25)
 
         W = [[0 for x in range(len(t_all))] for y in range(len(texts))]
         print('len(texts)=' + str(len(texts)))
@@ -291,7 +293,7 @@ class ClasterizationCalculator(QThread):
                 j += 1
             W_norm[i] = math.sqrt(W_norm[i])
             i += 1
-
+        self.signals.UpdateProgressBar.emit(30)
         for i in range(len(texts)):
             for j in range(len(t_all)):
                 W[i][j] /= W_norm[i]
@@ -309,7 +311,7 @@ class ClasterizationCalculator(QThread):
             W_string += '\n'
             i += 1
         writeStringToFile(W_string.replace('\n ', '\n'), output_dir + 'W.csv')
-
+        self.signals.UpdateProgressBar.emit(50)
         S = GetS(W)
         sim_string = ''
         for name in self.filenames:
@@ -321,7 +323,7 @@ class ClasterizationCalculator(QThread):
                 sim_string = sim_string + ';' + str(S[i][j]).replace('.',',')
             sim_string += '\n'
         writeStringToFile(sim_string.replace('\n ', '\n'), output_dir + 'sim.csv')
-
+        self.signals.UpdateProgressBar.emit(60)
         n = len(texts)
         m = len(texts)
         S = [[0 for x in range(n)] for y in range(m)]
@@ -345,7 +347,7 @@ class ClasterizationCalculator(QThread):
                 dist_string = dist_string + ';' + str(round(S[i][j], 2)).replace('.',',')
             dist_string += '\n'
         writeStringToFile(dist_string.replace('\n ', '\n'), output_dir + 'dist.csv')
-
+        self.signals.UpdateProgressBar.emit(70)
         doc2cluster = [0 for x in range(len(texts))]
         for i in range(len(texts)):
             doc2cluster[i] = i
@@ -403,9 +405,10 @@ class ClasterizationCalculator(QThread):
                     new_sim[j][union[i]] = 0.5 * (S[j][union[0]]) + 0.5 * (S[j][union[1]])
 
             S = new_sim
-
+        self.signals.UpdateProgressBar.emit(85)
         writeStringToFile(result.replace('\n ', '\n'), output_dir + 'stepsDist.csv')
         writeStringToFile(clustersString.replace('\n ', '\n'), output_dir + 'clusters.csv')
+        self.signals.UpdateProgressBar.emit(90)
         # Find unions with Sim
         F = [1 for x in range(len(texts))]
         result = ''
@@ -450,7 +453,7 @@ class ClasterizationCalculator(QThread):
         self.signals.UpdateProgressBar.emit(100)
 
     def makeClasterizationKMiddle(self,ClusterCount):
-        self.signals.UpdateProgressBar.emit(0)
+
         self.signals.PrintInfo.emit('Кластеризация к-средних' + '\n')
 
         texts = self.texts
@@ -728,7 +731,6 @@ class ClasterizationCalculator(QThread):
         self.signals.PrintInfo.emit('Кластеризация к-средних завершена' + '\n')
 
     def makeClasterizationSMiddle(self, ClusterCount, m, eps):
-        self.signals.UpdateProgressBar.emit(0)
         self.signals.PrintInfo.emit('Нечёткий алгоритм с-средних' + '\n')
 
         texts = self.texts
@@ -934,8 +936,6 @@ class ClasterizationCalculator(QThread):
 
     def makeDBSCANClasterization(self,eps, minPts):
         D = []
-
-        self.signals.UpdateProgressBar.emit(0)
         self.signals.PrintInfo.emit('Алгоритм DBSCAN' + '\n')
 
         texts = self.texts
@@ -995,6 +995,8 @@ class ClasterizationCalculator(QThread):
             # print('wnorm = ' + str(W_norm[i]))
             i += 1
 
+        self.signals.UpdateProgressBar.emit(25)
+
         for i in range(len(texts)):
             for j in range(len(t_all)):
                 W[i][j] /= W_norm[i]
@@ -1013,7 +1015,7 @@ class ClasterizationCalculator(QThread):
             W_string += '\n'
             i += 1
         writeStringToFile(W_string.replace('\n ', '\n'), output_dir + 'W.csv')
-        self.signals.UpdateProgressBar.emit(25)
+        self.signals.UpdateProgressBar.emit(35)
 
         pt = ()
         stepsString=''
@@ -1023,9 +1025,11 @@ class ClasterizationCalculator(QThread):
         # they are set to 0.3 and 3.
         stepsString += 'Steps\n'
         stepsString+= 'eps =;' + str(eps).replace('.',',') + '\nminPts=;' +str(minPts).replace('.',',') + '\n\n\n\n'
+        self.signals.UpdateProgressBar.emit(45)
         myDBSCAN = DBSCAN(D, eps, minPts)
         res = ''
         results= myDBSCAN.run()
+        self.signals.UpdateProgressBar.emit(75)
         clusters = results[0]
         noise = results[1]
         stepsString+=results[2]
@@ -1054,6 +1058,7 @@ class ClasterizationCalculator(QThread):
             # id=id+1
         # Manually printing
         # print('Clusters')
+        self.signals.UpdateProgressBar.emit(90)
         clustersString += 'Clusters\n'
         for cluster in clusters:
             clustersString+= 'C' + str(cluster.cid+1) + ':;'
@@ -1067,6 +1072,7 @@ class ClasterizationCalculator(QThread):
         writeStringToFile(clustersString.replace('\n ', '\n'), output_dir + 'Clusters.csv')
         stepsString+='\n\n' + clustersString
         writeStringToFile(stepsString.replace('\n ', '\n'), output_dir + 'Steps.csv')
+        self.signals.UpdateProgressBar.emit(100)
 
 class Cluster(object):
     """ A Cluster is just a wrapper for a list of points.

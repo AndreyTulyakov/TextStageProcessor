@@ -169,12 +169,7 @@ class XiCalculator(QThread):
                         break
 
 
-
-
-
-
         self.signals.UpdateProgressBar.emit(55)
-
         self.signals.PrintInfo.emit('Создание и заполнение MI, IG, CHI матриц...')
 
         # Создание матриц (Категория * Слова)
@@ -246,7 +241,6 @@ class XiCalculator(QThread):
 
         self.printDictToCsv(('Слово', 'DF (Кол-во документов в которых встречается слово)'), df_dict, self.output_dir + '/df_table.csv')
         self.signals.PrintInfo.emit('Таблица DF записана в файл:' + self.output_dir + '/df_table.csv')
-
 
         # Сохраняем рассчитанные матрицы в CSV файлы
         self.printMatrixToCsv(self.output_dir + '/mi_matrix.csv', categories_list, all_unique_words_list, mi_matrix)
