@@ -12,11 +12,7 @@ from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit
 from PyQt5 import QtCore, QtGui, uic
 from sources.TextPreprocessing import *
 from numpy.linalg import svd as singular_value_decomposition
-import matplotlib
-
 from sources.utils import Profiler
-
-matplotlib.use('Qt5Agg')
 
 
 class AnnotationMakerCalculatorSignals(QObject):
@@ -61,48 +57,53 @@ class AnnotationMakerCalculator(QThread):
 
         # Удаление стоп-слов
         self.configurations["minimal_word_size"] = 3
-        self.text.no_stop_words_sentences = removeStopWordsFromSentences(self.text.tokenized_sentences, self.morph,
-                                                                         self.configurations)
-        np.set_printoptions(suppress=False)
+        self.text.no_stop_words_sentences = removeStopWordsFromSentences(self.text.tokenized_sentences, self.morph, self.configurations)
 
-        self.signals.UpdateProgressBar.emit(20)
+        if len(self.text.no_stop_words_sentences) > 0:
 
-        # Нормализация
-        texts, log_string = normalizeTexts([self.text], self.morph)
-        self.text = texts[0]
+            np.set_printoptions(suppress=False)
 
-        # Приведение регистра
-        texts, log_string = fixRegisterInTexts(texts, self.morph)
-        self.text = texts[0]
+            self.signals.UpdateProgressBar.emit(20)
 
-        self.signals.UpdateProgressBar.emit(30)
+            # Нормализация
+            texts, log_string = normalizeTexts([self.text], self.morph)
+            self.text = texts[0]
 
-        # Расчет частотной таблицы слов
-        texts, log_string = calculateWordsFrequencyInTexts(texts)
-        self.text = texts[0]
+            # Приведение регистра
+            texts, log_string = fixRegisterInTexts(texts, self.morph)
+            self.text = texts[0]
 
-        self.signals.UpdateProgressBar.emit(40)
+            self.signals.UpdateProgressBar.emit(30)
 
-        matrix, all_word_keys = self.CreateLSAMatrixForSummarization(self.text)
-        matrix = self._compute_term_frequency(matrix)
+            # Расчет частотной таблицы слов
+            texts, log_string = calculateWordsFrequencyInTexts(texts)
+            self.text = texts[0]
 
-        self.signals.UpdateProgressBar.emit(50)
+            self.signals.UpdateProgressBar.emit(40)
 
-        u, sigma, v = singular_value_decomposition(matrix, full_matrices=False)
-        u = u + np.abs(np.min(u))
-        v = v + np.abs(np.min(v))
-        u, sigma, v = self.cutSingularValue(u, sigma, v)
+            matrix, all_word_keys = self.CreateLSAMatrixForSummarization(self.text)
+            matrix = self._compute_term_frequency(matrix)
 
-        self.signals.UpdateProgressBar.emit(70)
+            self.signals.UpdateProgressBar.emit(50)
 
-        if(self.calculation_method == AnnotationMakerCalculator.METHOD_BY_SENTENCE_VALUE):
-            self.calculateBySentenceValues(v, self.result_sentence_count)
+            u, sigma, v = singular_value_decomposition(matrix, full_matrices=False)
+            u = u + np.abs(np.min(u))
+            v = v + np.abs(np.min(v))
+            u, sigma, v = self.cutSingularValue(u, sigma, v)
 
-        if (self.calculation_method == AnnotationMakerCalculator.METHOD_BY_WORDS_SUM):
-            self.calculateByWordsValues(all_word_keys, u, self.result_sentence_count)
+            self.signals.UpdateProgressBar.emit(70)
+
+            if(self.calculation_method == AnnotationMakerCalculator.METHOD_BY_SENTENCE_VALUE):
+                self.calculateBySentenceValues(v, self.result_sentence_count)
+
+            if (self.calculation_method == AnnotationMakerCalculator.METHOD_BY_WORDS_SUM):
+                self.calculateByWordsValues(all_word_keys, u, self.result_sentence_count)
+            self.signals.PrintInfo.emit('\nУспешно завершено.')
+        else:
+            self.signals.PrintInfo.emit('\nНедостаточно входных данных и/или много неликвидных данных.')
 
         self.signals.UpdateProgressBar.emit(100)
-        self.signals.PrintInfo.emit('\nУспешно завершено.')
+
         self.signals.Finished.emit()
 
 
@@ -161,7 +162,6 @@ class AnnotationMakerCalculator(QThread):
 
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
-        print('lalala:', self.filename[self.filename.rfind('/'):])
         filename = self.output_dir + 'ByWordsValues_' + self.filename[1+self.filename.rfind('/'):]
         self.signals.PrintInfo.emit('Сохранено в файл:' + filename)
         writeStringToFile(result_string, filename)

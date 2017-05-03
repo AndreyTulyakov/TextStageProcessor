@@ -43,7 +43,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from PyQt5.QtCore import QThread
 
-from sources.TextData import TextData
+from sources.TextData import TextData, readFullTextInputText
 from sources.TextPreprocessing import *
 
 Ui_DialogPlotter, QDialog = loadUiType('sources/DialogLSAPlot.ui')
@@ -184,8 +184,7 @@ class LsaCalculator(QThread):
                 input_texts.append(self.getCompiledFromSentencesText(text.register_pass_centences))
         else:
             for filename in self.filenames:
-                with open(filename, 'r', encoding='utf-8') as content_file:
-                    input_texts.append(content_file.read())
+                input_texts.append(readFullTextInputText(filename))
 
         self.signals.UpdateProgressBar.emit(40)
 

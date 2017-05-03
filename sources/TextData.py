@@ -5,6 +5,47 @@
 import codecs
 
 
+def readFullTextInputText(filename):
+    data = None
+    encode_fail = False
+    encodings = ['utf-8', 'windows-1251']
+    for encoding in encodings:
+        try:
+            with codecs.open(filename, 'r', encoding) as text_file:
+                data = text_file.read()
+        except UnicodeDecodeError:
+            print('File:%s - Got unicode error with %s , trying different encoding' % (filename, encoding))
+            encode_fail = True
+        else:
+            if encode_fail:
+                print('Opening the file [%s] with encoding:  %s ' % (filename, encoding))
+            break
+    return data
+
+
+def readSentencesListFromInputText(filename):
+    sentences = []
+    encode_fail = False
+    encodings = ['utf-8', 'windows-1251']
+    for encoding in encodings:
+        try:
+            with codecs.open(filename, 'r', encoding) as text_file:
+                data = text_file.read().replace('\n', ' ')
+                sentences = data.split('.')
+                for i in range(len(sentences)):
+                    sentences[i] = sentences[i].strip().replace(',', '')
+        except UnicodeDecodeError:
+            print('File:%s - Got unicode error with %s , trying different encoding' % (filename, encoding))
+            encode_fail = True
+        else:
+            if encode_fail:
+                print('Opening the file [%s] with encoding:  %s ' % (filename, encoding))
+            break
+    return sentences
+
+
+
+
 class TextData:
     def __init__(self, filename):
         # Имя файла с текстом
@@ -40,13 +81,7 @@ class TextData:
         full_filename = self.filename
         if(subdir != None):
             full_filename = subdir + '/' + self.filename
-
-        with codecs.open(full_filename, 'r', "utf-8") as text_file:
-            data = text_file.read().replace('\n', ' ')
-            sentences = data.split('.')
-            for i in range(len(sentences)):
-                sentences[i] = sentences[i].strip().replace(',', '')
-            self.original_sentences = sentences
+        self.original_sentences = readSentencesListFromInputText(full_filename)
 
     def constainsWord(self, test_word):
         for sentense in self.register_pass_centences:

@@ -24,22 +24,6 @@ person_ids = dict()
 essences = dict()
 actions = dict()
 
-def readSentencesFromInputText(filename):
-    with open(filename, 'r') as text_file:
-
-        # Читаем весь текст из файла.
-        data=text_file.read().replace('\n', '')
-
-        # Разделяем на предложения
-        sentences = data.split('.')
-
-        # Удаляем пробелы в начале и конце строки
-        for i in range(len(sentences)):
-            sentences[i] = sentences[i].strip().replace(',', '')
-
-        return sentences
-    return None
-
 
 def en2ruPosName(enPosName):
     if(enPosName == None):

@@ -7,7 +7,7 @@ import math
 import pymorphy2
 from pymorphy2 import tokenizers 
 
-from sources.TextData import TextData
+from sources.TextData import TextData, readSentencesListFromInputText
 
 
 def readConfigurationFile(filename):
@@ -23,25 +23,19 @@ def readConfigurationFile(filename):
                     result[keyvalue[0]]=keyvalue[1]
         return result
 
-
-
 # Читает текст из файла и возвращает список предложений (без запятых)
 def readSentencesFromInputText(filename, input_dir_name):
     full_path = filename
     if(input_dir_name != None):
         full_path = input_dir_name + '/' + filename
 
-    with codecs.open(full_path, 'r', "utf-8") as text_file:
-        data=text_file.read().replace('\n', '.')
-        sentences = data.split('.')
-        for i in range(len(sentences)):
-            sentences[i] = sentences[i].strip().replace(',', '')
-        result = []
-        for sentence in sentences:
-            if(len(sentence)>0):
-                result.append(sentence)
-        return result
-    return None
+    result = []
+    sentences = readSentencesListFromInputText(full_path)
+    for sentence in sentences:
+        if(len(sentence)>0):
+            result.append(sentence)
+    return result
+
 
 # Загружает из директории input_dir_name все txt файлы в список объектов TextData
 def loadInputFilesFromList(input_files_list):
