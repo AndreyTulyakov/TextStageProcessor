@@ -86,6 +86,13 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxNeedApriori">
+          <property name="text">
+           <string>Расчет Apriori</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>

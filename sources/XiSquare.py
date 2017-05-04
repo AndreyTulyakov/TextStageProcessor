@@ -13,7 +13,9 @@ from PyQt5 import QtCore, QtGui, uic
 from PyQt5.QtCore import QThread
 
 from sources.TextPreprocessing import *
+from sources.apriori_maker import makeAprioriForTexts
 from sources.utils import Profiler
+from stage_text_processor import output_dir
 
 
 def right_div(a, b):
@@ -56,6 +58,9 @@ class XiCalculator(QThread):
         self.categories = dict()
         self.signals = XiCalculatorSignals()
         self.need_preprocessing = True
+        self.need_apriori = False
+        self.min_support = 0.01
+        self.min_conf = 0.01
 
     def printMatrixToCsv(self, filename, header1, header2, matrix):
         matrix_csv_str = ';'
@@ -140,6 +145,10 @@ class XiCalculator(QThread):
                 text.normalized_sentences = text.tokenized_sentences
                 text.register_pass_centences = text.tokenized_sentences
                 self.texts, log_string = calculateWordsFrequencyInTexts(texts)
+
+        if self.need_apriori:
+            self.signals.PrintInfo.emit('Рассчет Apriori...')
+            makeAprioriForTexts(self.texts, output_dir, self.min_support, self.min_conf)
 
         self.signals.PrintInfo.emit('Рассчет списка уникальных слов для матриц...')
 
@@ -281,10 +290,19 @@ class DialogXiSquare(QDialog):
         output_dir = self.configurations.get("output_files_directory", "output_files")
         self.progressBar.setValue(0)
 
+        self.checkBoxNeedApriori.toggled.connect(self.onActivateApriori)
+        self.groupBoxApriori.setVisible(False)
+
         self.calculator = XiCalculator(filename, output_dir, morph, self.configurations)
         self.calculator.signals.Finished.connect(self.onCalculationFinish)
         self.calculator.signals.UpdateProgressBar.connect(self.onUpdateProgressBar)
         self.calculator.signals.PrintInfo.connect(self.onTextLogAdd)
+
+    def onActivateApriori(self):
+        if self.checkBoxNeedApriori.isChecked():
+            self.groupBoxApriori.setVisible(True)
+        else:
+            self.groupBoxApriori.setVisible(False)
 
     def onTextLogAdd(self, QString):
         self.textEdit.append(QString + '\n')
@@ -304,5 +322,8 @@ class DialogXiSquare(QDialog):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.textEdit.setText("")
         self.calculator.need_preprocessing = self.checkBoxEnablePreprocessing.isChecked()
+        self.calculator.need_apriori = self.checkBoxNeedApriori.isChecked()
+        self.calculator.min_support = self.spinBoxMinSupport.value()
+        self.calculator.min_conf = self.spinBoxMinConf.value()
         self.profiler.start()
         self.calculator.start()

@@ -8,6 +8,8 @@ from itertools import combinations
 from pandas import DataFrame
 import pandas
 
+from sources.TextPreprocessing import writeStringToFile
+from sources.apriori import Apriori
 
 def join_all_texts_to_sentences_list(texts):
     sentenses = []
@@ -31,7 +33,7 @@ def save_2d_list_to_dataframe(data):
 
 
 # Apriori
-def apriori(trans, support=0.01, minlen=2):
+def apriori_alg(trans, support=0.01, minlen=2):
     print('appr_1')
     dna = trans.unstack().dropna()
     print('appr_2')
@@ -53,9 +55,17 @@ def apriori(trans, support=0.01, minlen=2):
     return results
 
 # Выполняем Apriori от и до
-def makeAprioriForTexts(texts, output_filename):
+def makeAprioriForTexts(texts, output_dir, minsup = 0.01, minconf = 0.01):
     sentences = join_all_texts_to_sentences_list(texts)
     sentences = sort_all_words_in_sentences(sentences)
-    df = save_2d_list_to_dataframe(sentences)
-    result = apriori(df)
-    result.to_csv(output_filename, sep=";")
+
+    ap = Apriori(sentences, minsup, minconf)
+    ap.run()
+
+    frequent_itemset = ap.save_to_csv_string_frequent_itemset()
+    frequent_itemset = frequent_itemset.replace('.', ',')
+    writeStringToFile(frequent_itemset, output_dir + 'apriori_frequent_itemset.csv')
+
+    rules_string = ap.save_to_csv_string_rules()
+    rules_string = rules_string.replace('.', ',')
+    writeStringToFile(rules_string, output_dir + 'apriori_rules.csv')

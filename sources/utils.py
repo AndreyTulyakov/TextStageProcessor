@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import codecs
 import os
 import shutil
 import time
@@ -8,6 +9,18 @@ from PyQt5.QtWidgets import QFileDialog
 from sources.TextPreprocessing import loadInputFilesFromList, tokenizeTextData, removeStopWordsInTexts, \
     calculateWordsFrequencyInTexts, fixRegisterInTexts, normalizeTexts, writeStringToFile
 
+def readConfigurationFile(filename):
+    with codecs.open(filename, 'r', "utf-8") as text_file:
+        data = text_file.read()
+        lines = data.split("\n")
+        result = dict()
+        for line in lines:
+            line = line.strip()
+            if(line.startswith("#") == False):
+                keyvalue = line.split("=")
+                if(len(keyvalue) == 2):
+                    result[keyvalue[0]]=keyvalue[1]
+        return result
 
 def getFilenameFromUserSelection(file_types="Any Files (*.*)", path = ''):
     filenames, _ = QFileDialog.getOpenFileName(None, "Выбрать файл", path, file_types, None)

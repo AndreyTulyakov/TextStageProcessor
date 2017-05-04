@@ -4,13 +4,7 @@
 import sys
 import pymorphy2
 from matplotlib import rc
-from PyQt5.QtWidgets import QMainWindow, QSizePolicy, QSpacerItem, QFileDialog, QPushButton
-from sources.XiSquare import *
-from sources.TextClasterization import *
-from sources.TextClassification import *
-from sources.TextLSA import *
-from sources.TextDecomposeAndRuleApply import *
-from sources.AnnotationMaker import *
+
 from sources.utils import *
 
 
@@ -20,11 +14,20 @@ if(os.name != 'posix'):
             'weight': 'normal'}
     rc('font', **font)
 
-
 configurations = readConfigurationFile("configuration.cfg")
 input_dir = configurations.get("input_files_directory", "input_files") + "/"
 output_dir = configurations.get("output_files_directory", "output_files") + "/"
 stop_words_filename = configurations.get("stop_words_file", "sources/russian_stop_words.txt")
+
+
+from PyQt5.QtWidgets import QMainWindow, QSizePolicy, QSpacerItem, QFileDialog, QPushButton
+from sources.XiSquare import *
+from sources.TextClasterization import *
+from sources.TextClassification import *
+from sources.TextLSA import *
+from sources.TextDecomposeAndRuleApply import *
+from sources.AnnotationMaker import *
+
 
 if not os.path.exists(input_dir):
     os.makedirs(input_dir)

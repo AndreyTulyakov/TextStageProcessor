@@ -37,6 +37,7 @@ matplotlib.use('Qt5Agg')
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 
+from sources.apriori_maker import *
 
 import matplotlib.pyplot as plt
 
@@ -181,8 +182,10 @@ class LsaCalculator(QThread):
             self.texts, log_string = fixRegisterInTexts(self.texts, self.morph)
             self.signals.UpdateProgressBar.emit(30)
 
-            #self.signals.PrintInfo.emit('Рассчет Apriori...')
-            #makeAprioriForTexts(self.texts, output_dir + 'apriori.csv')
+            if self.configurations.get("need_apriori", False):
+                self.signals.PrintInfo.emit('Рассчет Apriori...')
+                makeAprioriForTexts(self.texts, output_dir)
+
             self.signals.PrintInfo.emit('...')
             for text in self.texts:
                 input_texts.append(self.getCompiledFromSentencesText(text.register_pass_centences))
@@ -192,53 +195,56 @@ class LsaCalculator(QThread):
 
         self.signals.UpdateProgressBar.emit(40)
 
-        # Добавим русские стоп-слова
-        russian_stop_words = []
-        with open(stop_words_filename) as f:
-            russian_stop_words = f.readlines()
-        russian_stop_words = [x.strip() for x in russian_stop_words]
+        if len(self.texts) < 3:
+            self.signals.PrintInfo.emit('Недостаточно документов для корректного анализа!')
+        else:
+            # Добавим русские стоп-слова
+            russian_stop_words = []
+            with open(stop_words_filename) as f:
+                russian_stop_words = f.readlines()
+            russian_stop_words = [x.strip() for x in russian_stop_words]
 
-        self.signals.UpdateProgressBar.emit(45)
+            self.signals.UpdateProgressBar.emit(45)
 
-        vectorizer = CountVectorizer(min_df=1, stop_words=russian_stop_words)
-        dtm = vectorizer.fit_transform(input_texts)
+            vectorizer = CountVectorizer(min_df=1, stop_words=russian_stop_words)
+            dtm = vectorizer.fit_transform(input_texts)
 
-        pre_svd_matrix = pd.DataFrame(dtm.toarray(), index=self.short_filenames, columns=vectorizer.get_feature_names()).head(10)
-        pre_svd_matrix_filename = self.output_dir + 'pre_svd_matrix.csv'
-        pre_svd_matrix.to_csv(pre_svd_matrix_filename, sep=";", encoding='utf-8')
-        self.signals.PrintInfo.emit('Файл с матрицей [слова * документы] для ЛСА:' + pre_svd_matrix_filename)
+            pre_svd_matrix = pd.DataFrame(dtm.toarray(), index=self.short_filenames, columns=vectorizer.get_feature_names()).head(10)
+            pre_svd_matrix_filename = self.output_dir + 'pre_svd_matrix.csv'
+            pre_svd_matrix.to_csv(pre_svd_matrix_filename, sep=";", encoding='utf-8')
+            self.signals.PrintInfo.emit('Файл с матрицей [слова * документы] для ЛСА:' + pre_svd_matrix_filename)
 
-        self.signals.PrintInfo.emit('Уникальных слов:' + str(len(vectorizer.get_feature_names())))
+            self.signals.PrintInfo.emit('Уникальных слов:' + str(len(vectorizer.get_feature_names())))
 
-        self.signals.UpdateProgressBar.emit(50)
+            self.signals.UpdateProgressBar.emit(50)
 
-        # Производим ЛСА и сжимаем пространство до 2-мерного
-        lsa = TruncatedSVD(2, algorithm='arpack')
-        dtm_lsa = lsa.fit_transform(dtm)
-        dtm_lsa = Normalizer(copy=False).fit_transform(dtm_lsa)
-        self.signals.UpdateProgressBar.emit(70)
+            # Производим ЛСА и сжимаем пространство до 2-мерного
+            lsa = TruncatedSVD(2, algorithm='arpack')
+            dtm_lsa = lsa.fit_transform(dtm)
+            dtm_lsa = Normalizer(copy=False).fit_transform(dtm_lsa)
+            self.signals.UpdateProgressBar.emit(70)
 
-        xs = [w[0] for w in dtm_lsa]
-        ys = [w[1] for w in dtm_lsa]
+            xs = [w[0] for w in dtm_lsa]
+            ys = [w[1] for w in dtm_lsa]
 
-        columns = ['Filename', 'X-component', 'Y-component']
-        docs_weight_df = pd.DataFrame(columns=columns, index=None)
-        docs_weight_df[columns[0]] = self.short_filenames
-        docs_weight_df[columns[1]] = xs
-        docs_weight_df[columns[2]] = ys
-        documents_weight_filename = self.output_dir + 'documents_weight.csv'
-        docs_weight_df.to_csv(documents_weight_filename, sep=";", encoding='utf-8')
-        self.signals.PrintInfo.emit('Файл с весами документов:' + documents_weight_filename)
+            columns = ['Filename', 'X-component', 'Y-component']
+            docs_weight_df = pd.DataFrame(columns=columns, index=None)
+            docs_weight_df[columns[0]] = self.short_filenames
+            docs_weight_df[columns[1]] = xs
+            docs_weight_df[columns[2]] = ys
+            documents_weight_filename = self.output_dir + 'documents_weight.csv'
+            docs_weight_df.to_csv(documents_weight_filename, sep=";", encoding='utf-8')
+            self.signals.PrintInfo.emit('Файл с весами документов:' + documents_weight_filename)
 
-        self.signals.UpdateProgressBar.emit(90)
+            self.signals.UpdateProgressBar.emit(90)
 
-        # Вычислим таблицу соответствия докуметов
-        similarity = np.asarray(numpy.asmatrix(dtm_lsa) * numpy.asmatrix(dtm_lsa).T)
-        relationsTable = pd.DataFrame(similarity, index=self.short_filenames, columns=self.short_filenames).head(len(self.short_filenames))
+            # Вычислим таблицу соответствия докуметов
+            similarity = np.asarray(numpy.asmatrix(dtm_lsa) * numpy.asmatrix(dtm_lsa).T)
+            relationsTable = pd.DataFrame(similarity, index=self.short_filenames, columns=self.short_filenames).head(len(self.short_filenames))
 
-        relation_table_filename = self.output_dir + 'document_relation_table.csv'
-        relationsTable.to_csv(relation_table_filename, sep=";", encoding='utf-8')
-        self.signals.PrintInfo.emit('Файл с таблицей отношений документов:' + relation_table_filename)
+            relation_table_filename = self.output_dir + 'document_relation_table.csv'
+            relationsTable.to_csv(relation_table_filename, sep=";", encoding='utf-8')
+            self.signals.PrintInfo.emit('Файл с таблицей отношений документов:' + relation_table_filename)
 
         self.signals.PrintInfo.emit('Рассчеты закончены!')
         self.signals.UpdateProgressBar.emit(100)
@@ -317,6 +323,7 @@ class DialogConfigLSA(QDialog):
         self.configurations['need_full_preprocessing'] = self.radio_preprocessing_full.isChecked()
         self.configurations["minimal_word_size"] = self.spinBoxMinimalWordsLen.value()
         self.configurations["cut_ADJ"] = self.checkBoxPrilag.isChecked()
+        self.configurations["need_apriori"] = self.checkBoxNeedApriori.isChecked()
         self.profiler.start()
         self.calculator.start()
 
