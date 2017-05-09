@@ -195,7 +195,7 @@ class LsaCalculator(QThread):
 
         self.signals.UpdateProgressBar.emit(40)
 
-        if len(self.texts) < 3:
+        if len(input_texts) < 3:
             self.signals.PrintInfo.emit('Недостаточно документов для корректного анализа!')
         else:
             # Добавим русские стоп-слова
