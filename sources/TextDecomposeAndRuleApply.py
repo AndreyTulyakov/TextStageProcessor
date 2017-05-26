@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
-
 import pymorphy2
 import collections
+import json
 
 from PyQt5.QtCore import Qt
 from pymorphy2 import tokenizers
@@ -585,15 +584,17 @@ class DialogConfigDRA(QDialog):
 
 
         self.textEdit.append('\nПреобразование в функциональный вид:')
+
+
+
         # правила формирования аргументов для каждой функции
-        actions_grammatic = [['покинуть','#$','#ESS','#ESS'],
-                             ['заменить','#$','#$'],
-                             ['вступить','#$','#ESS','#ESS']]
+        actions_grammatic = []
+        self.rules_filename = self.filenames[0][:self.filenames[0].rfind('/')] + '/grammatic.json'
+        with open(self.rules_filename) as rules_file:
+            actions_grammatic = json.load(rules_file)
 
         for text in self.texts:
-            print("IN SENTENCES: ", text.updated_sentences)
             actions_map = formActions(text.updated_sentences, actions_grammatic)
-            print("ACTIONS MAP: ", actions_map)
             for action in actions_map:
                 self.textEdit.append('\nФункция:' + str(action))
 
@@ -603,9 +604,16 @@ class DialogConfigDRA(QDialog):
 
         # Добавим правило вывода: [входные функции] [выходные функции]
         output_rules = []
-        output_rules.append([[['покинуть','#0','#1','#2'],['заменить','#0','#3']],
-                           [ ['покинуть','#0','#1','#2'],['вступить','#3','#1','#2'],['испариться','#0']]])
+        self.rules_filename = self.filenames[0][:self.filenames[0].rfind('/')] + '/rules.json'
+        with open(self.rules_filename) as rules_file:
+            output_rules = json.load(rules_file)
 
+        output_rules_p = []
+
+        for rule in output_rules:
+            output_rules_p.append([rule['source_scheme'], rule['replace_scheme']])
+
+        output_rules = output_rules_p
         updated_functions = applyRules(output_rules, actions_map)
         for function in updated_functions:
             self.textEdit.append('\n'+str(function))
