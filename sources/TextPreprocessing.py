@@ -10,6 +10,13 @@ from pymorphy2 import tokenizers
 from sources.TextData import TextData, readSentencesListFromInputText
 
 
+def getCompiledFromSentencesText(sentences):
+    result_string = ''
+    for sentence in sentences:
+        for word in sentence:
+            result_string += (' ' + word)
+    return result_string
+
 
 # Читает текст из файла и возвращает список предложений (без запятых)
 def readSentencesFromInputText(filename, input_dir_name):
@@ -394,7 +401,7 @@ def removeTFIDFWordsWithMiniamlMultiplier(texts , min_mult):
                 text.word_frequency.pop(word)
 
 
-def makePreprocessing(filenames, morph, configurations, additional_output):
+def makePreprocessing(filenames, morph, configurations, additional_output=None):
 
     # Загружаем предложения из нескольких файлов
     texts = loadInputFilesFromList(filenames)
@@ -403,30 +410,34 @@ def makePreprocessing(filenames, morph, configurations, additional_output):
         os.makedirs(output_dir)
     # Разделяем предложения на слова
     texts = tokenizeTextData(texts)
-    additional_output.append('Этап препроцессинга:\n')
+    checkAdditionalOutput(additional_output,'Этап препроцессинга:\n')
 
     # Удаление стоп-слов из предложения (частицы, прилагательные и тд)
-    additional_output.append('1) Удаление стоп-слов.\n')
+    checkAdditionalOutput(additional_output,'1) Удаление стоп-слов.\n')
 
     texts, log_string = removeStopWordsInTexts(texts, morph, configurations)
     writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_1.txt')
 
     # Переводим обычное предложение в нормализованное (каждое слово)
-    additional_output.append('2) Нормализация.\n')
+    checkAdditionalOutput(additional_output,'2) Нормализация.\n')
     texts, log_string = normalizeTexts(texts, morph)
     writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_2.txt')
 
     # Приведение регистра (все слова с маленькой буквы за исключением ФИО)
-    additional_output.append('3) Приведение регистра.\n')
+    checkAdditionalOutput(additional_output,'3) Приведение регистра.\n')
     texts, log_string = fixRegisterInTexts(texts, morph)
     writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_3.txt')
 
     # Подсчет частоты слов в тексте
-    additional_output.append('4) Расчет частотной таблицы слов.\n')
+    checkAdditionalOutput(additional_output,'4) Расчет частотной таблицы слов.\n')
     texts, log_string = calculateWordsFrequencyInTexts(texts)
     writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_4.csv')
 
     return texts
+
+def checkAdditionalOutput(additional_output, text):
+    if additional_output:
+        additional_output.append(text)
 
 # Для алгоритмов не требующих нормализации, удаления стоп-слов каких-либо модификаций слов
 def makeFakePreprocessing(filenames):
