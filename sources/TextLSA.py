@@ -146,18 +146,12 @@ class LsaCalculator(QThread):
     def setConfiguration(self, configurations):
         self.configurations = configurations
 
-    def getCompiledFromSentencesText(self, sentences):
-        result_string = ''
-        for sentence in sentences:
-            for word in sentence:
-                result_string += (' ' + word)
-        return result_string
-
     def run(self):
         self.texts = []
         self.signals.UpdateProgressBar.emit(0)
 
         input_texts = list()
+        output_dir = self.configurations.get("output_files_directory", "output_files") + "/preprocessing/"
 
         need_full_preprocessing = self.configurations.get("need_full_preprocessing", True)
         if need_full_preprocessing:
@@ -168,18 +162,22 @@ class LsaCalculator(QThread):
 
             self.signals.PrintInfo.emit('Токенизация...')
             self.texts = tokenizeTextData(self.texts, self.configurations)
+
             self.signals.UpdateProgressBar.emit(10)
 
             self.signals.PrintInfo.emit('Удаление стоп-слов...')
             self.texts, log_string = removeStopWordsInTexts(self.texts, self.morph, self.configurations)
+            writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_1.txt')
             self.signals.UpdateProgressBar.emit(15)
 
             self.signals.PrintInfo.emit('Приведение к нормальной форме...')
             self.texts, log_string = normalizeTexts(self.texts, self.morph)
+            writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_2.txt')
             self.signals.UpdateProgressBar.emit(25)
 
             self.signals.PrintInfo.emit('Приведение регистра...')
             self.texts, log_string = fixRegisterInTexts(self.texts, self.morph)
+            writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_3.txt')
             self.signals.UpdateProgressBar.emit(30)
 
             if self.configurations.get("need_apriori", False):
@@ -188,7 +186,7 @@ class LsaCalculator(QThread):
 
             self.signals.PrintInfo.emit('...')
             for text in self.texts:
-                input_texts.append(self.getCompiledFromSentencesText(text.register_pass_centences))
+                input_texts.append(getCompiledFromSentencesText(text.register_pass_centences))
         else:
             for filename in self.filenames:
                 input_texts.append(readFullTextInputText(filename))
@@ -209,7 +207,8 @@ class LsaCalculator(QThread):
             vectorizer = CountVectorizer(min_df=1, stop_words=russian_stop_words)
             dtm = vectorizer.fit_transform(input_texts)
 
-            pre_svd_matrix = pd.DataFrame(dtm.toarray(), index=self.short_filenames, columns=vectorizer.get_feature_names()).head(10)
+            pre_svd_matrix = pd.DataFrame(dtm.toarray(), index=self.short_filenames,
+                                          columns=vectorizer.get_feature_names()).head(10)
             pre_svd_matrix_filename = self.output_dir + 'pre_svd_matrix.csv'
             pre_svd_matrix.to_csv(pre_svd_matrix_filename, sep=";", encoding='utf-8')
             self.signals.PrintInfo.emit('Файл с матрицей [слова * документы] для ЛСА:' + pre_svd_matrix_filename)
