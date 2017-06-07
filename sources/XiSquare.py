@@ -127,15 +127,38 @@ class XiCalculator(QThread):
         if self.need_preprocessing:
             self.signals.PrintInfo.emit('Предварительная обработка текстов...')
             self.configurations['need_agresive_filtration'] = True
-            self.texts = tokenizeTextData(self.texts, self.configurations)
-            self.signals.UpdateProgressBar.emit(25)
+
+            output_dir = self.configurations.get("output_files_directory", "output_files") + "/preprocessing/"
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            # Разделяем предложения на слова
+            self.texts = tokenizeTextData(self.texts)
+            self.signals.PrintInfo.emit('Этап препроцессинга:')
+            self.signals.UpdateProgressBar.emit(10)
+            # Удаление стоп-слов из предложения (частицы, прилагательные и тд)
+            self.signals.PrintInfo.emit('1) Удаление стоп-слов.')
+
             self.texts, log_string = removeStopWordsInTexts(self.texts, self.morph, self.configurations)
-            self.signals.UpdateProgressBar.emit(30)
+            writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_1.txt')
+            self.signals.UpdateProgressBar.emit(20)
+
+            # Переводим обычное предложение в нормализованное (каждое слово)
+            self.signals.PrintInfo.emit('2) Нормализация.')
             self.texts, log_string = normalizeTexts(self.texts, self.morph)
-            self.signals.UpdateProgressBar.emit(35)
+            writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_2.txt')
+            self.signals.UpdateProgressBar.emit(30)
+
+            # Приведение регистра (все слова с маленькой буквы за исключением ФИО)
+            self.signals.PrintInfo.emit('3) Приведение регистра.')
             self.texts, log_string = fixRegisterInTexts(self.texts, self.morph)
+            writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_3.txt')
             self.signals.UpdateProgressBar.emit(40)
+
+            # Подсчет частоты слов в тексте
+            self.signals.PrintInfo.emit('4) Расчет частотной таблицы слов.')
             self.texts, log_string = calculateWordsFrequencyInTexts(self.texts)
+            writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_4.csv')
+
             self.signals.UpdateProgressBar.emit(45)
         else:
             self.signals.PrintInfo.emit('Предварительная обработка текстов: Пропускается')

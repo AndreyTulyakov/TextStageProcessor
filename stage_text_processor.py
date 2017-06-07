@@ -5,6 +5,7 @@ import sys
 import pymorphy2
 from matplotlib import rc
 
+
 from sources.utils import *
 
 
@@ -24,6 +25,7 @@ from PyQt5.QtWidgets import QMainWindow, QSizePolicy, QSpacerItem, QFileDialog, 
 from sources.XiSquare import *
 from sources.TextClasterization import *
 from sources.TextClassification import *
+from sources.TextClastering import *
 from sources.TextLSA import *
 from sources.TextDecomposeAndRuleApply import *
 from sources.AnnotationMaker import *
@@ -52,6 +54,10 @@ class MainWindow(QMainWindow):
         button_clasterization.setMinimumHeight(32)
         button_clasterization.clicked.connect(self.clasterization)
 
+        button_clastering = QPushButton("Кластеризация (NEW!)")
+        button_clastering.setMinimumHeight(32)
+        button_clastering.clicked.connect(self.clastering)
+
         button_classification = QPushButton("Классификация")
         button_classification.setMinimumHeight(32)
         button_classification.clicked.connect(self.classification)
@@ -77,6 +83,7 @@ class MainWindow(QMainWindow):
 
         vbox = QVBoxLayout()
         vbox.addWidget(button_clasterization)
+        vbox.addWidget(button_clastering)
         vbox.addWidget(button_classification)
         vbox.addWidget(button_lsa)
         vbox.addWidget(button_analyze_and_rule_apply)
@@ -99,6 +106,15 @@ class MainWindow(QMainWindow):
             self.hide()
             dialogConfigClasterization.destroyed.connect(self.show)
             dialogConfigClasterization.exec_()
+
+    def clastering(self):
+        print("Кластеризация (NEW!)")
+        filenames = getFilenamesFromUserSelection(input_dir + 'clasterization')
+        if(filenames != None):
+            dialogConfigClastering = DialogClastering(filenames, morph, configurations, self)
+            self.hide()
+            dialogConfigClastering.destroyed.connect(self.show)
+            dialogConfigClastering.exec_()
 
     def classification(self):
         print("Классификация")
