@@ -239,6 +239,9 @@ class ClasterizationCalculator(QThread):
         if (self.method == '4'):
             self.makeDBSCANClasterization(self.eps,self.minPts)
 
+        if (self.method == '5'):
+            self.C3M()
+
         if self.first_call and self.need_preprocessing:
             self.first_call = False
 
