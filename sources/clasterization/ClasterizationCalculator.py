@@ -1109,6 +1109,11 @@ class ClasterizationCalculator(QThread):
                 text = texts[row]
                 W[-1].append(int(key in text.word_frequency))
 
+        # Вывод матрицы бинарных весов
+        for wRow in W:
+            print(''.join([str(w) for w in wRow]))
+        print()
+
         # Расчёт матрицы коэффициентов покрытия
         C = []
         # Список обратных сумм всех столбцов матрицы весов
@@ -1118,19 +1123,30 @@ class ClasterizationCalculator(QThread):
             sumK = 0
             C.append([])
             for j in range(len(W)):
+                sumK = 0
                 for k in range(len(W[i])):
                     sumK += beta[k] * W[i][k] * W[j][k]
                 C[-1].append(alpha * sumK)
+
+        # Вывод матрицы коэффициентов покрытия
+        for dCovers in C:
+            print(''.join(["{:.4f}".format(cover) + ' ' for cover in dCovers]))
+        print()
 
         # Количество кластеров
         nc = 0
         for i in range(len(C)):
             nc += C[i][i]
+        nc = int(nc)
+        print(nc)
+        print()
 
         # Затравочная сила
         P = []
         for i in range(len(C)):
             P.append(C[i][i] * (1 - C[i][i]) * sum(W[i]))
+            print(P[-1])
+        print()
 
         # Выбрать nc документов с наибольшей затравочной силой - "затравки"
         # Затравочные силы всех выбранных документов должны различаться
@@ -1141,7 +1157,7 @@ class ClasterizationCalculator(QThread):
         for i in range(nc, len(P)):
                 if P[i] > s[minSeedPower]:
                     for value in s.values():
-                        if (abs(P[i] - value) <= maxDifference):
+                        if (abs(P[i] - value) <= minDifference):
                             break
                     else:
                         del(s[minSeedPower])
@@ -1162,13 +1178,19 @@ class ClasterizationCalculator(QThread):
             if d not in s:
                 maxCover = 0
                 maxCoverIndex = 0
-                for k, seedPower in s:
+                for k, seedPower in s.items():
                     if maxCover < C[d][k] or (maxCover == C[d][k] and seedPower > s[maxCoverIndex]):
                         maxCover = C[d][k]
                         maxCoverIndex = k
                 for cluster in clusters:
                     if (maxCoverIndex == cluster[0]):
                         cluster.append(d)
+
+        # Вывод результирующего набора кластеров (в консоль)
+        for index,cluster in enumerate(clusters):
+            print('c' + str(index) + ':')
+            for d in cluster:
+                print('  d' + str(d))
 
 class Cluster(object):
     """ A Cluster is just a wrapper for a list of points.
