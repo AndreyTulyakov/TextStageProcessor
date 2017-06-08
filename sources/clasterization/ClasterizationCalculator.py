@@ -1126,6 +1126,7 @@ class ClasterizationCalculator(QThread):
         nc = 0
         for i in range(len(C)):
             nc += C[i][i]
+        nc = int(nc)
 
         # Затравочная сила
         P = []
@@ -1162,13 +1163,19 @@ class ClasterizationCalculator(QThread):
             if d not in s:
                 maxCover = 0
                 maxCoverIndex = 0
-                for k, seedPower in s:
+                for k, seedPower in s.items():
                     if maxCover < C[d][k] or (maxCover == C[d][k] and seedPower > s[maxCoverIndex]):
                         maxCover = C[d][k]
                         maxCoverIndex = k
                 for cluster in clusters:
                     if (maxCoverIndex == cluster[0]):
                         cluster.append(d)
+
+        # Вывод результирующего набора кластеров (в консоль)
+        for index,cluster in enumerate(clusters):
+            print('c' + str(index) + ':')
+            for d in cluster:
+                print('  d' + str(d))
 
 class Cluster(object):
     """ A Cluster is just a wrapper for a list of points.
