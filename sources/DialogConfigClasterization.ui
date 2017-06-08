@@ -87,6 +87,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QRadioButton" name="radioButton_C3M">
+        <property name="text">
+         <string>C3M</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
