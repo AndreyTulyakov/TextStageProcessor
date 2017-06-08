@@ -56,6 +56,7 @@ class DialogConfigClasterization(QDialog):
         self.radioButton_KMiddle.toggled.connect(self.onChangeMethod)
         self.radioButton_SMiddle.toggled.connect(self.onChangeMethod)
         self.radioButton_DBSCAN.toggled.connect(self.onChangeMethod)
+        self.radioButton_C3M.toggled.connect(self.onChangeMethod)
 
     def onChangeMethod(self):
         if (self.radioButton_Hierarhy.isChecked()):
@@ -77,6 +78,8 @@ class DialogConfigClasterization(QDialog):
             self.calculator.setMethod('3')
         if (self.radioButton_DBSCAN.isChecked()):
             self.calculator.setMethod('4')
+        if (self.radioButton_C3M.isChecked()):
+            self.calculator.setMethod('5')
 
     def onTextLogAdd(self, QString):
         self.textEdit.append(QString + '\n')
