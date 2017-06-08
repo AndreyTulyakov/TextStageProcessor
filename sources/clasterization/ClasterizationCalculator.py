@@ -1266,4 +1266,99 @@ def IrisTest(csv):
     for cluster in clusters:
         print(cluster.cid, cluster.pts)
 
+def C3M():
+    self.signals.PrintInfo.emit('Алгоритм C3M' + '\n')
+    texts = self.texts
+    output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/DBScan/"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    self.signals.PrintInfo.emit('Нахождение матрицы весов' + '\n')
+    t_all = dict()
 
+    for text in texts:
+        for key, value in text.sorted_word_frequency:
+            t_all[key] = t_all.get(key, 0) + 1
+
+    # Найти df
+    df_string = ''
+    df_string = df_string + "Слово;Используется в документах\n"
+    for key, value in t_all.items():
+        df_string = df_string + key + ';' + str(value) + '\n'
+    writeStringToFile(df_string.replace('\n ', '\n'), output_dir + 'df.csv')
+
+    # Вычисление бинарных весов терминов в документах
+    W = [[0 for x in range(len(t_all))] for y in range(len(texts))]
+    print('len(texts)=' + str(len(texts)))
+    print('len(t_all)=' + str(len(t_all)))
+    i = 0
+    j = 0
+    for row in range(len(texts)):
+        j = 0
+        for key, value in t_all.items():
+            text = texts[row]
+            if (key in text.word_frequency):
+                frequency_in_this_doc = 1
+            else:
+                frequency_in_this_doc = 0
+            W[i][j] = frequency_in_this_doc
+            j += 1
+        i += 1
+
+    # Расчёт матрицы коэффициентов покрытия
+    C = [[] for x in range(len(W))]
+    beta = [1 / sum(x) for x in zip(*W)]
+    for i in range(len(C)):
+        alpha = 1 / sum(W[i])
+        sumK = 0
+        for j in range(len(C)):
+            for k in range(len(C)):
+                sumK += beta[k] * W[i][k] * W[j][k]
+                C[i].append(alpha * sumK)
+
+    # Количество кластеров
+    nc = 0
+    for i in range(len(C)):
+        nc += C[i][i]
+
+    # Затравочная сила
+    P = [0 for x in range(len(C))]
+    for i in range(len(C)):
+        P[i] = (C[i][i] * (1 - C[i][i]) * sum(W[i]))
+
+    # Выбрать nc документов с наибольшей затравочной силой - "затравки"
+    # Затравочные силы всех выбранных документов должны различаться
+    s = {key:P[key] for key in range(nc)}
+    j = 0
+    minSeedPower = min(s, key = lambda key: s[key])
+    for i in range(nc, len(P)):
+            if P[i] < s[minSeedPower]:
+                if P[i] not in s.values():
+                    del(s[minSeedPower])
+                    s[i] = P[i]
+                    minSeedPower = min(s, key = lambda key: s[key])
+
+    # Формирование кластеров
+    # Каждый документ, не являющийся затравочным,
+    # помещается в кластер той затравки,
+    # которая больше его покрывает
+    # Если несколько затравок покрывают документ одинаково,
+    # выбирается затравка с наибольшей затравочной силой
+    clusters = [[] for j in range(nc)]
+    j = 0
+    for k in s:
+        clusters[j][0] = k
+        j = j + 1
+    for d in range(len(C)):
+        if d not in s:
+            maxCover = 0
+            maxCoverIndex = 0
+            for k, seedPower in s:
+                if maxCover < C[d][k]:
+                    maxCover = C[d][k]
+                    maxCoverIndex = k
+                if maxCover == C[d][k] and seedPower > s[maxCoverIndex]:
+                    maxCover = C[d][k]
+                    maxCoverIndex = k
+            for cluster in clusters:
+                if (maxCoverIndex == cluster[0]):
+                    cluster.append(d)
