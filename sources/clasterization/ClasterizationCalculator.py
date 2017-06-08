@@ -1074,6 +1074,99 @@ class ClasterizationCalculator(QThread):
         writeStringToFile(stepsString.replace('\n ', '\n'), output_dir + 'Steps.csv')
         self.signals.UpdateProgressBar.emit(100)
 
+    def C3M(self):
+        """Разбить документы на кластеры на основании построенной матрицы
+        коэффициентов покрытия"""
+        self.signals.PrintInfo.emit('Алгоритм C3M' + '\n')
+        texts = self.texts
+        output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/C2ICM/"
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        self.signals.PrintInfo.emit('Нахождение матрицы весов' + '\n')
+        t_all = dict()
+
+        for text in texts:
+            for key, value in text.sorted_word_frequency:
+                t_all[key] = t_all.get(key, 0) + 1
+
+        # Найти df
+        df_string = ''
+        df_string = df_string + "Слово;Используется в документах\n"
+        for key, value in t_all.items():
+            df_string = df_string + key + ';' + str(value) + '\n'
+        writeStringToFile(df_string.replace('\n ', '\n'), output_dir + 'df.csv')
+
+        # Вычисление бинарных весов терминов в документах
+        W = []
+        print('len(texts)=' + str(len(texts)))
+        print('len(t_all)=' + str(len(t_all)))
+        for row in range(len(texts)):
+            W.append([])
+            for key, value in t_all.items():
+                text = texts[row]
+                W[-1].append(int(key in text.word_frequency))
+
+        # Расчёт матрицы коэффициентов покрытия
+        C = []
+        # Список обратных сумм всех столбцов матрицы весов
+        beta = [1 / sum(x) for x in zip(*W)]
+        for i in range(len(W)):
+            alpha = 1 / sum(W[i])
+            sumK = 0
+            C.append([])
+            for j in range(len(W)):
+                for k in range(len(W[i])):
+                    sumK += beta[k] * W[i][k] * W[j][k]
+                C[-1].append(alpha * sumK)
+
+        # Количество кластеров
+        nc = 0
+        for i in range(len(C)):
+            nc += C[i][i]
+
+        # Затравочная сила
+        P = []
+        for i in range(len(C)):
+            P.append(C[i][i] * (1 - C[i][i]) * sum(W[i]))
+
+        # Выбрать nc документов с наибольшей затравочной силой - "затравки"
+        # Затравочные силы всех выбранных документов должны различаться
+        s = {key:P[key] for key in range(nc)}
+        minDifference = 0.001
+        j = 0
+        minSeedPower = min(s, key = lambda key: s[key])
+        for i in range(nc, len(P)):
+                if P[i] > s[minSeedPower]:
+                    for value in s.values():
+                        if (abs(P[i] - value) <= maxDifference):
+                            break
+                    else:
+                        del(s[minSeedPower])
+                        s[i] = P[i]
+                        minSeedPower = min(s, key = lambda key: s[key])
+
+        # Формирование кластеров
+        # Каждый документ, не являющийся затравочным,
+        # помещается в кластер той затравки,
+        # которая больше его покрывает
+        # Если несколько затравок покрывают документ одинаково,
+        # выбирается затравка с наибольшей затравочной силой
+        clusters = []
+        for k in s:
+            clusters.append([])
+            clusters[-1].append(k)
+        for d in range(len(C)):
+            if d not in s:
+                maxCover = 0
+                maxCoverIndex = 0
+                for k, seedPower in s:
+                    if maxCover < C[d][k] or (maxCover == C[d][k] and seedPower > s[maxCoverIndex]):
+                        maxCover = C[d][k]
+                        maxCoverIndex = k
+                for cluster in clusters:
+                    if (maxCoverIndex == cluster[0]):
+                        cluster.append(d)
+
 class Cluster(object):
     """ A Cluster is just a wrapper for a list of points.
     Each Cluster object has a unique id. DBSCAN.run()
@@ -1265,5 +1358,3 @@ def IrisTest(csv):
     # Manually printing
     for cluster in clusters:
         print(cluster.cid, cluster.pts)
-
-
