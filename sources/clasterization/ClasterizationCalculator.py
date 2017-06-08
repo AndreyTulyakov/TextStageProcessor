@@ -1109,6 +1109,11 @@ class ClasterizationCalculator(QThread):
                 text = texts[row]
                 W[-1].append(int(key in text.word_frequency))
 
+        # Вывод матрицы бинарных весов
+        for wRow in W:
+            print(''.join([str(w) for w in wRow]))
+        print()
+
         # Расчёт матрицы коэффициентов покрытия
         C = []
         # Список обратных сумм всех столбцов матрицы весов
@@ -1118,20 +1123,30 @@ class ClasterizationCalculator(QThread):
             sumK = 0
             C.append([])
             for j in range(len(W)):
+                sumK = 0
                 for k in range(len(W[i])):
                     sumK += beta[k] * W[i][k] * W[j][k]
                 C[-1].append(alpha * sumK)
+
+        # Вывод матрицы коэффициентов покрытия
+        for dCovers in C:
+            print(''.join(["{:.4f}".format(cover) + ' ' for cover in dCovers]))
+        print()
 
         # Количество кластеров
         nc = 0
         for i in range(len(C)):
             nc += C[i][i]
         nc = int(nc)
+        print(nc)
+        print()
 
         # Затравочная сила
         P = []
         for i in range(len(C)):
             P.append(C[i][i] * (1 - C[i][i]) * sum(W[i]))
+            print(P[-1])
+        print()
 
         # Выбрать nc документов с наибольшей затравочной силой - "затравки"
         # Затравочные силы всех выбранных документов должны различаться
