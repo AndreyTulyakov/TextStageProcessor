@@ -1141,7 +1141,7 @@ class ClasterizationCalculator(QThread):
         for i in range(nc, len(P)):
                 if P[i] > s[minSeedPower]:
                     for value in s.values():
-                        if (abs(P[i] - value) <= maxDifference):
+                        if (abs(P[i] - value) <= minDifference):
                             break
                     else:
                         del(s[minSeedPower])
