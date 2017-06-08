@@ -1269,7 +1269,7 @@ def IrisTest(csv):
 def C3M():
     self.signals.PrintInfo.emit('Алгоритм C3M' + '\n')
     texts = self.texts
-    output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/DBScan/"
+    output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/C2ICM/"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     self.signals.PrintInfo.emit('Нахождение матрицы весов' + '\n')
@@ -1287,33 +1287,27 @@ def C3M():
     writeStringToFile(df_string.replace('\n ', '\n'), output_dir + 'df.csv')
 
     # Вычисление бинарных весов терминов в документах
-    W = [[0 for x in range(len(t_all))] for y in range(len(texts))]
+    W = []
     print('len(texts)=' + str(len(texts)))
     print('len(t_all)=' + str(len(t_all)))
-    i = 0
-    j = 0
     for row in range(len(texts)):
-        j = 0
+        W.append([])
         for key, value in t_all.items():
             text = texts[row]
-            if (key in text.word_frequency):
-                frequency_in_this_doc = 1
-            else:
-                frequency_in_this_doc = 0
-            W[i][j] = frequency_in_this_doc
-            j += 1
-        i += 1
+            W[-1].append(int(key in text.word_frequency))
 
     # Расчёт матрицы коэффициентов покрытия
-    C = [[] for x in range(len(W))]
+    C = []
+    # Список обратных сумм всех столбцов матрицы весов
     beta = [1 / sum(x) for x in zip(*W)]
-    for i in range(len(C)):
+    for i in range(len(W)):
         alpha = 1 / sum(W[i])
         sumK = 0
-        for j in range(len(C)):
-            for k in range(len(C)):
+        C.append([])
+        for j in range(len(W)):
+            for k in range(len(W[i])):
                 sumK += beta[k] * W[i][k] * W[j][k]
-                C[i].append(alpha * sumK)
+            C[-1].append(alpha * sumK)
 
     # Количество кластеров
     nc = 0
@@ -1321,18 +1315,22 @@ def C3M():
         nc += C[i][i]
 
     # Затравочная сила
-    P = [0 for x in range(len(C))]
+    P = []
     for i in range(len(C)):
-        P[i] = (C[i][i] * (1 - C[i][i]) * sum(W[i]))
+        P.append(C[i][i] * (1 - C[i][i]) * sum(W[i]))
 
     # Выбрать nc документов с наибольшей затравочной силой - "затравки"
     # Затравочные силы всех выбранных документов должны различаться
     s = {key:P[key] for key in range(nc)}
+    minDifference = 0.001
     j = 0
     minSeedPower = min(s, key = lambda key: s[key])
     for i in range(nc, len(P)):
-            if P[i] < s[minSeedPower]:
-                if P[i] not in s.values():
+            if P[i] > s[minSeedPower]:
+                for value in s.values():
+                    if (abs(P[i] - value) <= maxDifference):
+                        break
+                else:
                     del(s[minSeedPower])
                     s[i] = P[i]
                     minSeedPower = min(s, key = lambda key: s[key])
@@ -1343,20 +1341,16 @@ def C3M():
     # которая больше его покрывает
     # Если несколько затравок покрывают документ одинаково,
     # выбирается затравка с наибольшей затравочной силой
-    clusters = [[] for j in range(nc)]
-    j = 0
+    clusters = []
     for k in s:
-        clusters[j][0] = k
-        j = j + 1
+        clusters.append([])
+        clusters[-1].append(k)
     for d in range(len(C)):
         if d not in s:
             maxCover = 0
             maxCoverIndex = 0
             for k, seedPower in s:
-                if maxCover < C[d][k]:
-                    maxCover = C[d][k]
-                    maxCoverIndex = k
-                if maxCover == C[d][k] and seedPower > s[maxCoverIndex]:
+                if maxCover < C[d][k] or (maxCover == C[d][k] and seedPower > s[maxCoverIndex]):
                     maxCover = C[d][k]
                     maxCoverIndex = k
             for cluster in clusters:
