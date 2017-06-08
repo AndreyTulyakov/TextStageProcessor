@@ -12,18 +12,21 @@ import random
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
-from sklearn.cluster import KMeans
-from sklearn.feature_extraction.text import CountVectorizer
-import matplotlib.pyplot as plt
 
-from sources.TextPreprocessing import writeStringToFile, makePreprocessing, makeFakePreprocessing
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.decomposition import TruncatedSVD
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import Normalizer
+
+from sources.TextPreprocessing import writeStringToFile, makePreprocessing, makeFakePreprocessing, \
+    getCompiledFromSentencesText
 from sources.utils import makePreprocessingForAllFilesInFolder
 
 
 
 # Сигналы для потока вычисления
-from stage_text_processor import stop_words_filename
-
 
 class ClasterizationCalculatorSignals(QObject):
     PrintInfo = pyqtSignal(str)
@@ -90,52 +93,39 @@ class ClasteringCalculator(QThread):
 
 
         if(True or self.method == '2'):
-            #self.makeClasterizationKMiddle(self.clusterCount)
+
             input_texts = list()
             for text in self.texts:
-                input_texts.append(self.getCompiledFromSentencesText(text.register_pass_centences))
+                input_texts.append(getCompiledFromSentencesText(text.register_pass_centences))
+            short_filenames = [text.filename[text.filename.rfind('/') + 1:] for text in self.texts]
 
-            russian_stop_words = []
-            with open(stop_words_filename) as f:
-                russian_stop_words = f.readlines()
-            russian_stop_words = [x.strip() for x in russian_stop_words]
-
-            vectorizer = CountVectorizer(min_df=1, stop_words=russian_stop_words)
+            vectorizer = CountVectorizer()
             X = vectorizer.fit_transform(input_texts)
 
-            km = KMeans(n_clusters=self.clusterCount, init='k-means++', max_iter=100, n_init=1)
+            svd = TruncatedSVD(2)
+            normalizer = Normalizer(copy=False)
+            lsa = make_pipeline(svd, normalizer)
+            X = lsa.fit_transform(X)
+
+            km = KMeans(n_clusters=self.clusterCount, init='k-means++', max_iter=100, n_init=10)
             km.fit(X)
 
-            self.signals.PrintInfo.emit("Top terms per cluster:")
-            order_centroids = km.cluster_centers_.argsort()[:, ::-1]
 
-            terms = vectorizer.get_feature_names()
+            predict_result = km.predict(X)
+
+            self.signals.PrintInfo.emit('Прогноз по документам:')
+            self.signals.PrintInfo.emit(str(predict_result))
+
             for i in range(self.clusterCount):
-                self.signals.PrintInfo.emit(str("Cluster " + str(i) +':'))
-                for ind in order_centroids[i, :10]:
-                    self.signals.PrintInfo.emit(' ' + str(terms[ind]))
+                self.signals.PrintInfo.emit('  Кластер ' + str(i) + ':')
+                for predicted_cluster, filename in zip(predict_result, short_filenames):
+                    if predicted_cluster == i:
+                        self.signals.PrintInfo.emit("    " + str(filename))
 
-            y_pred = km.predict(X)
-            print("y_pred:", y_pred)
-            #
-            # plt.subplot(111)
-            # colors = np.array([x for x in 'bgrcmykbgrcmykbgrcmykbgrcmyk'])
-            # colors = np.hstack([colors] * 20)
-            #
-            # plt.scatter(X[:, 0], X[:, 1], color=colors[y_pred].tolist(), s=100)
-            #
-            # if hasattr(km, 'cluster_centers_'):
-            #     centers = km.cluster_centers_
-            #     center_colors = colors[:len(centers)]
-            #     plt.scatter(centers[:, 0], centers[:, 1], s=100, c=center_colors)
-            # plt.xlim(-2, 2)
-            # plt.ylim(-2, 2)
-            # plt.xticks(())
-            # plt.yticks(())
-            # plt.text(.99, .01, '',
-            #          transform=plt.gca().transAxes, size=15,
-            #          horizontalalignment='right')
-            # plt.show()
+            self.signals.PrintInfo.emit('')
+            self.signals.PrintInfo.emit('Центры кластеров:')
+            for index, cluster_center in enumerate(km.cluster_centers_):
+                self.signals.PrintInfo.emit('  ' + str(index)+':' + str(cluster_center))
 
         if self.first_call and self.need_preprocessing:
             self.first_call = False

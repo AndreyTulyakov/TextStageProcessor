@@ -80,7 +80,7 @@ class DialogClastering(QDialog):
             self.calculator.setMethod('4')
 
     def onTextLogAdd(self, QString):
-        self.textEdit.append(QString + '\n')
+        self.textEdit.append(QString)
         self.repaint()
 
     def onUpdateProgressBar(self, value):
