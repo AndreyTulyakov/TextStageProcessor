@@ -1109,6 +1109,10 @@ class ClasterizationCalculator(QThread):
                 text = texts[row]
                 W[-1].append(int(key in text.word_frequency))
 
+        # Вывод матрицы бинарных весов
+        for wRow in W:
+            ' '.join([str(w) for w in wRow])
+
         # Расчёт матрицы коэффициентов покрытия
         C = []
         # Список обратных сумм всех столбцов матрицы весов
@@ -1118,19 +1122,29 @@ class ClasterizationCalculator(QThread):
             sumK = 0
             C.append([])
             for j in range(len(W)):
+                sumK = 0
                 for k in range(len(W[i])):
                     sumK += beta[k] * W[i][k] * W[j][k]
                 C[-1].append(alpha * sumK)
+
+        # Вывод матрицы коэффициентов покрытия
+        # Первая строка - список номеров документов
+        # Последующие строки предваряются номером документа,
+        # для которого рассчитаны коэффициенты
+        writeStringToFile('\n'.join([';'.join([''] + ["d" + str(1 + num) for num in range(len(C))])] + [';'.join(["d" + str(d + 1)] + ["{:.4f}".format(cover) for cover in dCovers]) for d,dCovers in enumerate(C)]), output_dir + 'CoverMatrix.csv')
 
         # Количество кластеров
         nc = 0
         for i in range(len(C)):
             nc += C[i][i]
+        nc = round(nc)
+        print('Количество кластеров: ' + str(nc) + '\n')
 
         # Затравочная сила
         P = []
         for i in range(len(C)):
             P.append(C[i][i] * (1 - C[i][i]) * sum(W[i]))
+        writeStringToFile('\n'.join(';'.join([str(1 + index), "{:.4f}".format(k)]) for index,k in enumerate(P)), output_dir + 'SeedPower.csv')
 
         # Выбрать nc документов с наибольшей затравочной силой - "затравки"
         # Затравочные силы всех выбранных документов должны различаться
@@ -1141,12 +1155,13 @@ class ClasterizationCalculator(QThread):
         for i in range(nc, len(P)):
                 if P[i] > s[minSeedPower]:
                     for value in s.values():
-                        if (abs(P[i] - value) <= maxDifference):
+                        if (abs(P[i] - value) <= minDifference):
                             break
                     else:
                         del(s[minSeedPower])
                         s[i] = P[i]
                         minSeedPower = min(s, key = lambda key: s[key])
+        writeStringToFile('\n'.join(';'.join([str(1 + key), "{:.4f}".format(value)]) for key, value in s.items()), output_dir + 'Seeds.csv')
 
         # Формирование кластеров
         # Каждый документ, не являющийся затравочным,
@@ -1162,13 +1177,17 @@ class ClasterizationCalculator(QThread):
             if d not in s:
                 maxCover = 0
                 maxCoverIndex = 0
-                for k, seedPower in s:
-                    if maxCover < C[d][k] or (maxCover == C[d][k] and seedPower > s[maxCoverIndex]):
-                        maxCover = C[d][k]
+                for k, seedPower in s.items():
+                    if maxCover < C[k][d] or (maxCover == C[k][d] and s[maxCoverIndex] < seedPower):
+                        maxCover = C[k][d]
                         maxCoverIndex = k
                 for cluster in clusters:
                     if (maxCoverIndex == cluster[0]):
                         cluster.append(d)
+
+        # Вывод результирующего набора кластеров
+        writeStringToFile('\n'.join(';'.join(['Cluster' + str(1 + index)] + [str(1 + d) for d in cluster]) for index, cluster in enumerate(clusters)), output_dir + 'clusters.csv')
+
 
 class Cluster(object):
     """ A Cluster is just a wrapper for a list of points.
