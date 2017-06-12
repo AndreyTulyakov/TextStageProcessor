@@ -1188,6 +1188,143 @@ class ClasterizationCalculator(QThread):
         # Вывод результирующего набора кластеров
         writeStringToFile('\n'.join(';'.join(['Cluster' + str(1 + index)] + [str(1 + d) for d in cluster]) for index, cluster in enumerate(clusters)), output_dir + 'clusters.csv')
 
+    def SOM(self, length):
+        """Кластеризовать документы визуально,
+        используя самоорганизующиеся карты.
+        length - длина стороны матрицы нейронов
+        """
+        self.signals.PrintInfo.emit('Алгоритм SOM' + '\n')
+        texts = self.texts
+        output_dir = self.configurations.get("output_files_directory", "output_files") + "/clasterization/SOM/"
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        # Нахождение матрицы весов
+        self.signals.PrintInfo.emit('Нахождение матрицы весов' + '\n')
+        t_all = dict()
+
+        for text in texts:
+            for key, value in text.sorted_word_frequency:
+                t_all[key] = t_all.get(key, 0) + 1
+
+        self.signals.UpdateProgressBar.emit(15)
+        # Найти df
+        df_string = ''
+        df_string = df_string + "Слово;Используется в документах\n"
+        for key, value in t_all.items():
+            df_string = df_string + key + ';' + str(value) + '\n'
+        writeStringToFile(df_string.replace('\n ', '\n'), output_dir + 'df.csv')
+
+        W = [[0 for x in range(len(t_all))] for y in range(len(texts))]
+        print('len(texts)=' + str(len(texts)))
+        print('len(t_all)=' + str(len(t_all)))
+        W_norm = [0 for x in range(len(texts))]
+        i = 0
+        j = 0
+        for row in range(len(texts)):
+            j = 0
+            for key, value in t_all.items():
+                text = texts[row]
+                if (key in text.word_frequency):
+                    frequency_in_this_doc = text.word_frequency[key]
+                else:
+                    frequency_in_this_doc = 0
+                W[i][j] = frequency_in_this_doc * math.log10(len(texts) / value)
+                W_norm[i] += math.pow(W[i][j], 2)
+                j += 1
+            W_norm[i] = math.sqrt(W_norm[i])
+            i += 1
+
+        for i in range(len(texts)):
+            for j in range(len(t_all)):
+                W[i][j] /= W_norm[i]
+        writeMatrixToFile(W, output_dir + "W.csv")
+
+        neuronSize = length * length
+        t = 0                                       # Счётчик итераций обучения
+        M = [[random.random() for j in range(t_all)] \
+            for i in range(neuronSize)]             # Множество нейронов
+        # Карта нейронов - представление в виде двумерного массива
+        mapM = [[m for m in M[i * length:i * length + length]]
+            for i in range(length)]
+        minError = 0.0001
+
+        # Процесс обучения. Его цель - сгруппировать нейроны, непосредственно
+        # соседствующие по карте, вокруг документов
+        while minError < winnerDistSum / len(texts):
+            winnerDistSum = 0
+            Dtr = [d for d in W]                    # Обучающая выборка
+
+            # Выбирается ближайший к случайно выбранному документу нейрон
+            # Все нейроны-соседи "победителя" по карте перемещаются ближе к нему
+            while Dtr:
+                dChosen = Dtr.pop(random.randint(0, len(Dtr) - 1))
+                winner = min(M, key=lambda m:dist(dChosen, m))
+                rw = (M.index(winner) // length, M.index(winner) % length)
+                for m in M:
+                    rm = (M.index(m) // length, M.index(m) % length)
+                    m = [mi + trainCoeff(t) * math.exp(-(dist(rm, rw) ** 2) / \
+                        (2 * neighborCoeff(t, length) ** 2)) * (di - mi) \
+                        for mi,di in zip(m, dChosen)]
+                t += 1
+                winnerDistSum += dist(winner, dChosen)
+
+        # Построение U-матрицы, хранящей расстояния между соседними нейронами
+        uMatrixSize = 2 * length - 1
+        uMatrix = [[0 for i in range(uMatrixSize)] for j in range(uMatrixSize)]
+        mi,mj = 0,0
+        for mi, i in zip(range(length), range(0, uMatrixSize, 2)):
+            for mj, j in zip(range(length), range(0, uMatrixSize, 2)):
+                if mj < length - 1:
+                    uMatrix[i][j + 1] = dist(mapM[mi][mj],mapM[mi][mj + 1])
+                if mi < length - 1:
+                    uMatrix[i + 1][j] = dist(mapM[mi][mj], mapM[mi + 1][mj])
+                if mj < length - 1 and mi < length - 1:
+                    uMatrix[i + 1][j + 1] = \
+                        avg([dist(mapM[mi][mj], mapM[mi + 1][mj + 1]), \
+                             dist(mapM[mi][mj + 1], mapM[mi + 1][mj])
+                uMatrix[i][j] = avg([uMatrix[n][m] \
+                    for m in range(j - 1, j + 2) \
+                    for n in range(i - 1, i + 2) \
+                    if 0 <= m < uMatrixSize \
+                    and 0 <= n < uMatrixSize \
+                    and not (m == j and n == i)])
+
+        writeMatrixToFile(uMatrix, output_dir + 'uMatrix.csv')
+
+        # Поскольку итоговая карта должна быть отрисована оттенками серого,
+        # нужно представить эту карту матрицей, содержащей дробные значения
+        # от нуля до единицы. Минимальное расстояние в U-матрице
+        # принимается за 0, максимальное - за 1.
+        minDist = min([d for row in uMatrix for d in row])
+        finalMap = [[d - minDist for d in row] for row in uMatrix]
+        maxDist = max([d for row in finalMap for d in row])
+        finalMap = [[d / maxDist for d in row] for row in finalMap]
+        writeMatrixToFile(finalMap, output_dir + 'greyScaleMap.csv')
+
+    def writeMatrixToFile(matrix, filename):
+        """Записать матрицу чисел в файл."""
+        writeStringToFile('\n'.join([';'.join(str(x) for x in row) for row in matrix]), filename)
+
+    def avg(numList):
+        """Найти среднее значение для элементов списка"""
+        return sum(numList) / len(numList)
+
+    def dist(vec1, vec2):
+        """Найти евклидово расстояние между двумя векторами"""
+        return math.sqrt(sum([map(lambda x: x * x, [i - j for i, j in zip(vec1, vec2)])]))
+
+    def trainCoeff(t):
+        """Рассчитать коэффициент обучения для алгоритма SOM.
+        Эта функция может быть изменена по желанию.
+        С ростом параметра t монотонно убывает."""
+        return 0.1 + math.exp(-t / 1000)
+
+    def neighborCoeff(t, length):
+        """Рассчитать коэффициент соседства для алгоритма SOM.
+        Эта функция может быть изменена по желанию.
+        С ростом параметра t монотонно убывает."""
+        return length + math.exp(-t / (1000 / math.log(length)))
 
 class Cluster(object):
     """ A Cluster is just a wrapper for a list of points.
