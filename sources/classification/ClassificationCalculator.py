@@ -30,6 +30,7 @@ class ClassificationCalculator(QThread):
     METHOD_ROCCHIO = 2
     METHOD_KNN = 3
     METHOD_LLSF = 4
+    METHOD_ID3 = 5
 
     def __init__(self, input_dir, output_dir, morph, configurations):
         super().__init__()
@@ -94,6 +95,9 @@ class ClassificationCalculator(QThread):
 
         if self.method == ClassificationCalculator.METHOD_LLSF:
             self.classification_llsf(self.need_preprocessing)
+
+        if self.method == ClassificationCalculator.METHOD_ID3:
+            self.classification_id3(self.need_preprocessing);
 
         if self.first_call and self.need_preprocessing:
             self.first_call = False
@@ -365,3 +369,28 @@ class ClassificationCalculator(QThread):
         listToCsv(class_table, output_dir + 'output_class.csv')
         self.signals.PrintInfo.emit(output_dir + 'tfidf_matrix.csv')
         writeStringToFile2(log_tfidf, output_dir + 'tfidf_matrix.csv')
+
+    def classification_id3(self, needPreprocessing):
+        output_dir = self.output_dir + 'id3_out/'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        input_dir = self.method_input_dir
+        fdata, fclass, split = makeFileList(input_dir)
+        trainingSet = fdata[:split]
+        trainingClass = fclass[:split]
+        testSet = fdata[split:]
+
+        print('output_dir:', output_dir)
+        print('input_dir:', input_dir)
+        print('fdata, fclass, split', (fdata, fclass, split))
+        print('trainingSet:', trainingSet)
+        print('trainingClass:', trainingClass)
+        print('testSet:', testSet)
+
+        # Переделать под реалии.
+        # Classification_Text_ID3('tree.txt', 'result.txt')
+
+
+
+

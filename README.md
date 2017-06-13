@@ -28,3 +28,7 @@ Open source project for text mining process exploration.
 
 ### По вопросам
 > Andrew Tulyakov (mhyhre@gmail.com)
+
+Разработано с участием:
+> Дмитрий Кузнецов (megalord2@mail.ru)
+> Николай Сябро (6xitix6@gmail.com)

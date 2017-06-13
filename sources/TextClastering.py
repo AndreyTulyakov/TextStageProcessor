@@ -110,6 +110,7 @@ class DialogClastering(QDialog):
 
         if(self.radioButton_DBSCAN.isChecked()):
             self.calculator.setEps(self.lineEdit_4.text())
+            self.calculator.setMinPts(self.lineEdit.text())
         else:
             self.calculator.setEps(self.lineEdit.text())
 

@@ -189,6 +189,7 @@ class ClasterizationCalculator(QThread):
         self.eps = 0.01
         self.m = 2
         self.minPts = 0.3
+        self.som_length = 1
         self.need_preprocessing = False
         self.first_call = True
         self.texts = []
@@ -241,6 +242,9 @@ class ClasterizationCalculator(QThread):
 
         if (self.method == '5'):
             self.C3M()
+
+        if (self.method == '6'):
+            self.SOM(self.som_length)
 
         if self.first_call and self.need_preprocessing:
             self.first_call = False

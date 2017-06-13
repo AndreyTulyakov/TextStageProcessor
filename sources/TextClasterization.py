@@ -42,6 +42,7 @@ class DialogConfigClasterization(QDialog):
         self.textEdit.setText("")
         self.parameters.setVisible(False)
         self.parameters_DBSCAN.setVisible(False)
+        self.parameters_SOM.setVisible(False)
         output_dir = self.configurations.get("output_files_directory", "output_files")
         self.progressBar.setValue(0)
         self.profiler = Profiler()
@@ -57,18 +58,24 @@ class DialogConfigClasterization(QDialog):
         self.radioButton_SMiddle.toggled.connect(self.onChangeMethod)
         self.radioButton_DBSCAN.toggled.connect(self.onChangeMethod)
         self.radioButton_C3M.toggled.connect(self.onChangeMethod)
+        self.radioButton_SOM.toggled.connect(self.onChangeMethod)
 
     def onChangeMethod(self):
-        if (self.radioButton_Hierarhy.isChecked()):
-            self.parameters.setVisible(False)
-            self.parameters_DBSCAN.setVisible(False)
-        else:
-            if(self.radioButton_DBSCAN.isChecked()):
-                self.parameters.setVisible(False)
-                self.parameters_DBSCAN.setVisible(True)
-            else:
-                self.parameters_DBSCAN.setVisible(False)
-                self.parameters.setVisible(True)
+        self.parameters.setVisible(False)
+        self.parameters_DBSCAN.setVisible(False)
+        self.parameters_SOM.setVisible(False)
+
+        if(self.radioButton_DBSCAN.isChecked()):
+            self.parameters_DBSCAN.setVisible(True)
+
+        if (self.radioButton_KMiddle.isChecked() or self.radioButton_SMiddle.isChecked()):
+            self.parameters.setVisible(True)
+
+        if (self.radioButton_SOM.isChecked()):
+            self.parameters_SOM.setVisible(True)
+
+
+
 
         if (self.radioButton_Hierarhy.isChecked()):
             self.calculator.setMethod('1')
@@ -80,6 +87,8 @@ class DialogConfigClasterization(QDialog):
             self.calculator.setMethod('4')
         if (self.radioButton_C3M.isChecked()):
             self.calculator.setMethod('5')
+        if (self.radioButton_SOM.isChecked()):
+            self.calculator.setMethod('6')
 
     def onTextLogAdd(self, QString):
         self.textEdit.append(QString + '\n')
@@ -110,5 +119,6 @@ class DialogConfigClasterization(QDialog):
             self.calculator.setEps(self.lineEdit.text())
         self.calculator.setM(self.lineEdit_2.text())
         self.calculator.setMinPts(self.lineEdit_3.text())
+        self.calculator.som_length = self.spinBox_SOM_length.value()
         self.profiler.start()
         self.calculator.start()
