@@ -14,6 +14,7 @@ from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 
 import matplotlib.pyplot as plt
+from sklearn.cluster import AgglomerativeClustering
 from sklearn.cluster import DBSCAN
 from sklearn.cluster import KMeans
 from sklearn.decomposition import TruncatedSVD
@@ -54,9 +55,12 @@ class ClasteringCalculator(QThread):
         self.eps = 0.01
         self.m = 2
         self.minPts = 0.3
+        self.spinbox_ward_eps = 1.0
+        self.ward_parameter_clusters_count = 1
         self.need_preprocessing = False
         self.first_call = True
         self.texts = []
+
 
     def setMethod(self, method_name):
         self.method = method_name
@@ -103,6 +107,8 @@ class ClasteringCalculator(QThread):
         if(self.method == '2'):
             self.make_dbscan_clustering(short_filenames, input_texts)
 
+        if(self.method == '3'):
+            self.make_ward_clustering(short_filenames, input_texts)
 
 
 
@@ -170,10 +176,8 @@ class ClasteringCalculator(QThread):
         lsa = make_pipeline(svd, normalizer)
         X = lsa.fit_transform(X)
 
-        km = KMeans(n_clusters=self.clusterCount, init='k-means++', max_iter=100, n_init=10)
-        km.fit(X)
-
         db = DBSCAN(eps=0.3, min_samples=10).fit(X)
+
 
         core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
         core_samples_mask[db.core_sample_indices_] = True
@@ -212,6 +216,37 @@ class ClasteringCalculator(QThread):
                 xy=(x, y), xytext=(-20, 20),
                 textcoords='offset points', ha='right', va='bottom',
                 # bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
+                arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
+        plt.xticks(())
+        plt.yticks(())
+        plt.grid()
+
+
+
+    def make_ward_clustering(self, short_filenames, input_texts):
+        vectorizer = CountVectorizer()
+        X = vectorizer.fit_transform(input_texts)
+
+        svd = TruncatedSVD(2)
+        normalizer = Normalizer(copy=False)
+        lsa = make_pipeline(svd, normalizer)
+        X = lsa.fit_transform(X)
+
+        ward = AgglomerativeClustering(n_clusters=self.ward_parameter_clusters_count, linkage='ward')
+        predict_result = ward.fit_predict(X)
+
+        self.signals.PrintInfo.emit('Прогноз по документам:')
+
+        plt.subplot(111)
+        colors = np.array([x for x in 'bgrcmykbgrcmykbgrcmykbgrcmyk'])
+        colors = np.hstack([colors] * 20)
+        plt.scatter(X[:, 0], X[:, 1], color=colors[predict_result].tolist(), s=50)
+
+        for label, x, y in zip(short_filenames, X[:, 0], X[:, 1]):
+            plt.annotate(
+                label,
+                xy=(x, y), xytext=(-20, 20),
+                textcoords='offset points', ha='right', va='bottom',
                 arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
         plt.xticks(())
         plt.yticks(())

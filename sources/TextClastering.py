@@ -66,6 +66,7 @@ class DialogClastering(QDialog):
 
         self.radioButton_KMiddle.toggled.connect(self.onChangeMethod)
         self.radioButton_DBSCAN.toggled.connect(self.onChangeMethod)
+        self.radioButton_Ward.toggled.connect(self.onChangeMethod)
 
     def onChangeMethod(self):
         if (self.radioButton_KMiddle.isChecked()):
@@ -79,6 +80,13 @@ class DialogClastering(QDialog):
             self.parameters_DBSCAN.setVisible(True)
         else:
             self.parameters_DBSCAN.setVisible(False)
+
+        if(self.radioButton_Ward.isChecked()):
+            self.calculator.setMethod('3')
+            self.parameters_Ward.setVisible(True)
+        else:
+            self.parameters_Ward.setVisible(False)
+
 
     def onTextLogAdd(self, QString):
         self.textEdit.append(QString)
@@ -116,6 +124,9 @@ class DialogClastering(QDialog):
 
         self.calculator.setM(self.lineEdit_2.text())
         self.calculator.setMinPts(self.lineEdit_3.text())
+        self.calculator.ward_parameter_eps = self.spinbox_ward_eps.value()
+        self.calculator.ward_parameter_clusters_count = self.spinbox_ward_clusters_count.value()
+
         self.profiler.start()
         self.calculator.start()
 
