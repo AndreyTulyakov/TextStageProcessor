@@ -1286,7 +1286,7 @@ class ClasterizationCalculator(QThread):
                 if mj < length - 1 and mi < length - 1:
                     uMatrix[i + 1][j + 1] = \
                         avg([dist(mapM[mi][mj], mapM[mi + 1][mj + 1]), \
-                             dist(mapM[mi][mj + 1], mapM[mi + 1][mj])
+                             dist(mapM[mi][mj + 1], mapM[mi + 1][mj])])
                 uMatrix[i][j] = avg([uMatrix[n][m] \
                     for m in range(j - 1, j + 2) \
                     for n in range(i - 1, i + 2) \
