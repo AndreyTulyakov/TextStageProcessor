@@ -41,6 +41,7 @@ class DialogConfigClassification(QDialog):
         self.radioButtonRocchio.toggled.connect(self.onChangeMethod)
         self.radioButtonKNN.toggled.connect(self.onChangeMethod)
         self.radioButtonLLSF.toggled.connect(self.onChangeMethod)
+        self.radioButtonID3.toggled.connect(self.onChangeMethod)
 
         output_dir = self.configurations.get("output_files_directory", "output_files")
 
@@ -91,6 +92,9 @@ class DialogConfigClassification(QDialog):
 
         if self.radioButtonLLSF.isChecked():
             self.calculator.setMethod(ClassificationCalculator.METHOD_LLSF, need_preprocessing)
+
+        if self.radioButtonID3.isChecked():
+            self.calculator.setMethod(ClassificationCalculator.METHOD_ID3, need_preprocessing)
 
         self.profiler.start()
         self.calculator.start()
