@@ -85,7 +85,6 @@ def FindUnionDist(Dist, F):
 
     return [min_i, min_j], Dist[min_i][min_j]
 
-
 def FindUnionSim(Sim, F):
     max_i = 0
     max_j = 0
@@ -100,6 +99,18 @@ def FindUnionSim(Sim, F):
                 max_j = j
 
     return [max_i, max_j], Sim[max_i][max_j]
+
+def writeMatrixToFile(matrix, filename):
+    """Записать матрицу чисел в файл."""
+    writeStringToFile('\n'.join([';'.join(str(x) for x in row) for row in matrix]), filename)
+
+def avg(numList):
+    """Найти среднее значение для элементов списка"""
+    return sum(numList) / len(numList)
+
+def dist(vec1, vec2):
+    """Найти евклидово расстояние между двумя векторами"""
+    return math.sqrt(sum(map(lambda x: x * x, [i - j for i, j in zip(vec1, vec2)])))
 
 
 class Cluster:
@@ -1192,6 +1203,20 @@ class ClasterizationCalculator(QThread):
         # Вывод результирующего набора кластеров
         writeStringToFile('\n'.join(';'.join(['Cluster' + str(1 + index)] + [str(1 + d) for d in cluster]) for index, cluster in enumerate(clusters)), output_dir + 'clusters.csv')
 
+    @staticmethod
+    def trainCoeff(t):
+        """Рассчитать коэффициент обучения для алгоритма SOM.
+        Эта функция может быть изменена по желанию.
+        С ростом параметра t монотонно убывает."""
+        return 0.1 + math.exp(-t / 1000)
+
+    @staticmethod
+    def neighborCoeff(t, length):
+        """Рассчитать коэффициент соседства для алгоритма SOM.
+        Эта функция может быть изменена по желанию.
+        С ростом параметра t монотонно убывает."""
+        return length + math.exp(-t / (1000 / math.log(length)))
+
     def SOM(self, length):
         """Кластеризовать документы визуально,
         используя самоорганизующиеся карты.
@@ -1246,7 +1271,7 @@ class ClasterizationCalculator(QThread):
 
         neuronSize = length * length
         t = 0                                       # Счётчик итераций обучения
-        M = [[random.random() for j in range(t_all)] \
+        M = [[random.random() for j in range(len(t_all))] \
             for i in range(neuronSize)]             # Множество нейронов
         # Карта нейронов - представление в виде двумерного массива
         mapM = [[m for m in M[i * length:i * length + length]]
@@ -1255,7 +1280,7 @@ class ClasterizationCalculator(QThread):
 
         # Процесс обучения. Его цель - сгруппировать нейроны, непосредственно
         # соседствующие по карте, вокруг документов
-        while minError < winnerDistSum / len(texts):
+        while True:
             winnerDistSum = 0
             Dtr = [d for d in W]                    # Обучающая выборка
 
@@ -1267,11 +1292,13 @@ class ClasterizationCalculator(QThread):
                 rw = (M.index(winner) // length, M.index(winner) % length)
                 for m in M:
                     rm = (M.index(m) // length, M.index(m) % length)
-                    m = [mi + trainCoeff(t) * math.exp(-(dist(rm, rw) ** 2) / \
-                        (2 * neighborCoeff(t, length) ** 2)) * (di - mi) \
+                    m = [mi + self.trainCoeff(t) * math.exp(-(dist(rm, rw) ** 2) / \
+                        (2 * self.neighborCoeff(t, length) ** 2)) * (di - mi) \
                         for mi,di in zip(m, dChosen)]
                 t += 1
                 winnerDistSum += dist(winner, dChosen)
+            if minError < winnerDistSum / len(texts):
+                break;
 
         # Построение U-матрицы, хранящей расстояния между соседними нейронами
         uMatrixSize = 2 * length - 1
@@ -1305,30 +1332,6 @@ class ClasterizationCalculator(QThread):
         maxDist = max([d for row in finalMap for d in row])
         finalMap = [[d / maxDist for d in row] for row in finalMap]
         writeMatrixToFile(finalMap, output_dir + 'greyScaleMap.csv')
-
-    def writeMatrixToFile(matrix, filename):
-        """Записать матрицу чисел в файл."""
-        writeStringToFile('\n'.join([';'.join(str(x) for x in row) for row in matrix]), filename)
-
-    def avg(numList):
-        """Найти среднее значение для элементов списка"""
-        return sum(numList) / len(numList)
-
-    def dist(vec1, vec2):
-        """Найти евклидово расстояние между двумя векторами"""
-        return math.sqrt(sum([map(lambda x: x * x, [i - j for i, j in zip(vec1, vec2)])]))
-
-    def trainCoeff(t):
-        """Рассчитать коэффициент обучения для алгоритма SOM.
-        Эта функция может быть изменена по желанию.
-        С ростом параметра t монотонно убывает."""
-        return 0.1 + math.exp(-t / 1000)
-
-    def neighborCoeff(t, length):
-        """Рассчитать коэффициент соседства для алгоритма SOM.
-        Эта функция может быть изменена по желанию.
-        С ростом параметра t монотонно убывает."""
-        return length + math.exp(-t / (1000 / math.log(length)))
 
 class Cluster(object):
     """ A Cluster is just a wrapper for a list of points.
