@@ -25,7 +25,7 @@ from sklearn.preprocessing import Normalizer
 from sources.TextPreprocessing import writeStringToFile, makePreprocessing, makeFakePreprocessing, \
     getCompiledFromSentencesText
 from sources.utils import makePreprocessingForAllFilesInFolder
-
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 # Сигналы для потока вычисления
@@ -42,7 +42,7 @@ class ClasteringCalculator(QThread):
     def __init__(self, filenames, output_dir, morph, configurations, textEdit):
         super().__init__()
         self.filenames = filenames
-        self.output_dir = output_dir
+        self.output_dir = output_dir + '/clasterization/'
         self.morph = morph
         self.configurations = configurations
         self.textEdit = textEdit
@@ -120,8 +120,31 @@ class ClasteringCalculator(QThread):
         self.signals.UpdateProgressBar.emit(100)
         self.signals.Finished.emit()
 
+    def calculate_and_write_idf(self, out_filename, input_texts):
+        idf_vectorizer = TfidfVectorizer(min_df=1, use_idf=True)
+        idf_vectorizer.fit_transform(input_texts)
+        idf = idf_vectorizer.idf_
+        tf_idf = dict(zip(idf_vectorizer.get_feature_names(), idf))
+        tf_idf_out_text = 'IDF:\n'
+        for key, value in tf_idf.items():
+            tf_idf_out_text += (str(key) + ';' + str(value) + '\n')
+        writeStringToFile(tf_idf_out_text, out_filename)
+        result_msg = "Таблица IDF записана: " + out_filename
+        return result_msg
+
 
     def make_k_means_clustering(self, short_filenames, input_texts):
+
+        output_dir = self.output_dir + 'K_MEANS/'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        self.signals.PrintInfo.emit("Расчет IDF...")
+        idf_filename = output_dir + 'idf.csv'
+        msg = self.calculate_and_write_idf(idf_filename, input_texts)
+        self.signals.PrintInfo.emit(msg)
+
+
         vectorizer = CountVectorizer()
         X = vectorizer.fit_transform(input_texts)
 
@@ -135,14 +158,20 @@ class ClasteringCalculator(QThread):
 
         predict_result = km.predict(X)
 
-        self.signals.PrintInfo.emit('Прогноз по документам:')
-        self.signals.PrintInfo.emit(str(predict_result))
 
-        for i in range(self.clusterCount):
-            self.signals.PrintInfo.emit('  Кластер ' + str(i) + ':')
-            for predicted_cluster, filename in zip(predict_result, short_filenames):
-                if predicted_cluster == i:
-                    self.signals.PrintInfo.emit("    " + str(filename))
+        self.signals.PrintInfo.emit('\nПрогноз по документам:\n')
+
+        clasters_output = ''
+        for claster_index in range(max(predict_result) + 1):
+            clasters_output += ('Кластер ' + str(claster_index) + ':\n')
+            for predict, document in zip(predict_result, short_filenames):
+                if predict == claster_index:
+                    clasters_output += ('  ' + str(document) + '\n')
+            clasters_output += '\n'
+        self.signals.PrintInfo.emit(clasters_output)
+
+        self.signals.PrintInfo.emit('Сохранено в:' + str(output_dir + 'clusters.txt'))
+        writeStringToFile(clasters_output, output_dir + 'clusters.txt')
 
         self.signals.PrintInfo.emit('')
         self.signals.PrintInfo.emit('Центры кластеров:')
@@ -166,8 +195,18 @@ class ClasteringCalculator(QThread):
         plt.grid()
 
 
-
     def make_dbscan_clustering(self, short_filenames, input_texts):
+
+        output_dir = self.output_dir + 'DBSCAN/'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        self.signals.PrintInfo.emit("Расчет IDF...")
+        idf_filename = output_dir + 'idf.csv'
+        msg = self.calculate_and_write_idf(idf_filename, input_texts)
+        self.signals.PrintInfo.emit(msg)
+
+
         vectorizer = CountVectorizer()
         X = vectorizer.fit_transform(input_texts)
 
@@ -176,8 +215,9 @@ class ClasteringCalculator(QThread):
         lsa = make_pipeline(svd, normalizer)
         X = lsa.fit_transform(X)
 
-        db = DBSCAN(eps=0.3, min_samples=10).fit(X)
-
+        db = DBSCAN(eps=self.eps, min_samples=self.minPts)
+        predict_result = db.fit_predict(X)
+        db.fit(X)
 
         core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
         core_samples_mask[db.core_sample_indices_] = True
@@ -186,9 +226,24 @@ class ClasteringCalculator(QThread):
         # Number of clusters in labels, ignoring noise if present.
         n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
+        self.signals.PrintInfo.emit('\nПрогноз по документам:\n')
+        clasters_output = ''
+        for claster_index in range(max(predict_result) + 1):
+            clasters_output += ('Кластер ' + str(claster_index) + ':\n')
+            for predict, document in zip(predict_result, short_filenames):
+                if predict == claster_index:
+                    clasters_output += ('  ' + str(document) + '\n')
+            clasters_output += '\n'
 
+        clasters_output += ('Шумовые элементы (-1):\n')
+        for predict, document in zip(predict_result, short_filenames):
+            if predict == -1:
+                clasters_output += ('  ' + str(document) + '\n')
+        clasters_output += '\n'
+        self.signals.PrintInfo.emit(clasters_output)
 
-        self.signals.PrintInfo.emit('Прогноз по документам:')
+        self.signals.PrintInfo.emit('Сохранено в:' + str(output_dir + 'clusters.txt'))
+        writeStringToFile(clasters_output, output_dir + 'clusters.txt')
 
         plt.subplot(111)
 
@@ -222,8 +277,17 @@ class ClasteringCalculator(QThread):
         plt.grid()
 
 
-
     def make_ward_clustering(self, short_filenames, input_texts):
+
+        output_dir = self.output_dir + 'WARD/'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        self.signals.PrintInfo.emit("Расчет IDF...")
+        idf_filename = output_dir + 'idf.csv'
+        msg = self.calculate_and_write_idf(idf_filename, input_texts)
+        self.signals.PrintInfo.emit(msg)
+
         vectorizer = CountVectorizer()
         X = vectorizer.fit_transform(input_texts)
 
@@ -234,13 +298,27 @@ class ClasteringCalculator(QThread):
 
         ward = AgglomerativeClustering(n_clusters=self.ward_parameter_clusters_count, linkage='ward')
         predict_result = ward.fit_predict(X)
+        print('predict_result:', predict_result)
 
-        self.signals.PrintInfo.emit('Прогноз по документам:')
+        self.signals.PrintInfo.emit('\nПрогноз по документам:\n')
+
+        clasters_output = ''
+        for claster_index in range(max(predict_result)+1):
+            clasters_output += ('Кластер ' + str(claster_index) + ':\n')
+            for predict, document in zip(predict_result, short_filenames):
+                if predict == claster_index:
+                    clasters_output += ('  ' + str(document) + '\n')
+            clasters_output += '\n'
+        self.signals.PrintInfo.emit(clasters_output)
+        self.signals.PrintInfo.emit('Сохранено в:' + str(output_dir + 'clusters.txt'))
+        writeStringToFile(clasters_output, output_dir + 'clusters.txt')
+
 
         plt.subplot(111)
         colors = np.array([x for x in 'bgrcmykbgrcmykbgrcmykbgrcmyk'])
         colors = np.hstack([colors] * 20)
         plt.scatter(X[:, 0], X[:, 1], color=colors[predict_result].tolist(), s=50)
+
 
         for label, x, y in zip(short_filenames, X[:, 0], X[:, 1]):
             plt.annotate(

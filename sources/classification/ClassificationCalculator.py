@@ -382,13 +382,6 @@ class ClassificationCalculator(QThread):
         trainingClass = fclass[:split]
         testSet = fdata[split:]
 
-        print('output_dir:', output_dir)
-        print('input_dir:', input_dir)
-        print('fdata, fclass, split', (fdata, fclass, split))
-        print('trainingSet:', trainingSet)
-        print('trainingClass:', trainingClass)
-        print('testSet:', testSet)
-
         Classification_Text_ID3(input_dir, output_dir, trainingSet, trainingClass, testSet)
 
 

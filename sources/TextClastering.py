@@ -114,16 +114,13 @@ class DialogClastering(QDialog):
 
         self.calculator.need_preprocessing = self.checkBoxNeedPreprocessing.isChecked()
         self.checkBoxNeedPreprocessing.setEnabled(False)
+
         self.calculator.setClusterCount(self.spinBox.value())
 
-        if(self.radioButton_DBSCAN.isChecked()):
-            self.calculator.setEps(self.lineEdit_4.text())
-            self.calculator.setMinPts(self.lineEdit.text())
-        else:
-            self.calculator.setEps(self.lineEdit.text())
 
-        self.calculator.setM(self.lineEdit_2.text())
-        self.calculator.setMinPts(self.lineEdit_3.text())
+        self.calculator.setEps(self.doubleSpinBox_dbscan_eps.value())
+        self.calculator.setMinPts(self.spinBox_dbscan_min_pts.value())
+
         self.calculator.ward_parameter_eps = self.spinbox_ward_eps.value()
         self.calculator.ward_parameter_clusters_count = self.spinbox_ward_clusters_count.value()
 
