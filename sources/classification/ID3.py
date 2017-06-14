@@ -1,43 +1,85 @@
 # -*- coding: utf-8 -*-
-import os
+import csv
+import re, os
+import numpy as np
+import pymorphy2
 
 ##########################################
-directoryTest = 'china/test'
-category = list(os.listdir('china/train'))
-
-directoryTrue = 'china/train/' + category[0]
-directoryFalse = 'china/train/' + category[1]
-
-trueFiles = os.listdir(directoryTrue)
-falseFiles = os.listdir(directoryFalse)
-testFiles = os.listdir(directoryTest)
-
+# directoryTest = 'china/test'
+# category = list(os.listdir('china/train'))
+#
+# directoryTrue = 'china/train/' + category[0]
+# directoryFalse = 'china/train/' + category[1]
+#
+# trueFiles = os.listdir(directoryTrue)
+# falseFiles = os.listdir(directoryFalse)
+# testFiles = os.listdir(directoryTest)
 ############################################
 
 
-def Classification_Text_ID3(tree_file, result_file):
-    applyID3(tree_file)
+
+category = []
+trueFiles = []
+falseFiles=[]
+testFiles = []
+trueFilesName = []
+falseFilesName=[]
+testFilesName = []
+input_dir1 = ''
+
+def Classification_Text_ID3(input_dir,output_dir, trainingSet, trainingClass, testSet):
+
+    global category
+    global trueFiles
+    global falseFiles
+    global testFiles
+    global trueFilesName
+    global falseFilesName
+    global testFilesName
+    global input_dir1
+
+    tree_file = output_dir + 'tree.txt'
+    result_file = output_dir + 'result.txt'
+    category = sorted(list(set(trainingClass)))
+    input_dir1 = input_dir
+    testFiles = testSet
+
+
+
+    for i in range(len(trainingSet)):
+       if  trainingClass[i] == category[0]:
+           trueFiles.append(trainingSet[i])
+       else:
+           falseFiles.append(trainingSet[i])
+
+    Words = words()
+    list_words_in_file = Analysis_of_words(Words)
+    applyID3(tree_file,Words,list_words_in_file)
     testTrue = []
     testFalse = []
     lastWord = ''
+    i = 0
     for f in testFiles:
-        f = open(directoryTest + '/' + f ,'r')
-        arr = list(set(f.readline().split()))
+        #f = open(directoryTest + '/' + f ,'r')
+        #arr = list(set(f.readline().split()))'
+        arr = list(set(f))
         with open(tree_file) as tree:
             for line in tree:
                 s1 = line.strip()
                 s1 = s1.split('=')
                 if s1[0]==lastWord:
-                    lastName = ''
+                    lastWord = ''
                     continue
                 if s1[0] in arr or lastWord != '' :
                     continue
                 else:
                     if s1[0] == '0':
-                        testFalse.append(os.path.basename(f.name))
+                        testFalse.append(testFilesName[i])
+                        i+=1
                         break
                     if s1[0] == '1':
-                        testTrue.append(os.path.basename(f.name))
+                        testTrue.append(testFilesName[i])
+                        i+=1
                         break
                     else:
                         lastWord == str(s1[0])
@@ -46,75 +88,106 @@ def Classification_Text_ID3(tree_file, result_file):
 
     for i in range(len(testTrue)):
         res.write(str(testTrue[i]) + ' ')
-        if i == len(testTrue) -1 : res.write('- ' + category[0] + '\n')
+        if i == len(testTrue) -1 : res.write('- ' + category[1] + '\n')
     for i in range(len(testFalse)):
         res.write(str(testFalse[i]) + ' ')
-        if i == len(testFalse) - 1: res.write('- ' + category[1] + '\n')
+        if i == len(testFalse) - 1: res.write('- ' + category[0] + '\n')
     res.close()
 
 def words():
     Words = {}
-    for f1 in trueFiles:
-        ff = open(directoryTrue + '/' + f1, 'r')
-        arr = ff.readline().split()
-        arr = list(set(arr))
+    global category
+    global trueFiles
+    global falseFiles
+    global testFiles
+    global trueFilesName
+    global falseFilesName
+    global testFilesName
+    global input_dir1
+
+    for f in trueFiles:
+        #ff = open(directoryTrue + '/' + f1, 'r')
+        #arr = f
+        arr = list(set(f))
         for s in arr:
             if s not in Words:  Words[s] = [0,1,0.0]
             else: Words[s][1]+=1
 
-    for f2 in falseFiles:
-        ff = open(directoryFalse + '/' + f2,'r')
-        arr = ff.readline().split()
+    for f in falseFiles:
+        #ff = open(directoryFalse + '/' + f2,'r')
+        arr = f
         arr = list(set(arr))
         for s in arr:
             if s not in Words:  Words[s] = [1,0,0.0]
             else: Words[s][0]+=1
-    ff.close()
+    #ff.close()
     return Words
 
 def Analysis_of_words(Words):
+    global category
+    global trueFiles
+    global falseFiles
+    global testFiles
+    global trueFilesName
+    global falseFilesName
+    global testFilesName
+    global input_dir1
+
     list_words = sorted(Words.keys())
     list_words_in_files = {}
     cells = []
 
-    for f in trueFiles:
-        for i in range(len(list_words) + 1): cells.append(0)
-        ff = open(directoryTrue + '/' + f, 'r')
-        arr = ff.readline().split()
+    trueFilesName = os.listdir(input_dir1 + '/train/' + category[0])
+    falseFilesName = os.listdir(input_dir1 + '/train/' + category[1])
+    testFilesName = os.listdir(input_dir1 + '/test/' + category[1]) +  os.listdir(input_dir1 + '/test/' + category[0])
+
+    for i in range(len(trueFiles)):
+        for j in range(len(list_words) + 1): cells.append(0)
+        #ff = open(directoryTrue + '/' + f, 'r')
+        #arr = ff.readline().split()
+        arr = trueFiles[i]
         arr = list(set(arr))
         for s in list_words:
             if s in arr: cells[list_words.index(s)] = 1
         cells[len(cells)-1] = 1
-        list_words_in_files[f] = cells
+        list_words_in_files[trueFilesName[i]] = cells
         cells = []
 
-    for f in falseFiles:
-        for i in range(len(list_words) + 1): cells.append(0)
-        ff = open(directoryFalse + '/' + f, 'r')
-        arr = ff.readline().split()
+    for i in range(len(falseFiles)):
+        for j in range(len(list_words) + 1): cells.append(0)
+        #ff = open(directoryFalse + '/' + f, 'r')
+        arr = falseFiles[i]
         arr = list(set(arr))
         for s in list_words:
             if s in arr: cells[list_words.index(s)] = 1
-        list_words_in_files[f] = cells
+        list_words_in_files[falseFilesName[i]] = cells
         cells = []
 
-    for f in trueFiles:
-        for i in range(len(list_words) + 1): cells.append(0)
-        ff = open(directoryTrue + '/' + f, 'r')
-        arr = ff.readline().split()
+    for i in range(len(testFiles)):
+        for j in range(len(list_words) + 1): cells.append(0)
+        #ff = open(directoryTrue + '/' + f, 'r')
+        arr = testFiles[i]
         arr = list(set(arr))
         for s in list_words:
             if s in arr: cells[list_words.index(s)] = 1
         cells[len(cells)-1] = 1
-        list_words_in_files[f] = cells
+        list_words_in_files[testFilesName[i]] = cells
         cells = []
-    ff.close()
+    #ff.close()
 
     return list_words_in_files
 
-def ParseAttributes2(Words):
+def ParseAttributes2(Words,list_words_in_file):
+    global category
+    global trueFiles
+    global falseFiles
+    global testFiles
+    global trueFilesName
+    global falseFilesName
+    global testFilesName
+    global input_dir1
     attr, attrnames, tests = {}, [], []
-    justList = Analysis_of_words(Words)
+    justList = list_words_in_file
     attrnum = len(Words.keys()) + 1
     for s in Words.keys():
         i = 0
@@ -125,7 +198,7 @@ def ParseAttributes2(Words):
         attr[fWords[2]] = 0
         i+=1
     num = attrnum -1 # позиция вывода
-    testnum = len(trueFiles) + len(falseFiles)
+    #testnum = len(trueFiles) + len(falseFiles)
 
     for s in justList.keys():
         tests.append(justList[s])
@@ -204,8 +277,8 @@ def ID3(tests,num,f,tabnum,usedattr,attrnames,attr):
     else:
         ID3(arrneg, num, f, tabnum + 1, newusedattr, attrnames, attr)
 
-def applyID3(outfname):
-    bigarr = ParseAttributes2(words())
+def applyID3(outfname,Words,list_words_in_file):
+    bigarr = ParseAttributes2(Words,list_words_in_file)
     attrnum, attrnames, attr, tests, num = bigarr[0], bigarr[1], bigarr[2], bigarr[3], bigarr[4]
     f = open(outfname, 'w')
     usedattr = []
@@ -213,4 +286,4 @@ def applyID3(outfname):
     ID3(tests, attrnum - 1, f, 0, usedattr, attrnames, attr)
 
 #########TEST############
-
+#Classification_Text_ID3('C:/Users/art-c/Desktop/TextStageProcessor-master/input_files/classification/china','C:/Users/art-c/Desktop/TextStageProcessor-master/output_files/classification/id3_out/', [['китайский', 'пекин', 'китайский'], ['китайский', 'китайский', 'шанхай'], ['китайский', 'китайский', 'макао'], ['токио', 'япония', 'китайский']], ['china', 'china', 'china', 'not_china'], [['китайский', 'китайский', 'китайский', 'токио', 'япония']])
