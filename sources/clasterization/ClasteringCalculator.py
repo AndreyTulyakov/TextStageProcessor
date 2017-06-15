@@ -137,6 +137,7 @@ class ClasteringCalculator(QThread):
             for cell in range(tf_idf_matrix.shape[1]):
                 matrix_output_s += (';' + str(tf_idf_matrix[row][cell]))
             matrix_output_s += '\n'
+        matrix_output_s = matrix_output_s.replace('.', ',')
         writeStringToFile(matrix_output_s, out_filename)
         result_msg = "Матрица TF-IDF записана: " + out_filename
 
