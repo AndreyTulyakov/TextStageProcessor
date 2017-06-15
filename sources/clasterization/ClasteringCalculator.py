@@ -99,16 +99,16 @@ class ClasteringCalculator(QThread):
         input_texts = list()
         for text in self.texts:
             input_texts.append(getCompiledFromSentencesText(text.register_pass_centences))
-        short_filenames = [text.filename[text.filename.rfind('/') + 1:] for text in self.texts]
+        self.short_filenames = [text.filename[text.filename.rfind('/') + 1:] for text in self.texts]
 
         if(self.method == '1'):
-            self.make_k_means_clustering(short_filenames, input_texts)
+            self.make_k_means_clustering(self.short_filenames, input_texts)
 
         if(self.method == '2'):
-            self.make_dbscan_clustering(short_filenames, input_texts)
+            self.make_dbscan_clustering(self.short_filenames, input_texts)
 
         if(self.method == '3'):
-            self.make_ward_clustering(short_filenames, input_texts)
+            self.make_ward_clustering(self.short_filenames, input_texts)
 
 
 
@@ -120,16 +120,26 @@ class ClasteringCalculator(QThread):
         self.signals.UpdateProgressBar.emit(100)
         self.signals.Finished.emit()
 
-    def calculate_and_write_idf(self, out_filename, input_texts):
-        idf_vectorizer = TfidfVectorizer(min_df=1, use_idf=True)
-        idf_vectorizer.fit_transform(input_texts)
-        idf = idf_vectorizer.idf_
-        tf_idf = dict(zip(idf_vectorizer.get_feature_names(), idf))
-        tf_idf_out_text = 'IDF:\n'
-        for key, value in tf_idf.items():
-            tf_idf_out_text += (str(key) + ';' + str(value) + '\n')
-        writeStringToFile(tf_idf_out_text, out_filename)
-        result_msg = "Таблица IDF записана: " + out_filename
+    # Рассчет и запись матрицы TF-IDF
+    def calculate_and_write_tf_idf(self, out_filename, input_texts):
+        idf_vectorizer = TfidfVectorizer()
+        tf_idf_matrix = idf_vectorizer.fit_transform(input_texts)
+        feature_names = idf_vectorizer.get_feature_names()
+
+        matrix_output_s = 'Слово'
+        for filename in self.short_filenames:
+            matrix_output_s += (';' + filename)
+        matrix_output_s += '\n'
+
+        tf_idf_matrix = tf_idf_matrix.toarray().transpose()
+        for row in range(tf_idf_matrix.shape[0]):
+            matrix_output_s += feature_names[row]
+            for cell in range(tf_idf_matrix.shape[1]):
+                matrix_output_s += (';' + str(tf_idf_matrix[row][cell]))
+            matrix_output_s += '\n'
+        writeStringToFile(matrix_output_s, out_filename)
+        result_msg = "Матрица TF-IDF записана: " + out_filename
+
         return result_msg
 
 
@@ -139,9 +149,9 @@ class ClasteringCalculator(QThread):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        self.signals.PrintInfo.emit("Расчет IDF...")
-        idf_filename = output_dir + 'idf.csv'
-        msg = self.calculate_and_write_idf(idf_filename, input_texts)
+        self.signals.PrintInfo.emit("Расчет TF-IDF...")
+        idf_filename = output_dir + 'tf_idf.csv'
+        msg = self.calculate_and_write_tf_idf(idf_filename, input_texts)
         self.signals.PrintInfo.emit(msg)
 
 
@@ -201,9 +211,9 @@ class ClasteringCalculator(QThread):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        self.signals.PrintInfo.emit("Расчет IDF...")
-        idf_filename = output_dir + 'idf.csv'
-        msg = self.calculate_and_write_idf(idf_filename, input_texts)
+        self.signals.PrintInfo.emit("Расчет TF-IDF...")
+        idf_filename = output_dir + 'tf_idf.csv'
+        msg = self.calculate_and_write_tf_idf(idf_filename, input_texts)
         self.signals.PrintInfo.emit(msg)
 
 
@@ -283,9 +293,9 @@ class ClasteringCalculator(QThread):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        self.signals.PrintInfo.emit("Расчет IDF...")
-        idf_filename = output_dir + 'idf.csv'
-        msg = self.calculate_and_write_idf(idf_filename, input_texts)
+        self.signals.PrintInfo.emit("Расчет TF-IDF...")
+        idf_filename = output_dir + 'tf_idf.csv'
+        msg = self.calculate_and_write_tf_idf(idf_filename, input_texts)
         self.signals.PrintInfo.emit(msg)
 
         vectorizer = CountVectorizer()
