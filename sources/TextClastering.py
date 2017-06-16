@@ -62,31 +62,6 @@ class DialogClastering(QDialog):
         self.calculator.signals.UpdateProgressBar.connect(self.onUpdateProgressBar)
         self.calculator.signals.PrintInfo.connect(self.onTextLogAdd)
 
-        self.onChangeMethod()
-
-        self.radioButton_KMiddle.toggled.connect(self.onChangeMethod)
-        self.radioButton_DBSCAN.toggled.connect(self.onChangeMethod)
-        self.radioButton_Ward.toggled.connect(self.onChangeMethod)
-
-    def onChangeMethod(self):
-        if (self.radioButton_KMiddle.isChecked()):
-            self.calculator.setMethod('1')
-            self.parameters_KMEANS.setVisible(True)
-        else:
-            self.parameters_KMEANS.setVisible(False)
-
-        if(self.radioButton_DBSCAN.isChecked()):
-            self.calculator.setMethod('2')
-            self.parameters_DBSCAN.setVisible(True)
-        else:
-            self.parameters_DBSCAN.setVisible(False)
-
-        if(self.radioButton_Ward.isChecked()):
-            self.calculator.setMethod('3')
-            self.parameters_Ward.setVisible(True)
-        else:
-            self.parameters_Ward.setVisible(False)
-
 
     def onTextLogAdd(self, QString):
         self.textEdit.append(QString)
@@ -97,32 +72,50 @@ class DialogClastering(QDialog):
         self.repaint()
 
     def onCalculationFinish(self):
-        self.methods.setEnabled(True)
+        self.tabWidget.setEnabled(True)
         self.textEdit.append('Выполнено за ' + self.profiler.stop() + ' с.')
         QApplication.restoreOverrideCursor()
         self.addfig(plt.gcf())
         self.startMethod.setEnabled(True)
+        self.checkBoxNeedCalculateTFIDF.setEnabled(True)
         QMessageBox.information(self, "Внимание", "Кластеризация завершена!")
 
     def OnStartMethod(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.startMethod.setEnabled(False)
+        self.tabWidget.setEnabled(False)
 
         self.textEdit.setText("")
         plt.cla()
         plt.clf()
 
+        self.calculator.set_method_index(self.tabWidget.currentIndex())
+
         self.calculator.need_preprocessing = self.checkBoxNeedPreprocessing.isChecked()
         self.checkBoxNeedPreprocessing.setEnabled(False)
 
-        self.calculator.setClusterCount(self.spinBox.value())
+        self.calculator.need_tf_idf = self.checkBoxNeedCalculateTFIDF.isChecked()
+        self.checkBoxNeedCalculateTFIDF.setEnabled(False)
 
+        # Передает параметры с формы в процесс
+        self.calculator.kmeans_cluster_count = self.kmeans_cluster_count.value()
 
-        self.calculator.setEps(self.doubleSpinBox_dbscan_eps.value())
-        self.calculator.setMinPts(self.spinBox_dbscan_min_pts.value())
+        self.calculator.dbscan_min_pts = self.dbscan_min_pts.value()
+        self.calculator.dbscan_eps = self.dbscan_eps.value()
 
-        self.calculator.ward_parameter_eps = self.spinbox_ward_eps.value()
-        self.calculator.ward_parameter_clusters_count = self.spinbox_ward_clusters_count.value()
+        self.calculator.ward_clusters_count = self.ward_clusters_count.value()
+
+        self.calculator.spectral_clusters_count = self.spectral_clusters_count.value()
+
+        self.calculator.aa_damping = self.aa_damping.value()
+        self.calculator.aa_max_iter = self.aa_max_iter.value()
+        self.calculator.aa_no_change_stop = self.aa_no_change_stop.value()
+
+        self.calculator.mean_shift_quantile = self.mean_shift_quantile.value()
+
+        self.calculator.birch_threshold = self.birch_threshold.value()
+        self.calculator.birch_branching_factor = self.birch_branching_factor.value()
+        self.calculator.birch_clusters_count = self.birch_clusters_count.value()
 
         self.profiler.start()
         self.calculator.start()
