@@ -115,13 +115,25 @@ class ClasteringCalculator(QThread):
         matrix_output_s = 'Слово'
         for filename in self.short_filenames:
             matrix_output_s += (';' + filename)
+        matrix_output_s += ('; Сумма')
         matrix_output_s += '\n'
 
         tf_idf_matrix = tf_idf_matrix.toarray().transpose()
+        total = []
         for row in range(tf_idf_matrix.shape[0]):
-            matrix_output_s += feature_names[row]
-            for cell in range(tf_idf_matrix.shape[1]):
-                matrix_output_s += (';' + str(tf_idf_matrix[row][cell]))
+            current_total = np.sum(tf_idf_matrix[row])
+            total.append((current_total, tf_idf_matrix[row], feature_names[row]))
+
+        total.sort(key=lambda tup: tup[0], reverse=True)
+
+        for row in range(len(total)):
+            current_total = total[row]
+            current_row = current_total[1]
+            current_feature_name = current_total[2]
+            matrix_output_s += current_feature_name
+            for cell in range(current_row.shape[0]):
+                matrix_output_s += ('; ' + str(current_row[cell]))
+            matrix_output_s += ('; ' + str(current_total[0]))
             matrix_output_s += '\n'
         matrix_output_s = matrix_output_s.replace('.', ',')
         writeStringToFile(matrix_output_s, out_filename)
