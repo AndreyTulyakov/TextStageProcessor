@@ -35,7 +35,7 @@ class ClassificationLibCalculator(QThread):
 
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
-        clear_dir(self.output_dir)
+        #clear_dir(self.output_dir)
 
         self.output_preprocessing_dir = self.output_dir + 'preprocessing/'
         self.first_call = True
@@ -99,8 +99,6 @@ class ClassificationLibCalculator(QThread):
 
         self.signals.UpdateProgressBar.emit(40)
 
-
-
         if self.method_index == 0:
             self.classification_knn()
 
@@ -120,6 +118,30 @@ class ClassificationLibCalculator(QThread):
         self.signals.Finished.emit()
 
 
+    def compile_result_string(self, results, proba, classes, filenames):
+        result_s = ''
+        result_s += "Результаты классификации:\n"
+        result_s += "----------------------------------------------------------------------------\n"
+        for index, result in enumerate(results):
+            result_s += "Файл: " + self.test_filenames[index] + '\n'
+            result_s += "Класс: " + str(result) + '\n'
+            result_s += "----------------------------------------------------------------------------\n"
+        return result_s
+
+    def write_results_to_file(self, output_filename, results, proba, classes, filenames):
+        result_s = ''
+        result_s += "Результаты классификации:\n"
+        result_s += "\n"
+        for index, result in enumerate(results):
+            result_s += "Файл;" + self.test_filenames[index] + '\n'
+            result_s += "Класс;" + str(result) + '\n'
+            result_s += "Вероятность;\n"
+            for cl_index, cl in enumerate(classes):
+                result_s += ";" + str(cl) + ';' + str(proba[index][cl_index]) + "\n"
+            result_s += "\n"
+        writeStringToFile(result_s, output_filename)
+
+
     def classification_knn(self):
         self.signals.PrintInfo.emit("Алгоритм KNN")
         output_dir = self.output_dir + 'knn_out/'
@@ -137,13 +159,12 @@ class ClassificationLibCalculator(QThread):
         classificator = KNeighborsClassifier(n_neighbors=self.knn_n_neighbors)
         classificator.fit(trainingSet, self.trainingClass)
         results = classificator.predict(testSet)
+        proba = classificator.predict_proba(testSet)
 
-        self.signals.PrintInfo.emit("Результаты классификации:")
-        self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
-        for index, result in enumerate(results):
-            self.signals.PrintInfo.emit("Файл: " + self.test_filenames[index])
-            self.signals.PrintInfo.emit("Класс: " + str(result))
-            self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
+        self.write_results_to_file(output_dir + 'results.csv', results, proba, classificator.classes_, self.test_filenames)
+        out_text = self.compile_result_string(results, proba, classificator.classes_, self.test_filenames)
+        self.signals.PrintInfo.emit(out_text)
+
 
 
     def classification_linear_svm(self):
@@ -157,16 +178,14 @@ class ClassificationLibCalculator(QThread):
         trainingSet = fdata[:self.split]
         testSet = fdata[self.split:]
 
-        classificator = SVC(kernel="linear", C=self.linear_svm_c)
+        classificator = SVC(kernel="linear", probability=True, C=self.linear_svm_c)
         classificator.fit(trainingSet, self.trainingClass)
         results = classificator.predict(testSet)
+        proba = classificator.predict_proba(testSet)
 
-        self.signals.PrintInfo.emit("Результаты классификации:")
-        self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
-        for index, result in enumerate(results):
-            self.signals.PrintInfo.emit("Файл: " + self.test_filenames[index])
-            self.signals.PrintInfo.emit("Класс: " + str(result))
-            self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
+        self.write_results_to_file(output_dir + 'results.csv', results, proba, classificator.classes_, self.test_filenames)
+        out_text = self.compile_result_string(results, proba, classificator.classes_, self.test_filenames)
+        self.signals.PrintInfo.emit(out_text)
 
 
     def classification_rbf_svm(self):
@@ -180,16 +199,14 @@ class ClassificationLibCalculator(QThread):
         trainingSet = fdata[:self.split]
         testSet = fdata[self.split:]
 
-        classificator = SVC(gamma=2, C=self.rbf_svm_c)
+        classificator = SVC(gamma=2, probability=True, C=self.rbf_svm_c)
         classificator.fit(trainingSet, self.trainingClass)
         results = classificator.predict(testSet)
+        proba = classificator.predict_proba(testSet)
 
-        self.signals.PrintInfo.emit("Результаты классификации:")
-        self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
-        for index, result in enumerate(results):
-            self.signals.PrintInfo.emit("Файл: " + self.test_filenames[index])
-            self.signals.PrintInfo.emit("Класс: " + str(result))
-            self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
+        self.write_results_to_file(output_dir + 'results.csv', results, proba, classificator.classes_,self.test_filenames)
+        out_text = self.compile_result_string(results, proba, classificator.classes_, self.test_filenames)
+        self.signals.PrintInfo.emit(out_text)
 
 
     def classification_gaussian_nb(self):
@@ -206,10 +223,8 @@ class ClassificationLibCalculator(QThread):
         classificator = GaussianNB()
         classificator.fit(trainingSet.toarray(), self.trainingClass)
         results = classificator.predict(testSet.toarray())
+        proba = classificator.predict_proba(testSet.toarray())
 
-        self.signals.PrintInfo.emit("Результаты классификации:")
-        self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
-        for index, result in enumerate(results):
-            self.signals.PrintInfo.emit("Файл: " + self.test_filenames[index])
-            self.signals.PrintInfo.emit("Класс: " + str(result))
-            self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
+        self.write_results_to_file(output_dir + 'results.csv', results, proba, classificator.classes_,self.test_filenames)
+        out_text = self.compile_result_string(results, proba, classificator.classes_, self.test_filenames)
+        self.signals.PrintInfo.emit(out_text)
