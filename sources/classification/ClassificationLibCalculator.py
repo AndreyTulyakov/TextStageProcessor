@@ -12,7 +12,9 @@ from PyQt5.QtCore import QObject
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
+from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 
 from sources.TextPreprocessing import writeStringToFile
 from sources.classification.clsf_util import makeFileListLib
@@ -84,10 +86,32 @@ class ClassificationLibCalculator(QThread):
         else:
             self.method_input_dir = self.input_dir
 
+        self.fdata, self.fclass, self.split, self.filenames = makeFileListLib(self.method_input_dir)
+
+        for index in range(len(self.filenames)):
+            if '/' in self.filenames[index]:
+                self.filenames[index] = self.filenames[index].split('/')[-1]
+
+        self.trainingSet = self.fdata[:self.split]
+        self.trainingClass = self.fclass[:self.split]
+        self.testSet = self.fdata[self.split:]
+        self.test_filenames = self.filenames[self.split:]
+
         self.signals.UpdateProgressBar.emit(40)
+
+
 
         if self.method_index == 0:
             self.classification_knn()
+
+        if self.method_index == 1:
+            self.classification_linear_svm()
+
+        if self.method_index == 2:
+            self.classification_rbf_svm()
+
+        if self.method_index == 3:
+            self.classification_gaussian_nb()
 
         if self.first_call and self.need_preprocessing:
             self.first_call = False
@@ -96,59 +120,96 @@ class ClassificationLibCalculator(QThread):
         self.signals.Finished.emit()
 
 
-    # Алгоритм KNN
     def classification_knn(self):
-
+        self.signals.PrintInfo.emit("Алгоритм KNN")
         output_dir = self.output_dir + 'knn_out/'
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        k = self.configurations.get('classification_knn_k')
-
-        self.signals.PrintInfo.emit("Алгоритм KNN")
-
-        fdata, fclass, split, filenames = makeFileListLib(self.method_input_dir)
-
-
-        for index in range(len(filenames)):
-            if '/' in filenames[index]:
-                filenames[index] = filenames[index].split('/')[-1]
-
-        trainingSet = fdata[:split]
-        trainingClass = fclass[:split]
-        testSet = fdata[split:]
-        training_filenames = filenames[:split]
-        test_filenames = filenames[split:]
-
-        print('trainingSet:', trainingSet)
-        print('trainingClass:', trainingClass)
-        print('testSet:', testSet)
-        print('filenames:', filenames)
-        print('test_filenames:', test_filenames)
-
         # Переводим документы в векторы
+        # Особенно стоит обратить внимание на тип векторизатора, ведь существуют и другие.
         vectorizer = HashingVectorizer()
-        fdata = vectorizer.fit_transform(fdata)
-        trainingSet = fdata[:split]
-        testSet = fdata[split:]
+        fdata = vectorizer.fit_transform(self.fdata)
+        trainingSet = fdata[:self.split]
+        testSet = fdata[self.split:]
 
         # Создаем и тренируем классификатор а затем классифицируем
         classificator = KNeighborsClassifier(n_neighbors=self.knn_n_neighbors)
-        classificator.fit(trainingSet, trainingClass)
+        classificator.fit(trainingSet, self.trainingClass)
         results = classificator.predict(testSet)
 
         self.signals.PrintInfo.emit("Результаты классификации:")
         self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
         for index, result in enumerate(results):
-            self.signals.PrintInfo.emit("Файл: " + test_filenames[index])
+            self.signals.PrintInfo.emit("Файл: " + self.test_filenames[index])
             self.signals.PrintInfo.emit("Класс: " + str(result))
             self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
 
-        # self.signals.PrintInfo.emit(output_dir + 'tfidf_matrix.csv')
-        # writeStringToFile(log_tfidf, output_dir + 'tfidf_matrix.csv')
-        #
-        # self.signals.PrintInfo.emit(output_dir + 'Соседи.csv')
-        # writeStringToFile(log_neighbors, output_dir + 'Соседи.csv')
-        #
-        # self.signals.PrintInfo.emit(output_dir + 'Голоса.csv')
-        # writeStringToFile(log_votes, output_dir + 'Голоса.csv')
+
+    def classification_linear_svm(self):
+        self.signals.PrintInfo.emit("Алгоритм Linear SVM")
+        output_dir = self.output_dir + 'linear_svm_out/'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        vectorizer = HashingVectorizer()
+        fdata = vectorizer.fit_transform(self.fdata)
+        trainingSet = fdata[:self.split]
+        testSet = fdata[self.split:]
+
+        classificator = SVC(kernel="linear", C=self.linear_svm_c)
+        classificator.fit(trainingSet, self.trainingClass)
+        results = classificator.predict(testSet)
+
+        self.signals.PrintInfo.emit("Результаты классификации:")
+        self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
+        for index, result in enumerate(results):
+            self.signals.PrintInfo.emit("Файл: " + self.test_filenames[index])
+            self.signals.PrintInfo.emit("Класс: " + str(result))
+            self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
+
+
+    def classification_rbf_svm(self):
+        self.signals.PrintInfo.emit("RBF SVM")
+        output_dir = self.output_dir + 'rbf_svm_out/'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        vectorizer = HashingVectorizer()
+        fdata = vectorizer.fit_transform(self.fdata)
+        trainingSet = fdata[:self.split]
+        testSet = fdata[self.split:]
+
+        classificator = SVC(gamma=2, C=self.rbf_svm_c)
+        classificator.fit(trainingSet, self.trainingClass)
+        results = classificator.predict(testSet)
+
+        self.signals.PrintInfo.emit("Результаты классификации:")
+        self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
+        for index, result in enumerate(results):
+            self.signals.PrintInfo.emit("Файл: " + self.test_filenames[index])
+            self.signals.PrintInfo.emit("Класс: " + str(result))
+            self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
+
+
+    def classification_gaussian_nb(self):
+        self.signals.PrintInfo.emit("Gaussian NB")
+        output_dir = self.output_dir + 'gaussian_nb_out/'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        vectorizer = HashingVectorizer()
+        fdata = vectorizer.fit_transform(self.fdata)
+        trainingSet = fdata[:self.split]
+        testSet = fdata[self.split:]
+
+        classificator = GaussianNB()
+        classificator.fit(trainingSet.toarray(), self.trainingClass)
+        results = classificator.predict(testSet.toarray())
+
+        self.signals.PrintInfo.emit("Результаты классификации:")
+        self.signals.PrintInfo.emit("----------------------------------------------------------------------------")
+        for index, result in enumerate(results):
+            self.signals.PrintInfo.emit("Файл: " + self.test_filenames[index])
+            self.signals.PrintInfo.emit("Класс: " + str(result))
+            self.signals.PrintInfo.emit("----------------------------------------------------------------------------")

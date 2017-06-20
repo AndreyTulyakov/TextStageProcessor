@@ -60,9 +60,11 @@ class DialogClassificationLib(QDialog):
     def makeClassification(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.textEdit.setText("")
+        self.checkBoxNeedPreprocessing.setEnabled(False)
 
         self.calculator.knn_n_neighbors = self.knn_n_neighbors.value()
-
+        self.calculator.linear_svm_c = self.linear_svm_c.value()
+        self.calculator.rbf_svm_c = self.rbf_svm_c.value()
 
         self.calculator.need_preprocessing = self.checkBoxNeedPreprocessing.isChecked()
         self.calculator.method_index = self.tabWidget.currentIndex()
