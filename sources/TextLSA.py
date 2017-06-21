@@ -135,6 +135,7 @@ class LsaCalculator(QThread):
         self.categories = dict()
         self.signals = LsaCalculatorSignals()
         self.textEdit = textEdit
+        self.input_texts = list()
 
         for filename in self.filenames:
             self.short_filenames.append(filename[filename.rfind('/')+1:])
@@ -143,57 +144,67 @@ class LsaCalculator(QThread):
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
+        self.first_start = True
+
     def setConfiguration(self, configurations):
         self.configurations = configurations
 
     def run(self):
         self.texts = []
         self.signals.UpdateProgressBar.emit(0)
+        xs = []
+        ys = []
+        similarity = []
 
-        input_texts = list()
+
         output_dir = self.configurations.get("output_files_directory", "output_files") + "/preprocessing/"
 
         need_full_preprocessing = self.configurations.get("need_full_preprocessing", True)
-        if need_full_preprocessing:
-            for filename in self.filenames:
-                    text = TextData(filename)
-                    text.readSentencesFromInputText()
-                    self.texts.append(text)
+        if self.first_start == True:
+            if need_full_preprocessing:
+                for filename in self.filenames:
+                        text = TextData(filename)
+                        text.readSentencesFromInputText()
+                        self.texts.append(text)
 
-            self.signals.PrintInfo.emit('Токенизация...')
-            self.texts = tokenizeTextData(self.texts, self.configurations)
+                self.signals.PrintInfo.emit('Токенизация...')
+                self.texts = tokenizeTextData(self.texts, self.configurations)
 
-            self.signals.UpdateProgressBar.emit(10)
+                self.signals.UpdateProgressBar.emit(10)
 
-            self.signals.PrintInfo.emit('Удаление стоп-слов...')
-            self.texts, log_string = removeStopWordsInTexts(self.texts, self.morph, self.configurations)
-            writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_1.txt')
-            self.signals.UpdateProgressBar.emit(15)
+                self.signals.PrintInfo.emit('Удаление стоп-слов...')
+                self.texts, log_string = removeStopWordsInTexts(self.texts, self.morph, self.configurations)
+                writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_1.txt')
+                self.signals.UpdateProgressBar.emit(15)
 
-            self.signals.PrintInfo.emit('Приведение к нормальной форме...')
-            self.texts, log_string = normalizeTexts(self.texts, self.morph)
-            writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_2.txt')
-            self.signals.UpdateProgressBar.emit(25)
+                self.signals.PrintInfo.emit('Приведение к нормальной форме...')
+                self.texts, log_string = normalizeTexts(self.texts, self.morph)
+                writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_2.txt')
+                self.signals.UpdateProgressBar.emit(25)
 
-            self.signals.PrintInfo.emit('Приведение регистра...')
-            self.texts, log_string = fixRegisterInTexts(self.texts, self.morph)
-            writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_3.txt')
-            self.signals.UpdateProgressBar.emit(30)
+                self.signals.PrintInfo.emit('Приведение регистра...')
+                self.texts, log_string = fixRegisterInTexts(self.texts, self.morph)
+                writeStringToFile(log_string.replace('\n ', '\n'), output_dir + 'output_stage_3.txt')
+                self.signals.UpdateProgressBar.emit(30)
 
-            if self.configurations.get("need_apriori", False):
-                self.signals.PrintInfo.emit('Рассчет Apriori...')
-                makeAprioriForTexts(self.texts, output_dir)
+                if self.configurations.get("need_apriori", False):
+                    self.signals.PrintInfo.emit('Рассчет Apriori...')
+                    makeAprioriForTexts(self.texts, output_dir)
 
-            self.signals.PrintInfo.emit('...')
-            for text in self.texts:
-                input_texts.append(getCompiledFromSentencesText(text.register_pass_centences))
+                self.signals.PrintInfo.emit('...')
+                for text in self.texts:
+                    self.input_texts.append(getCompiledFromSentencesText(text.register_pass_centences))
+            else:
+                for filename in self.filenames:
+                    self.input_texts.append(readFullTextInputText(filename))
         else:
-            for filename in self.filenames:
-                input_texts.append(readFullTextInputText(filename))
+            self.signals.PrintInfo.emit('Использование предыдущих результатов предварительной обработки')
 
         self.signals.UpdateProgressBar.emit(40)
 
-        if len(input_texts) < 3:
+        self.first_start = False
+
+        if len(self.input_texts) < 3:
             self.signals.PrintInfo.emit('Недостаточно документов для корректного анализа!')
         else:
             # Добавим русские стоп-слова
@@ -205,20 +216,27 @@ class LsaCalculator(QThread):
             self.signals.UpdateProgressBar.emit(45)
 
             vectorizer = CountVectorizer(min_df=1, stop_words=russian_stop_words)
-            dtm = vectorizer.fit_transform(input_texts)
+            dtm = vectorizer.fit_transform(self.input_texts)
 
             pre_svd_matrix = pd.DataFrame(dtm.toarray(), index=self.short_filenames,
                                           columns=vectorizer.get_feature_names()).head(10)
             pre_svd_matrix_filename = self.output_dir + 'pre_svd_matrix.csv'
             pre_svd_matrix.to_csv(pre_svd_matrix_filename, sep=";", encoding='utf-8')
             self.signals.PrintInfo.emit('Файл с матрицей [слова * документы] для ЛСА:' + pre_svd_matrix_filename)
-
-            self.signals.PrintInfo.emit('Уникальных слов:' + str(len(vectorizer.get_feature_names())))
+            features_count = len(vectorizer.get_feature_names())
+            self.signals.PrintInfo.emit('Уникальных слов:' + str(features_count))
 
             self.signals.UpdateProgressBar.emit(50)
 
+            max_component = min(len(self.input_texts), features_count)
+
             # Производим ЛСА и сжимаем пространство до 2-мерного
-            lsa = TruncatedSVD(2, algorithm='arpack')
+            if max_component <= self.lsa_components_count:
+                self.signals.PrintInfo.emit('Внимание! Число компонент уменьшено с ' + str(self.lsa_components_count) + ' до ' + str(max_component - 1))
+                self.lsa_components_count = max_component - 1
+
+
+            lsa = TruncatedSVD(self.lsa_components_count, algorithm='arpack')
             dtm_lsa = lsa.fit_transform(dtm)
             dtm_lsa = Normalizer(copy=False).fit_transform(dtm_lsa)
             self.signals.UpdateProgressBar.emit(70)
@@ -226,13 +244,17 @@ class LsaCalculator(QThread):
             xs = [w[0] for w in dtm_lsa]
             ys = [w[1] for w in dtm_lsa]
 
-            columns = ['Filename', 'X-component', 'Y-component']
+            columns = ['Filename']
+            if len(dtm_lsa) > 0:
+                for column_index in range(len(dtm_lsa[0])):
+                    columns.append('Component_' + str(column_index+1))
+
             docs_weight_df = pd.DataFrame(columns=columns, index=None)
             docs_weight_df[columns[0]] = self.short_filenames
-            docs_weight_df[columns[1]] = xs
-            docs_weight_df[columns[2]] = ys
+            for column_index in range(1, len(columns)):
+                docs_weight_df[columns[column_index]] = [w[column_index-1] for w in dtm_lsa]
             documents_weight_filename = self.output_dir + 'documents_weight.csv'
-            docs_weight_df.to_csv(documents_weight_filename, sep=";", encoding='utf-8')
+            docs_weight_df.to_csv(documents_weight_filename, sep=";")
             self.signals.PrintInfo.emit('Файл с весами документов:' + documents_weight_filename)
 
             self.signals.UpdateProgressBar.emit(90)
@@ -310,10 +332,12 @@ class DialogConfigLSA(QDialog):
         QApplication.restoreOverrideCursor()
         self.button2DView.setEnabled(True)
         self.buttonRelationTable.setEnabled(True)
+        self.buttonMakeLSA.setEnabled(True)
         QMessageBox.information(self, "Внимание", "Латентно-семантический анализ завершен!")
 
     def makeLSA(self):
         self.calculator.setConfiguration(self.configurations)
+        self.calculator.lsa_components_count = self.lsa_components_count.value()
         self.buttonMakeLSA.setEnabled(False)
         self.button2DView.setEnabled(False)
         self.buttonRelationTable.setEnabled(False)
@@ -323,6 +347,9 @@ class DialogConfigLSA(QDialog):
         self.configurations["minimal_word_size"] = self.spinBoxMinimalWordsLen.value()
         self.configurations["cut_ADJ"] = self.checkBoxPrilag.isChecked()
         self.configurations["need_apriori"] = self.checkBoxNeedApriori.isChecked()
+        self.radio_preprocessing_full.setEnabled(False)
+        self.radio_preprocessing_stopwords.setEnabled(False)
+        self.groupBoxFullPreprocessingPanel.setEnabled(False)
         self.profiler.start()
         self.calculator.start()
 
