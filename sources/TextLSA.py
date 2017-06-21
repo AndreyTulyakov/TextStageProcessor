@@ -221,7 +221,7 @@ class LsaCalculator(QThread):
             pre_svd_matrix = pd.DataFrame(dtm.toarray(), index=self.short_filenames,
                                           columns=vectorizer.get_feature_names()).head(10)
             pre_svd_matrix_filename = self.output_dir + 'pre_svd_matrix.csv'
-            pre_svd_matrix.to_csv(pre_svd_matrix_filename, sep=";", encoding='utf-8')
+            pre_svd_matrix.to_csv(pre_svd_matrix_filename, sep=";", decimal=',')
             self.signals.PrintInfo.emit('Файл с матрицей [слова * документы] для ЛСА:' + pre_svd_matrix_filename)
             features_count = len(vectorizer.get_feature_names())
             self.signals.PrintInfo.emit('Уникальных слов:' + str(features_count))
@@ -254,7 +254,7 @@ class LsaCalculator(QThread):
             for column_index in range(1, len(columns)):
                 docs_weight_df[columns[column_index]] = [w[column_index-1] for w in dtm_lsa]
             documents_weight_filename = self.output_dir + 'documents_weight.csv'
-            docs_weight_df.to_csv(documents_weight_filename, sep=";")
+            docs_weight_df.to_csv(documents_weight_filename, sep=";", decimal=',')
             self.signals.PrintInfo.emit('Файл с весами документов:' + documents_weight_filename)
 
             self.signals.UpdateProgressBar.emit(90)
@@ -264,7 +264,7 @@ class LsaCalculator(QThread):
             relationsTable = pd.DataFrame(similarity, index=self.short_filenames, columns=self.short_filenames).head(len(self.short_filenames))
 
             relation_table_filename = self.output_dir + 'document_relation_table.csv'
-            relationsTable.to_csv(relation_table_filename, sep=";", encoding='utf-8')
+            relationsTable.to_csv(relation_table_filename, sep=";", decimal=',')
             self.signals.PrintInfo.emit('Файл с таблицей отношений документов:' + relation_table_filename)
 
         self.signals.PrintInfo.emit('Рассчеты закончены!')
