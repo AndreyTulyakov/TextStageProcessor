@@ -102,7 +102,7 @@ def FindUnionSim(Sim, F):
 
 def writeMatrixToFile(matrix, filename):
     """Записать матрицу чисел в файл."""
-    writeStringToFile('\n'.join([';'.join(str(x) for x in row) for row in matrix]), filename)
+    writeStringToFile('\n'.join([';'.join(str(x).replace('.',',') for x in row) for row in matrix]), filename)
 
 def avg(numList):
     """Найти среднее значение для элементов списка"""
@@ -177,7 +177,7 @@ def Cluster2StringNames(clusters, cluster, filenames):
 # Сигналы для потока вычисления
 class ClasterizationCalculatorSignals(QObject):
     PrintInfo = pyqtSignal(str)
-    Finished = pyqtSignal()
+    Finished = pyqtSignal(list)
     UpdateProgressBar = pyqtSignal(int)
 
 
@@ -201,6 +201,7 @@ class ClasterizationCalculator(QThread):
         self.m = 2
         self.minPts = 0.3
         self.som_length = 1
+        self.somMap = []
         self.need_preprocessing = False
         self.first_call = True
         self.texts = []
@@ -260,8 +261,8 @@ class ClasterizationCalculator(QThread):
         if self.first_call and self.need_preprocessing:
             self.first_call = False
 
-        self.signals.PrintInfo.emit('Рассчеты закончены!')
-        self.signals.Finished.emit()
+        self.signals.PrintInfo.emit('Расчёты закончены!')
+        self.signals.Finished.emit(self.somMap)
 
     def makeHierarhyClasterization(self):
         self.signals.PrintInfo.emit('Иерархическая кластеризация' + '\n')
@@ -1208,14 +1209,14 @@ class ClasterizationCalculator(QThread):
         """Рассчитать коэффициент обучения для алгоритма SOM.
         Эта функция может быть изменена по желанию.
         С ростом параметра t монотонно убывает."""
-        return 0.1 + math.exp(-t / 1000)
+        return 0.1 * math.exp(-t / 1000)
 
     @staticmethod
     def neighborCoeff(t, length):
         """Рассчитать коэффициент соседства для алгоритма SOM.
         Эта функция может быть изменена по желанию.
         С ростом параметра t монотонно убывает."""
-        return length + math.exp(-t / (1000 / math.log(length)))
+        return length * math.exp(-t / (1000 / math.log(length)))
 
     def SOM(self, length):
         """Кластеризовать документы визуально,
@@ -1276,34 +1277,46 @@ class ClasterizationCalculator(QThread):
         # Карта нейронов - представление в виде двумерного массива
         mapM = [[m for m in M[i * length:i * length + length]]
             for i in range(length)]
-        minError = 0.0001
+        minError = 0.0000001
 
+        writeMatrixToFile(M, output_dir + "MInitial.csv")
         # Процесс обучения. Его цель - сгруппировать нейроны, непосредственно
         # соседствующие по карте, вокруг документов
         while True:
             winnerDistSum = 0
             Dtr = [d for d in W]                    # Обучающая выборка
-
             # Выбирается ближайший к случайно выбранному документу нейрон
             # Все нейроны-соседи "победителя" по карте перемещаются ближе к нему
             while Dtr:
                 dChosen = Dtr.pop(random.randint(0, len(Dtr) - 1))
                 winner = min(M, key=lambda m:dist(dChosen, m))
+                #print('indxW:' + str(M.index(winner)))
+                #print('distW:' + str(dist(dChosen, winner)))
                 rw = (M.index(winner) // length, M.index(winner) % length)
-                for m in M:
-                    rm = (M.index(m) // length, M.index(m) % length)
-                    m = [mi + self.trainCoeff(t) * math.exp(-(dist(rm, rw) ** 2) / \
+                for i in range(len(M)):
+                    rm = (i // length, i % length)
+                    M[i] = [mi + self.trainCoeff(t) * math.exp(-(dist(rm, rw) ** 2) / \
                         (2 * self.neighborCoeff(t, length) ** 2)) * (di - mi) \
-                        for mi,di in zip(m, dChosen)]
-                t += 1
-                winnerDistSum += dist(winner, dChosen)
-            if minError < winnerDistSum / len(texts):
+                        for mi,di in zip(M[i], dChosen)]
+            for d in W:
+                closest = min(M, key=lambda m:dist(d, m))
+                winnerDistSum += dist(closest, d)
+            if minError > winnerDistSum / len(texts) or t > 10000:
                 break;
+            t += 1
+
+        writeMatrixToFile(M, output_dir + "MOrganized.csv")
+
+        self.signals.PrintInfo.emit('Число итераций - ' + str(t))
+
+        for d in W:
+            closest = min(M, key=lambda m:dist(d, m))
+            print('d{0}:({1},{2}):{3}'.format(W.index(d), M.index(closest) // length, M.index(closest) % length, dist(closest,d)))
 
         # Построение U-матрицы, хранящей расстояния между соседними нейронами
+        finalMap = [[0 for i in range(length)] for j in range(length)]
         uMatrixSize = 2 * length - 1
         uMatrix = [[0 for i in range(uMatrixSize)] for j in range(uMatrixSize)]
-        mi,mj = 0,0
         for mi, i in zip(range(length), range(0, uMatrixSize, 2)):
             for mj, j in zip(range(length), range(0, uMatrixSize, 2)):
                 if mj < length - 1:
@@ -1314,7 +1327,7 @@ class ClasterizationCalculator(QThread):
                     uMatrix[i + 1][j + 1] = \
                         avg([dist(mapM[mi][mj], mapM[mi + 1][mj + 1]), \
                              dist(mapM[mi][mj + 1], mapM[mi + 1][mj])])
-                uMatrix[i][j] = avg([uMatrix[n][m] \
+                uMatrix[i][j] = finalMap[mi][mj] = avg([uMatrix[n][m] \
                     for m in range(j - 1, j + 2) \
                     for n in range(i - 1, i + 2) \
                     if 0 <= m < uMatrixSize \
@@ -1322,16 +1335,19 @@ class ClasterizationCalculator(QThread):
                     and not (m == j and n == i)])
 
         writeMatrixToFile(uMatrix, output_dir + 'uMatrix.csv')
+        writeMatrixToFile(finalMap, output_dir + 'extractedDists.csv')
 
         # Поскольку итоговая карта должна быть отрисована оттенками серого,
         # нужно представить эту карту матрицей, содержащей дробные значения
         # от нуля до единицы. Минимальное расстояние в U-матрице
-        # принимается за 0, максимальное - за 1.
-        minDist = min([d for row in uMatrix for d in row])
-        finalMap = [[d - minDist for d in row] for row in uMatrix]
+        # принимается за 1, максимальное - за 0.
         maxDist = max([d for row in finalMap for d in row])
-        finalMap = [[d / maxDist for d in row] for row in finalMap]
+        finalMap = [[d - maxDist for d in row] for row in finalMap]
+        minDist = min([d for row in finalMap for d in row])
+        finalMap = [[d / minDist for d in row] for row in finalMap]
         writeMatrixToFile(finalMap, output_dir + 'greyScaleMap.csv')
+
+        self.somMap = finalMap
 
 class Cluster(object):
     """ A Cluster is just a wrapper for a list of points.

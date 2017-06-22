@@ -9,7 +9,12 @@ from PyQt5.QtCore import QThread
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QApplication
+from PyQt5.uic import loadUiType
 from pymorphy2 import tokenizers
+import matplotlib
+matplotlib.use('Qt5Agg')
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 import os
 import random
 
@@ -22,6 +27,24 @@ from sources.TextPreprocessing import *
 from sources.clasterization.ClasterizationCalculator import ClasterizationCalculator
 from sources.utils import Profiler
 
+from .TextLSA import DialogPlotter
+
+Ui_DialogPlotter, QDialog = loadUiType('sources/DialogLSAPlot.ui')
+
+class DialogPlotterSOM(DialogPlotter):
+    def viewSOMDiagram(self, plt, somMap):
+        fig, ax = plt.subplots()
+        ax.imshow(somMap, cmap=plt.cm.gray, interpolation='nearest')
+        ax.set_title('SOM Map')
+
+        ax.spines['left'].set_position(('outward', len(somMap)))
+        ax.spines['bottom'].set_position(('outward', len(somMap)))
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        ax.yaxis.set_ticks_position('left')
+        ax.xaxis.set_ticks_position('bottom')
+
+        self.addfig(plt.gcf())
 
 class DialogConfigClasterization(QDialog):
 
@@ -36,6 +59,8 @@ class DialogConfigClasterization(QDialog):
         self.morph = morph
         self.configurations = configurations
         self.parent = parent
+
+        self.somMap = []
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.startMethod.clicked.connect(self.OnStartMethod)
@@ -59,6 +84,7 @@ class DialogConfigClasterization(QDialog):
         self.radioButton_DBSCAN.toggled.connect(self.onChangeMethod)
         self.radioButton_C3M.toggled.connect(self.onChangeMethod)
         self.radioButton_SOM.toggled.connect(self.onChangeMethod)
+        self.drawSOMDiagram.clicked.connect(self.onDrawSOMDiagram)
 
     def onChangeMethod(self):
         self.parameters.setVisible(False)
@@ -98,18 +124,21 @@ class DialogConfigClasterization(QDialog):
         self.progressBar.setValue(value)
         self.repaint()
 
-    def onCalculationFinish(self):
+    def onCalculationFinish(self, somMap=None):
         self.methods.setEnabled(True)
         self.parameters.setEnabled(True)
         self.textEdit.append('Выполнено за ' + self.profiler.stop() + ' с.')
         QApplication.restoreOverrideCursor()
         QMessageBox.information(self, "Внимание", "Кластеризация завершена!")
+        if somMap:
+            self.somMap = somMap
+            self.drawSOMDiagram.setEnabled(True)
 
     def OnStartMethod(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
 
         self.textEdit.setText("")
-
+        
         self.calculator.need_preprocessing = self.checkBoxNeedPreprocessing.isChecked()
         self.checkBoxNeedPreprocessing.setEnabled(False)
         self.calculator.setClusterCount(self.spinBox.value())
@@ -122,3 +151,8 @@ class DialogConfigClasterization(QDialog):
         self.calculator.som_length = self.spinBox_SOM_length.value()
         self.profiler.start()
         self.calculator.start()
+
+    def onDrawSOMDiagram(self):
+        plotter = DialogPlotterSOM()
+        plotter.viewSOMDiagram(plt, self.somMap)
+        plotter.exec_()
