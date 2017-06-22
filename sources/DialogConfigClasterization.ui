@@ -309,7 +309,17 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Cторона создаваемой матрицы нейронов</string>
+           <string>Размер матрицы нейронов</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="drawSOMDiagram">
+          <property name="text">
+           <string>Отобразить карту</string>
+          </property>
+          <property name="enabled">
+            <bool>False</bool>
           </property>
          </widget>
         </item>
