@@ -1208,14 +1208,14 @@ class ClasterizationCalculator(QThread):
         """Рассчитать коэффициент обучения для алгоритма SOM.
         Эта функция может быть изменена по желанию.
         С ростом параметра t монотонно убывает."""
-        return 0.1 * math.exp(-t / 1000)
+        return 0.1 * math.exp(-t / 500)
 
     @staticmethod
     def neighborCoeff(t, length):
         """Рассчитать коэффициент соседства для алгоритма SOM.
         Эта функция может быть изменена по желанию.
         С ростом параметра t монотонно убывает."""
-        return length * math.exp(-t / (1000 / math.log(length)))
+        return length * math.exp(-t / (500 / math.log(length)))
 
     def SOM(self, length):
         """Кластеризовать документы визуально,
@@ -1251,8 +1251,7 @@ class ClasterizationCalculator(QThread):
         i = 0
         j = 0
         for row in range(len(texts)):
-            j = 0
-            for key, value in t_all.items():
+            j = 0            for key, value in t_all.items():
                 text = texts[row]
                 if (key in text.word_frequency):
                     frequency_in_this_doc = text.word_frequency[key]
@@ -1269,18 +1268,16 @@ class ClasterizationCalculator(QThread):
                 W[i][j] /= W_norm[i]
         writeMatrixToFile(W, output_dir + "W.csv")
 
-        neuronSize = length * length
         t = 0                                       # Счётчик итераций обучения
         M = [[random.random() for j in range(len(t_all))] \
-            for i in range(neuronSize)]             # Множество нейронов
-        # Карта нейронов - представление в виде двумерного массива
-        mapM = [[m for m in M[i * length:i * length + length]]
-            for i in range(length)]
+            for i in range(length * length)]             # Множество нейронов
+
         minError = 0.0000001
 
         writeMatrixToFile(M, output_dir + "MInitial.csv")
         # Процесс обучения. Его цель - сгруппировать нейроны, непосредственно
         # соседствующие по карте, вокруг документов
+        self.signals.PrintInfo.emit('Обучение нейронов')
         while True:
             winnerDistSum = 0
             Dtr = [d for d in W]                    # Обучающая выборка
@@ -1297,9 +1294,8 @@ class ClasterizationCalculator(QThread):
                     M[i] = [mi + self.trainCoeff(t) * math.exp(-(dist(rm, rw) ** 2) / \
                         (2 * self.neighborCoeff(t, length) ** 2)) * (di - mi) \
                         for mi,di in zip(M[i], dChosen)]
-            for d in W:
-                closest = min(M, key=lambda m:dist(d, m))
-                winnerDistSum += dist(closest, d)
+                winnerDistSum = sum([dist(closest, d) for closest, d in zip([min(M, key=lambda m:dist(d, m)) for d in W], W)])
+
             if minError > winnerDistSum / len(texts) or t > 10000:
                 break;
             t += 1
@@ -1308,9 +1304,13 @@ class ClasterizationCalculator(QThread):
 
         self.signals.PrintInfo.emit('Число итераций - ' + str(t))
 
-        for d in W:
-            closest = min(M, key=lambda m:dist(d, m))
-            print('d{0}:({1},{2}):{3}'.format(W.index(d), M.index(closest) // length, M.index(closest) % length, dist(closest,d)))
+        print('\n'.join(['d{0}:({1},{2}):{3}'.format(W.index(d), M.index(closest) % length, M.index(closest) // length, dist(closest, d)) for d, closest in zip(W, [min(M, key=lambda m:dist(d, m)) for d in W])]))
+
+        self.signals.PrintInfo.emit('Построение U-матрицы')
+
+        # Для упрощения адресации нейроны организуются в двумерный массив
+        mapM = [[m for m in M[i * length:i * length + length]]
+            for i in range(length)]
 
         # Построение U-матрицы, хранящей расстояния между соседними нейронами
         finalMap = [[0 for i in range(length)] for j in range(length)]
@@ -1336,6 +1336,7 @@ class ClasterizationCalculator(QThread):
         writeMatrixToFile(uMatrix, output_dir + 'uMatrix.csv')
         writeMatrixToFile(finalMap, output_dir + 'extractedDists.csv')
 
+        self.signals.PrintInfo.emit('Нормализация карты')
         # Поскольку итоговая карта должна быть отрисована оттенками серого,
         # нужно представить эту карту матрицей, содержащей дробные значения
         # от нуля до единицы. Минимальное расстояние в U-матрице
