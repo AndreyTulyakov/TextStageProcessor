@@ -12,6 +12,7 @@ from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 
 from sources.TextPreprocessing import writeStringToFile
+from sources.classification.ID3 import Classification_Text_ID3
 from sources.classification.KNN import getResponse
 from sources.classification.NaiveBayes import *
 from sources.classification.clsf_util import *
@@ -381,15 +382,8 @@ class ClassificationCalculator(QThread):
         trainingClass = fclass[:split]
         testSet = fdata[split:]
 
-        print('output_dir:', output_dir)
-        print('input_dir:', input_dir)
-        print('fdata, fclass, split', (fdata, fclass, split))
-        print('trainingSet:', trainingSet)
-        print('trainingClass:', trainingClass)
-        print('testSet:', testSet)
+        Classification_Text_ID3(input_dir, output_dir, trainingSet, trainingClass, testSet)
 
-        # Переделать под реалии.
-        # Classification_Text_ID3('tree.txt', 'result.txt')
 
 
 

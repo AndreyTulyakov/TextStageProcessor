@@ -85,7 +85,6 @@ def FindUnionDist(Dist, F):
 
     return [min_i, min_j], Dist[min_i][min_j]
 
-
 def FindUnionSim(Sim, F):
     max_i = 0
     max_j = 0
@@ -100,6 +99,18 @@ def FindUnionSim(Sim, F):
                 max_j = j
 
     return [max_i, max_j], Sim[max_i][max_j]
+
+def writeMatrixToFile(matrix, filename):
+    """Записать матрицу чисел в файл."""
+    writeStringToFile('\n'.join([';'.join(str(x).replace('.',',') for x in row) for row in matrix]), filename)
+
+def avg(numList):
+    """Найти среднее значение для элементов списка"""
+    return sum(numList) / len(numList)
+
+def dist(vec1, vec2):
+    """Найти евклидово расстояние между двумя векторами"""
+    return math.sqrt(sum(map(lambda x: x * x, [i - j for i, j in zip(vec1, vec2)])))
 
 
 class Cluster:
@@ -166,7 +177,7 @@ def Cluster2StringNames(clusters, cluster, filenames):
 # Сигналы для потока вычисления
 class ClasterizationCalculatorSignals(QObject):
     PrintInfo = pyqtSignal(str)
-    Finished = pyqtSignal()
+    Finished = pyqtSignal(list)
     UpdateProgressBar = pyqtSignal(int)
 
 
@@ -190,6 +201,7 @@ class ClasterizationCalculator(QThread):
         self.m = 2
         self.minPts = 0.3
         self.som_length = 1
+        self.somMap = []
         self.need_preprocessing = False
         self.first_call = True
         self.texts = []
@@ -249,8 +261,8 @@ class ClasterizationCalculator(QThread):
         if self.first_call and self.need_preprocessing:
             self.first_call = False
 
-        self.signals.PrintInfo.emit('Рассчеты закончены!')
-        self.signals.Finished.emit()
+        self.signals.PrintInfo.emit('Расчёты закончены!')
+        self.signals.Finished.emit(self.somMap)
 
     def makeHierarhyClasterization(self):
         self.signals.PrintInfo.emit('Иерархическая кластеризация' + '\n')
@@ -1114,8 +1126,7 @@ class ClasterizationCalculator(QThread):
                 W[-1].append(int(key in text.word_frequency))
 
         # Вывод матрицы бинарных весов
-        for wRow in W:
-            ' '.join([str(w) for w in wRow])
+        writeStringToFile('\n'.join([';'.join([str(w).replace('.','.') for w in wRow]) for wRow in W]), output_dir + 'W.csv')
 
         # Расчёт матрицы коэффициентов покрытия
         C = []
@@ -1135,7 +1146,7 @@ class ClasterizationCalculator(QThread):
         # Первая строка - список номеров документов
         # Последующие строки предваряются номером документа,
         # для которого рассчитаны коэффициенты
-        writeStringToFile('\n'.join([';'.join([''] + ["d" + str(1 + num) for num in range(len(C))])] + [';'.join(["d" + str(d + 1)] + ["{:.4f}".format(cover) for cover in dCovers]) for d,dCovers in enumerate(C)]), output_dir + 'CoverMatrix.csv')
+        writeStringToFile('\n'.join([';'.join([''] + ["d" + str(1 + num) for num in range(len(C))])] + [';'.join(["d" + str(d + 1)] + [str(cover).replace('.',',') for cover in dCovers]) for d,dCovers in enumerate(C)]), output_dir + 'CoverMatrix.csv')
 
         # Количество кластеров
         nc = 0
@@ -1148,7 +1159,7 @@ class ClasterizationCalculator(QThread):
         P = []
         for i in range(len(C)):
             P.append(C[i][i] * (1 - C[i][i]) * sum(W[i]))
-        writeStringToFile('\n'.join(';'.join([str(1 + index), "{:.4f}".format(k)]) for index,k in enumerate(P)), output_dir + 'SeedPower.csv')
+        writeStringToFile('\n'.join(';'.join([str(1 + index), str(k).replace('.',',')]) for index,k in enumerate(P)), output_dir + 'SeedPower.csv')
 
         # Выбрать nc документов с наибольшей затравочной силой - "затравки"
         # Затравочные силы всех выбранных документов должны различаться
@@ -1165,7 +1176,7 @@ class ClasterizationCalculator(QThread):
                         del(s[minSeedPower])
                         s[i] = P[i]
                         minSeedPower = min(s, key = lambda key: s[key])
-        writeStringToFile('\n'.join(';'.join([str(1 + key), "{:.4f}".format(value)]) for key, value in s.items()), output_dir + 'Seeds.csv')
+        writeStringToFile('\n'.join(';'.join([str(1 + key), str(value).replace('.',',')]) for key, value in s.items()), output_dir + 'Seeds.csv')
 
         # Формирование кластеров
         # Каждый документ, не являющийся затравочным,
@@ -1191,6 +1202,20 @@ class ClasterizationCalculator(QThread):
 
         # Вывод результирующего набора кластеров
         writeStringToFile('\n'.join(';'.join(['Cluster' + str(1 + index)] + [str(1 + d) for d in cluster]) for index, cluster in enumerate(clusters)), output_dir + 'clusters.csv')
+
+    @staticmethod
+    def trainCoeff(t):
+        """Рассчитать коэффициент обучения для алгоритма SOM.
+        Эта функция может быть изменена по желанию.
+        С ростом параметра t монотонно убывает."""
+        return 0.1 * math.exp(-t / 500)
+
+    @staticmethod
+    def neighborCoeff(t, length):
+        """Рассчитать коэффициент соседства для алгоритма SOM.
+        Эта функция может быть изменена по желанию.
+        С ростом параметра t монотонно убывает."""
+        return length * math.exp(-t / (500 / math.log(length)))
 
     def SOM(self, length):
         """Кластеризовать документы визуально,
@@ -1226,8 +1251,7 @@ class ClasterizationCalculator(QThread):
         i = 0
         j = 0
         for row in range(len(texts)):
-            j = 0
-            for key, value in t_all.items():
+            j = 0            for key, value in t_all.items():
                 text = texts[row]
                 if (key in text.word_frequency):
                     frequency_in_this_doc = text.word_frequency[key]
@@ -1244,39 +1268,54 @@ class ClasterizationCalculator(QThread):
                 W[i][j] /= W_norm[i]
         writeMatrixToFile(W, output_dir + "W.csv")
 
-        neuronSize = length * length
         t = 0                                       # Счётчик итераций обучения
-        M = [[random.random() for j in range(t_all)] \
-            for i in range(neuronSize)]             # Множество нейронов
-        # Карта нейронов - представление в виде двумерного массива
-        mapM = [[m for m in M[i * length:i * length + length]]
-            for i in range(length)]
-        minError = 0.0001
+        M = [[random.random() for j in range(len(t_all))] \
+            for i in range(length * length)]             # Множество нейронов
 
+        minError = 0.0000001
+
+        writeMatrixToFile(M, output_dir + "MInitial.csv")
         # Процесс обучения. Его цель - сгруппировать нейроны, непосредственно
         # соседствующие по карте, вокруг документов
-        while minError < winnerDistSum / len(texts):
+        self.signals.PrintInfo.emit('Обучение нейронов')
+        while True:
             winnerDistSum = 0
             Dtr = [d for d in W]                    # Обучающая выборка
-
             # Выбирается ближайший к случайно выбранному документу нейрон
             # Все нейроны-соседи "победителя" по карте перемещаются ближе к нему
             while Dtr:
                 dChosen = Dtr.pop(random.randint(0, len(Dtr) - 1))
                 winner = min(M, key=lambda m:dist(dChosen, m))
+                #print('indxW:' + str(M.index(winner)))
+                #print('distW:' + str(dist(dChosen, winner)))
                 rw = (M.index(winner) // length, M.index(winner) % length)
-                for m in M:
-                    rm = (M.index(m) // length, M.index(m) % length)
-                    m = [mi + trainCoeff(t) * math.exp(-(dist(rm, rw) ** 2) / \
-                        (2 * neighborCoeff(t, length) ** 2)) * (di - mi) \
-                        for mi,di in zip(m, dChosen)]
-                t += 1
-                winnerDistSum += dist(winner, dChosen)
+                for i in range(len(M)):
+                    rm = (i // length, i % length)
+                    M[i] = [mi + self.trainCoeff(t) * math.exp(-(dist(rm, rw) ** 2) / \
+                        (2 * self.neighborCoeff(t, length) ** 2)) * (di - mi) \
+                        for mi,di in zip(M[i], dChosen)]
+                winnerDistSum = sum([dist(closest, d) for closest, d in zip([min(M, key=lambda m:dist(d, m)) for d in W], W)])
+
+            if minError > winnerDistSum / len(texts) or t > 10000:
+                break;
+            t += 1
+
+        writeMatrixToFile(M, output_dir + "MOrganized.csv")
+
+        self.signals.PrintInfo.emit('Число итераций - ' + str(t))
+
+        print('\n'.join(['d{0}:({1},{2}):{3}'.format(W.index(d), M.index(closest) % length, M.index(closest) // length, dist(closest, d)) for d, closest in zip(W, [min(M, key=lambda m:dist(d, m)) for d in W])]))
+
+        self.signals.PrintInfo.emit('Построение U-матрицы')
+
+        # Для упрощения адресации нейроны организуются в двумерный массив
+        mapM = [[m for m in M[i * length:i * length + length]]
+            for i in range(length)]
 
         # Построение U-матрицы, хранящей расстояния между соседними нейронами
+        finalMap = [[0 for i in range(length)] for j in range(length)]
         uMatrixSize = 2 * length - 1
         uMatrix = [[0 for i in range(uMatrixSize)] for j in range(uMatrixSize)]
-        mi,mj = 0,0
         for mi, i in zip(range(length), range(0, uMatrixSize, 2)):
             for mj, j in zip(range(length), range(0, uMatrixSize, 2)):
                 if mj < length - 1:
@@ -1286,8 +1325,8 @@ class ClasterizationCalculator(QThread):
                 if mj < length - 1 and mi < length - 1:
                     uMatrix[i + 1][j + 1] = \
                         avg([dist(mapM[mi][mj], mapM[mi + 1][mj + 1]), \
-                             dist(mapM[mi][mj + 1], mapM[mi + 1][mj])
-                uMatrix[i][j] = avg([uMatrix[n][m] \
+                             dist(mapM[mi][mj + 1], mapM[mi + 1][mj])])
+                uMatrix[i][j] = finalMap[mi][mj] = avg([uMatrix[n][m] \
                     for m in range(j - 1, j + 2) \
                     for n in range(i - 1, i + 2) \
                     if 0 <= m < uMatrixSize \
@@ -1295,40 +1334,20 @@ class ClasterizationCalculator(QThread):
                     and not (m == j and n == i)])
 
         writeMatrixToFile(uMatrix, output_dir + 'uMatrix.csv')
+        writeMatrixToFile(finalMap, output_dir + 'extractedDists.csv')
 
+        self.signals.PrintInfo.emit('Нормализация карты')
         # Поскольку итоговая карта должна быть отрисована оттенками серого,
         # нужно представить эту карту матрицей, содержащей дробные значения
         # от нуля до единицы. Минимальное расстояние в U-матрице
-        # принимается за 0, максимальное - за 1.
-        minDist = min([d for row in uMatrix for d in row])
-        finalMap = [[d - minDist for d in row] for row in uMatrix]
+        # принимается за 1, максимальное - за 0.
         maxDist = max([d for row in finalMap for d in row])
-        finalMap = [[d / maxDist for d in row] for row in finalMap]
+        finalMap = [[d - maxDist for d in row] for row in finalMap]
+        minDist = min([d for row in finalMap for d in row])
+        finalMap = [[d / minDist for d in row] for row in finalMap]
         writeMatrixToFile(finalMap, output_dir + 'greyScaleMap.csv')
 
-    def writeMatrixToFile(matrix, filename):
-        """Записать матрицу чисел в файл."""
-        writeStringToFile('\n'.join([';'.join(str(x) for x in row) for row in matrix]), filename)
-
-    def avg(numList):
-        """Найти среднее значение для элементов списка"""
-        return sum(numList) / len(numList)
-
-    def dist(vec1, vec2):
-        """Найти евклидово расстояние между двумя векторами"""
-        return math.sqrt(sum([map(lambda x: x * x, [i - j for i, j in zip(vec1, vec2)])]))
-
-    def trainCoeff(t):
-        """Рассчитать коэффициент обучения для алгоритма SOM.
-        Эта функция может быть изменена по желанию.
-        С ростом параметра t монотонно убывает."""
-        return 0.1 + math.exp(-t / 1000)
-
-    def neighborCoeff(t, length):
-        """Рассчитать коэффициент соседства для алгоритма SOM.
-        Эта функция может быть изменена по желанию.
-        С ростом параметра t монотонно убывает."""
-        return length + math.exp(-t / (1000 / math.log(length)))
+        self.somMap = finalMap
 
 class Cluster(object):
     """ A Cluster is just a wrapper for a list of points.

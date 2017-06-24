@@ -78,6 +78,7 @@ class DialogConfigClassification(QDialog):
     def makeClassification(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.textEdit.setText("")
+        self.checkBoxNeedPreprocessing.setEnabled(False)
         need_preprocessing = self.checkBoxNeedPreprocessing.isChecked()
         self.configurations['classification_knn_k'] = self.spinBox_KNN_K.value()
 

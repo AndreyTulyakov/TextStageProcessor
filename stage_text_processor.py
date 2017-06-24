@@ -5,7 +5,7 @@ import sys
 import pymorphy2
 from matplotlib import rc
 
-
+from sources.TextClassificationLib import DialogClassificationLib
 from sources.utils import *
 
 
@@ -54,13 +54,17 @@ class MainWindow(QMainWindow):
         button_clasterization.setMinimumHeight(32)
         button_clasterization.clicked.connect(self.clasterization)
 
-        button_clastering = QPushButton("Кластеризация (NEW!)")
+        button_clastering = QPushButton("Кластеризация (LIB)")
         button_clastering.setMinimumHeight(32)
         button_clastering.clicked.connect(self.clastering)
 
         button_classification = QPushButton("Классификация")
         button_classification.setMinimumHeight(32)
         button_classification.clicked.connect(self.classification)
+
+        button_classification_lib = QPushButton("Классификация (LIB)")
+        button_classification_lib.setMinimumHeight(32)
+        button_classification_lib.clicked.connect(self.classification_lib)
 
         button_lsa = QPushButton("Латентно-семантический анализ")
         button_lsa.setMinimumHeight(32)
@@ -85,6 +89,7 @@ class MainWindow(QMainWindow):
         vbox.addWidget(button_clasterization)
         vbox.addWidget(button_clastering)
         vbox.addWidget(button_classification)
+        vbox.addWidget(button_classification_lib)
         vbox.addWidget(button_lsa)
         vbox.addWidget(button_analyze_and_rule_apply)
         vbox.addWidget(button_xi_square)
@@ -108,7 +113,7 @@ class MainWindow(QMainWindow):
             dialogConfigClasterization.exec_()
 
     def clastering(self):
-        print("Кластеризация (NEW!)")
+        print("Кластеризация (LIB)")
         filenames = getFilenamesFromUserSelection(input_dir + 'clasterization')
         if(filenames != None):
             dialogConfigClastering = DialogClastering(filenames, morph, configurations, self)
@@ -124,6 +129,15 @@ class MainWindow(QMainWindow):
             self.hide()
             dialogConfigClassification.destroyed.connect(self.show)
             dialogConfigClassification.exec_()
+
+    def classification_lib(self):
+        print("Классификация (LIB)")
+        dirname = getDirFromUserSelection(input_dir + 'classification')
+        if(dirname != None):
+            dialogClassificationLib = DialogClassificationLib(dirname, morph, configurations, self)
+            self.hide()
+            dialogClassificationLib.destroyed.connect(self.show)
+            dialogClassificationLib.exec_()
 
     def makeLSA(self):
         print("LSA")

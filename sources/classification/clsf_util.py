@@ -21,7 +21,7 @@ def makeFileList(root_path = 'input_files/classification/', fread = True, fproce
     path_train = root_path + train_folder
     folders = [path_train + folder + '/' for folder in os.listdir(path_train)]
     class_titles = os.listdir(path_train)
-    
+
     for folder, title in zip(folders, class_titles):
         new_files = [folder + f for f in os.listdir(folder)]
         files.append(new_files)
@@ -43,20 +43,79 @@ def makeFileList(root_path = 'input_files/classification/', fread = True, fproce
         new_files = [folder + f for f in os.listdir(folder)]
         files_tst.append(new_files)
         type_data.append([title] * len(new_files))
-    
+
     type_data = sum(type_data, [])
-    
+
     out = sum(files + files_tst, [])
     if(fread):
         out = createTokenPool(out, fprocess)
-    
+
     return(out, type_data, split)
+
+
+
+#чтение путей файлов и классов
+def makeFileListLib(root_path = 'input_files/classification/', fread = True, fprocess = True):
+    type_data = []
+    split = 0
+    files = []
+    train_folder = "train/"
+    if len(root_path)>0 and root_path[-1] != '/':
+        train_folder = '/' + train_folder
+    path_train = root_path + train_folder
+    folders = [path_train + folder + '/' for folder in os.listdir(path_train)]
+    class_titles = os.listdir(path_train)
+
+    for folder, title in zip(folders, class_titles):
+        new_files = [folder + f for f in os.listdir(folder)]
+        files.append(new_files)
+        type_data.append([title] * len(new_files))
+        split += len(new_files)
+
+    test_folder = "test/"
+    if len(root_path) > 0 and root_path[-1] != '/':
+        test_folder = '/' + test_folder
+    path_test = root_path + test_folder
+
+    for cl in class_titles:
+         if not os.path.exists(path_test + cl):
+            os.makedirs(path_test + cl)
+
+    folders = [path_test + folder + '/' for folder in os.listdir(path_test)]
+    files_tst = []
+    for folder, title in zip(folders, class_titles):
+        new_files = [folder + f for f in os.listdir(folder)]
+        files_tst.append(new_files)
+        type_data.append([title] * len(new_files))
+
+    type_data = sum(type_data, [])
+
+    out = sum(files + files_tst, [])
+    filenames = out
+    if(fread):
+        out = createTokenPoolLib(out, fprocess)
+
+    return(out, type_data, split, filenames)
+
 
 #разделяем все документы на слова
 def createTokenPool(paths, fprocess):
     token_pool = []
     for path in paths:
         token_pool.append(tokenizeDoc(path, fprocess))
+    return token_pool
+
+def createTokenPoolLib(paths, fprocess):
+    token_pool = []
+    for path in paths:
+        try:
+            f = open(path, "r", encoding='utf-8')
+            text = f.read().lower()
+            token_pool.append(text)
+            f.close()
+        except Exception as err:
+            print("Ошибка чтения!", path, err)
+
     return token_pool
 
 #разделяем документ на слова   
