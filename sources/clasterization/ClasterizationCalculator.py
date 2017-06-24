@@ -1251,8 +1251,7 @@ class ClasterizationCalculator(QThread):
         i = 0
         j = 0
         for row in range(len(texts)):
-            j = 0
-            for key, value in t_all.items():
+            j = 0            for key, value in t_all.items():
                 text = texts[row]
                 if (key in text.word_frequency):
                     frequency_in_this_doc = text.word_frequency[key]
@@ -1272,6 +1271,7 @@ class ClasterizationCalculator(QThread):
         t = 0                                       # Счётчик итераций обучения
         M = [[random.random() for j in range(len(t_all))] \
             for i in range(length * length)]             # Множество нейронов
+
         minError = 0.0000001
 
         writeMatrixToFile(M, output_dir + "MInitial.csv")
@@ -1295,6 +1295,7 @@ class ClasterizationCalculator(QThread):
                         (2 * self.neighborCoeff(t, length) ** 2)) * (di - mi) \
                         for mi,di in zip(M[i], dChosen)]
                 winnerDistSum = sum([dist(closest, d) for closest, d in zip([min(M, key=lambda m:dist(d, m)) for d in W], W)])
+
             if minError > winnerDistSum / len(texts) or t > 10000:
                 break;
             t += 1
