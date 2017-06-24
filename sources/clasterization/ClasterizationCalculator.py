@@ -1110,8 +1110,7 @@ class ClasterizationCalculator(QThread):
                 W[-1].append(int(key in text.word_frequency))
 
         # Вывод матрицы бинарных весов
-        for wRow in W:
-            ' '.join([str(w) for w in wRow])
+        writeStringToFile('\n'.join([';'.join([str(w).replace('.','.') for w in wRow]) for wRow in W]), output_dir + 'W.csv')
 
         # Расчёт матрицы коэффициентов покрытия
         C = []
@@ -1131,7 +1130,7 @@ class ClasterizationCalculator(QThread):
         # Первая строка - список номеров документов
         # Последующие строки предваряются номером документа,
         # для которого рассчитаны коэффициенты
-        writeStringToFile('\n'.join([';'.join([''] + ["d" + str(1 + num) for num in range(len(C))])] + [';'.join(["d" + str(d + 1)] + ["{:.4f}".format(cover) for cover in dCovers]) for d,dCovers in enumerate(C)]), output_dir + 'CoverMatrix.csv')
+        writeStringToFile('\n'.join([';'.join([''] + ["d" + str(1 + num) for num in range(len(C))])] + [';'.join(["d" + str(d + 1)] + [str(cover).replace('.',',') for cover in dCovers]) for d,dCovers in enumerate(C)]), output_dir + 'CoverMatrix.csv')
 
         # Количество кластеров
         nc = 0
@@ -1144,7 +1143,7 @@ class ClasterizationCalculator(QThread):
         P = []
         for i in range(len(C)):
             P.append(C[i][i] * (1 - C[i][i]) * sum(W[i]))
-        writeStringToFile('\n'.join(';'.join([str(1 + index), "{:.4f}".format(k)]) for index,k in enumerate(P)), output_dir + 'SeedPower.csv')
+        writeStringToFile('\n'.join(';'.join([str(1 + index), str(k).replace('.',',')]) for index,k in enumerate(P)), output_dir + 'SeedPower.csv')
 
         # Выбрать nc документов с наибольшей затравочной силой - "затравки"
         # Затравочные силы всех выбранных документов должны различаться
@@ -1161,7 +1160,7 @@ class ClasterizationCalculator(QThread):
                         del(s[minSeedPower])
                         s[i] = P[i]
                         minSeedPower = min(s, key = lambda key: s[key])
-        writeStringToFile('\n'.join(';'.join([str(1 + key), "{:.4f}".format(value)]) for key, value in s.items()), output_dir + 'Seeds.csv')
+        writeStringToFile('\n'.join(';'.join([str(1 + key), str(value).replace('.',',')]) for key, value in s.items()), output_dir + 'Seeds.csv')
 
         # Формирование кластеров
         # Каждый документ, не являющийся затравочным,
