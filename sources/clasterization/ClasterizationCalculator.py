@@ -1251,7 +1251,8 @@ class ClasterizationCalculator(QThread):
         i = 0
         j = 0
         for row in range(len(texts)):
-            j = 0            for key, value in t_all.items():
+            j = 0
+            for key, value in t_all.items():
                 text = texts[row]
                 if (key in text.word_frequency):
                     frequency_in_this_doc = text.word_frequency[key]
