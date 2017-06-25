@@ -32,10 +32,17 @@ from .TextLSA import DialogPlotter
 Ui_DialogPlotter, QDialog = loadUiType('sources/DialogLSAPlot.ui')
 
 class DialogPlotterSOM(DialogPlotter):
-    def viewSOMDiagram(self, plt, somMap):
+    def viewSOMDiagram(self, plt, somMap, somDLocations):
         fig, ax = plt.subplots()
         ax.imshow(somMap, cmap=plt.cm.gray, interpolation='nearest')
         ax.set_title('SOM Map')
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+
+        for index, (x,y) in enumerate(somDLocations):
+            ax.text(x, y, 'd{0}'.format(index + 1),
+            verticalalignment='center',
+            horizontalalignment='center')
 
         ax.spines['left'].set_position(('outward', len(somMap)))
         ax.spines['bottom'].set_position(('outward', len(somMap)))
@@ -61,6 +68,7 @@ class DialogConfigClasterization(QDialog):
         self.parent = parent
 
         self.somMap = []
+        self.somDLocations = []
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.startMethod.clicked.connect(self.OnStartMethod)
@@ -124,21 +132,22 @@ class DialogConfigClasterization(QDialog):
         self.progressBar.setValue(value)
         self.repaint()
 
-    def onCalculationFinish(self, somMap=None):
+    def onCalculationFinish(self, somMap=None, somDLocations=None):
         self.methods.setEnabled(True)
         self.parameters.setEnabled(True)
         self.textEdit.append('Выполнено за ' + self.profiler.stop() + ' с.')
         QApplication.restoreOverrideCursor()
         QMessageBox.information(self, "Внимание", "Кластеризация завершена!")
-        if somMap:
+        if somMap and somDLocations:
             self.somMap = somMap
+            self.somDLocations = somDLocations
             self.drawSOMDiagram.setEnabled(True)
 
     def OnStartMethod(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
 
         self.textEdit.setText("")
-        
+
         self.calculator.need_preprocessing = self.checkBoxNeedPreprocessing.isChecked()
         self.checkBoxNeedPreprocessing.setEnabled(False)
         self.calculator.setClusterCount(self.spinBox.value())
@@ -154,5 +163,5 @@ class DialogConfigClasterization(QDialog):
 
     def onDrawSOMDiagram(self):
         plotter = DialogPlotterSOM()
-        plotter.viewSOMDiagram(plt, self.somMap)
+        plotter.viewSOMDiagram(plt, self.somMap, self.somDLocations)
         plotter.exec_()

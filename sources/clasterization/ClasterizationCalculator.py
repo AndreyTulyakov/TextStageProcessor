@@ -177,7 +177,7 @@ def Cluster2StringNames(clusters, cluster, filenames):
 # Сигналы для потока вычисления
 class ClasterizationCalculatorSignals(QObject):
     PrintInfo = pyqtSignal(str)
-    Finished = pyqtSignal(list)
+    Finished = pyqtSignal(list,list)
     UpdateProgressBar = pyqtSignal(int)
 
 
@@ -202,6 +202,7 @@ class ClasterizationCalculator(QThread):
         self.minPts = 0.3
         self.som_length = 1
         self.somMap = []
+        self.somDLocations = []
         self.need_preprocessing = False
         self.first_call = True
         self.texts = []
@@ -262,7 +263,7 @@ class ClasterizationCalculator(QThread):
             self.first_call = False
 
         self.signals.PrintInfo.emit('Расчёты закончены!')
-        self.signals.Finished.emit(self.somMap)
+        self.signals.Finished.emit(self.somMap, self.somDLocations)
 
     def makeHierarhyClasterization(self):
         self.signals.PrintInfo.emit('Иерархическая кластеризация' + '\n')
@@ -1208,14 +1209,14 @@ class ClasterizationCalculator(QThread):
         """Рассчитать коэффициент обучения для алгоритма SOM.
         Эта функция может быть изменена по желанию.
         С ростом параметра t монотонно убывает."""
-        return 0.1 * math.exp(-t / 500)
+        return 0.1 * math.exp(-t / 1000)
 
     @staticmethod
     def neighborCoeff(t, length):
         """Рассчитать коэффициент соседства для алгоритма SOM.
         Эта функция может быть изменена по желанию.
         С ростом параметра t монотонно убывает."""
-        return length * math.exp(-t / (500 / math.log(length)))
+        return length * math.exp(-t / (1000 / math.log(length)))
 
     def SOM(self, length):
         """Кластеризовать документы визуально,
@@ -1296,16 +1297,22 @@ class ClasterizationCalculator(QThread):
                         (2 * self.neighborCoeff(t, length) ** 2)) * (di - mi) \
                         for mi,di in zip(M[i], dChosen)]
                 winnerDistSum = sum([dist(closest, d) for closest, d in zip([min(M, key=lambda m:dist(d, m)) for d in W], W)])
-
             if minError > winnerDistSum / len(texts) or t > 10000:
                 break;
             t += 1
+
 
         writeMatrixToFile(M, output_dir + "MOrganized.csv")
 
         self.signals.PrintInfo.emit('Число итераций - ' + str(t))
 
-        print('\n'.join(['d{0}:({1},{2}):{3}'.format(W.index(d), M.index(closest) % length, M.index(closest) // length, dist(closest, d)) for d, closest in zip(W, [min(M, key=lambda m:dist(d, m)) for d in W])]))
+        self.somDLocations = [(M.index(closest) % length, M.index(closest) // length) \
+            for closest in [min(M, key=lambda m:dist(d, m)) for d in W]]
+        #print(str(len(self.somDLocations)))
+        #print(str(len(W)))
+        self.signals.PrintInfo.emit('\n'.join(['d{0}:({1},{2})'.format( \
+            W.index(d), x, y) for d, (x, y) in zip(W, self.somDLocations)]))
+
 
         self.signals.PrintInfo.emit('Построение U-матрицы')
 
