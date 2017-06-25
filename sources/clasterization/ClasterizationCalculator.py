@@ -1209,14 +1209,14 @@ class ClasterizationCalculator(QThread):
         """Рассчитать коэффициент обучения для алгоритма SOM.
         Эта функция может быть изменена по желанию.
         С ростом параметра t монотонно убывает."""
-        return 0.1 * math.exp(-t / 1000)
+        return 0.1 * math.exp(-t / 500)
 
     @staticmethod
     def neighborCoeff(t, length):
         """Рассчитать коэффициент соседства для алгоритма SOM.
         Эта функция может быть изменена по желанию.
         С ростом параметра t монотонно убывает."""
-        return length * math.exp(-t / (1000 / math.log(length)))
+        return length * math.exp(-t / (500 / math.log(length)))
 
     def SOM(self, length):
         """Кластеризовать документы визуально,
@@ -1308,11 +1308,8 @@ class ClasterizationCalculator(QThread):
 
         self.somDLocations = [(M.index(closest) % length, M.index(closest) // length) \
             for closest in [min(M, key=lambda m:dist(d, m)) for d in W]]
-        #print(str(len(self.somDLocations)))
-        #print(str(len(W)))
         self.signals.PrintInfo.emit('\n'.join(['d{0}:({1},{2})'.format( \
             W.index(d), x, y) for d, (x, y) in zip(W, self.somDLocations)]))
-
 
         self.signals.PrintInfo.emit('Построение U-матрицы')
 
