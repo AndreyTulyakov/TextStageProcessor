@@ -1146,19 +1146,28 @@ class ClasterizationCalculator(QThread):
         writeStringToFile('\n'.join(';'.join([str(1 + index), str(k).replace('.',',')]) for index,k in enumerate(P)), output_dir + 'SeedPower.csv')
 
         # Выбрать nc документов с наибольшей затравочной силой - "затравки"
-        # Затравочные силы всех выбранных документов должны различаться
-        s = {key:P[key] for key in range(nc)}
+        # Все затравки должны различаться между собой
         minDifference = 0.001
+        s = {}
+        for index, p in enumerate(P):
+            for key, value in s.items():
+                if abs(p - value) <= minDifference and C[index][index] == C[key][key] == C[index][key] == C[key][index]:
+                    break
+            else:
+                s[index] = p
+                if len(s) >= nc:
+                    break
         j = 0
         minSeedPower = min(s, key = lambda key: s[key])
-        for i in range(nc, len(P)):
-                if P[i] > s[minSeedPower]:
-                    for value in s.values():
-                        if (abs(P[i] - value) <= minDifference):
+        for index, p in enumerate(P):
+            if not index in s.keys():
+                if p > s[minSeedPower]:
+                    for key, value in s.items():
+                        if abs(p - value) <= minDifference and C[index][index] == C[key][key] == C[index][key] == C[key][index]:
                             break
                     else:
                         del(s[minSeedPower])
-                        s[i] = P[i]
+                        s[index] = p
                         minSeedPower = min(s, key = lambda key: s[key])
         writeStringToFile('\n'.join(';'.join([str(1 + key), str(value).replace('.',',')]) for key, value in s.items()), output_dir + 'Seeds.csv')
 
