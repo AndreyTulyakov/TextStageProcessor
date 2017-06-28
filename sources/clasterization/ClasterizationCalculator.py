@@ -1218,14 +1218,14 @@ class ClasterizationCalculator(QThread):
         """Рассчитать коэффициент обучения для алгоритма SOM.
         Эта функция может быть изменена по желанию.
         С ростом параметра t монотонно убывает."""
-        return 0.1 * math.exp(-t / 500)
+        return 0.1 * math.exp(-t / 1000)
 
     @staticmethod
     def neighborCoeff(t, length):
         """Рассчитать коэффициент соседства для алгоритма SOM.
         Эта функция может быть изменена по желанию.
         С ростом параметра t монотонно убывает."""
-        return length * math.exp(-t / (500 / math.log(length)))
+        return length * math.exp(-t / (1000 / math.log(length)))
 
     def SOM(self, length):
         """Кластеризовать документы визуально,
@@ -1290,24 +1290,23 @@ class ClasterizationCalculator(QThread):
         # соседствующие по карте, вокруг документов
         self.signals.PrintInfo.emit('Обучение нейронов')
         while True:
-            winnerDistSum = 0
             Dtr = [d for d in W]                    # Обучающая выборка
             # Выбирается ближайший к случайно выбранному документу нейрон
             # Все нейроны-соседи "победителя" по карте перемещаются ближе к нему
+            train = self.trainCoeff(t)
+            neighbor = 2 * self.neighborCoeff(t, length) ** 2
             while Dtr:
                 dChosen = Dtr.pop(random.randint(0, len(Dtr) - 1))
                 winner = min(M, key=lambda m:dist(dChosen, m))
-                #print('indxW:' + str(M.index(winner)))
-                #print('distW:' + str(dist(dChosen, winner)))
                 rw = (M.index(winner) // length, M.index(winner) % length)
                 for i in range(len(M)):
                     rm = (i // length, i % length)
-                    M[i] = [mi + self.trainCoeff(t) * math.exp(-(dist(rm, rw) ** 2) / \
-                        (2 * self.neighborCoeff(t, length) ** 2)) * (di - mi) \
-                        for mi,di in zip(M[i], dChosen)]
-                winnerDistSum = sum([dist(closest, d) for closest, d in zip([min(M, key=lambda m:dist(d, m)) for d in W], W)])
-            if minError > winnerDistSum / len(texts) or t > 10000:
-                break;
+                    h = train * math.exp(-(dist(rm, rw) ** 2) / neighbor)
+                    M[i] = [mi + h * (di - mi) for mi, di in zip(M[i], dChosen)]
+            avgWinDist = sum([dist(closest, d) for closest, d in zip([min(M, key=lambda m:dist(d, m)) for d in W], W)]) / len(texts)
+            if minError > avgWinDist or t >= 2000:
+                break
+
             t += 1
 
 
