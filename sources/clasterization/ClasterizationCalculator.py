@@ -1282,7 +1282,7 @@ class ClasterizationCalculator(QThread):
         t = 0                                       # Счётчик итераций обучения
         M = [[random.random() for j in range(len(t_all))] \
             for i in range(length * length)]             # Множество нейронов
-
+        neudists = [[dist((i1, j1), (i2, j2)) for i1 in range(length) for j1 in range(length)] for i2 in range(length) for j2 in range(length)]
         minError = 0.0000001
 
         writeMatrixToFile(M, output_dir + "MInitial.csv")
@@ -1298,11 +1298,11 @@ class ClasterizationCalculator(QThread):
             while Dtr:
                 dChosen = Dtr.pop(random.randint(0, len(Dtr) - 1))
                 winner = min(M, key=lambda m:dist(dChosen, m))
-                rw = (M.index(winner) // length, M.index(winner) % length)
+                iWinner = M.index(winner)
                 for i in range(len(M)):
-                    rm = (i // length, i % length)
-                    h = train * math.exp(-(dist(rm, rw) ** 2) / neighbor)
-                    M[i] = [mi + h * (di - mi) for mi, di in zip(M[i], dChosen)]
+                    if neudists[iWinner][i] < self.neighborCoeff(t,length):
+                        h = train * math.exp(-(neudists[iWinner][i] ** 2) / neighbor)
+                        M[i] = [mi + h * (di - mi) for mi, di in zip(M[i], dChosen)]
             avgWinDist = sum([dist(closest, d) for closest, d in zip([min(M, key=lambda m:dist(d, m)) for d in W], W)]) / len(texts)
             if minError > avgWinDist or t >= 2000:
                 break
