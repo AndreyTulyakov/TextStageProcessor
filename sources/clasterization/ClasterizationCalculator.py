@@ -1294,14 +1294,14 @@ class ClasterizationCalculator(QThread):
             # Выбирается ближайший к случайно выбранному документу нейрон
             # Все нейроны-соседи "победителя" по карте перемещаются ближе к нему
             train = self.trainCoeff(t)
-            neighbor = 2 * self.neighborCoeff(t, length) ** 2
+            neighbor = self.neighborCoeff(t, length)
             while Dtr:
                 dChosen = Dtr.pop(random.randint(0, len(Dtr) - 1))
                 winner = min(M, key=lambda m:dist(dChosen, m))
                 iWinner = M.index(winner)
                 for i in range(len(M)):
-                    if neudists[iWinner][i] < self.neighborCoeff(t,length):
-                        h = train * math.exp(-(neudists[iWinner][i] ** 2) / neighbor)
+                    if neudists[iWinner][i] <= neighbor:
+                        h = train * math.exp(-(neudists[iWinner][i] ** 2) / (2 * neighbor ** 2))
                         M[i] = [mi + h * (di - mi) for mi, di in zip(M[i], dChosen)]
             avgWinDist = sum([dist(closest, d) for closest, d in zip([min(M, key=lambda m:dist(d, m)) for d in W], W)]) / len(texts)
             if minError > avgWinDist or t >= 2000:
