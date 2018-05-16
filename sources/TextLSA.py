@@ -18,6 +18,9 @@ from sklearn.cluster import KMeans, MiniBatchKMeans
 import pandas as pd
 import warnings
 
+from scipy.sparse import csc_matrix
+from scipy.sparse.linalg import svds, eigs
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QDialog, QMessageBox, QTextEdit, QProgressBar, QApplication
@@ -236,10 +239,20 @@ class LsaCalculator(QThread):
                 self.lsa_components_count = max_component - 1
 
 
+
+           
+            # dtm_lsa = svds(dtm_lsa, k=self.lsa_components_count)
+            
             lsa = TruncatedSVD(self.lsa_components_count, algorithm='arpack')
+
+            dtm = csc_matrix(dtm, dtype=float)
             dtm_lsa = lsa.fit_transform(dtm)
+
+            dtm_lsa = csc_matrix(dtm_lsa, dtype=float) 
             dtm_lsa = Normalizer(copy=False).fit_transform(dtm_lsa)
             self.signals.UpdateProgressBar.emit(70)
+
+            dtm_lsa = np.array(dtm_lsa.toarray())
 
             xs = [w[0] for w in dtm_lsa]
             ys = [w[1] for w in dtm_lsa]
