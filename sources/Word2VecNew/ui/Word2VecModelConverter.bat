@@ -1,0 +1,1 @@
+python -m PyQt5.uic.pyuic DialogWord2Vec.ui -o DialogWord2Vec.py
