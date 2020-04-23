@@ -30,7 +30,7 @@ Open source project for text mining process exploration.
  - pymorphy2-dicts>=2.4
  - sklearn
 
-Склонировать с github
+Склонировать с этой версии github
 git clone https://github.com/ElleyKo/TextStageProcessor
 
 Для установки зависимостей (при наличии Python>=3.7.*) можно набрать команду
