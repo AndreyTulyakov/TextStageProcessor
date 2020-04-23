@@ -1,3 +1,6 @@
 *.pyc
 *.csv
 *.txt
+/.vscode
+/output_files/Word2Vec
+/output_files/FastText

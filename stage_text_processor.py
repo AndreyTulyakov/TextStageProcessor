@@ -23,6 +23,7 @@ stop_words_filename = configurations.get("stop_words_file", "sources/russian_sto
 
 from PyQt5.QtWidgets import QMainWindow, QSizePolicy, QSpacerItem, QFileDialog, QPushButton
 from sources.XiSquare import *
+from sources.Word2VecNew.DialogWord2VecMaker import *
 from sources.TextClasterization import *
 from sources.TextClassification import *
 from sources.TextClastering import *
@@ -83,6 +84,10 @@ class MainWindow(QMainWindow):
         button_annotation.clicked.connect(self.makeTextAnnotation)
         #button_annotation.setEnabled(False)
 
+        button_w2v = QPushButton("Word2Vec")
+        button_w2v.setMinimumHeight(32)
+        button_w2v.clicked.connect(self.makeWord2Vec)
+
         spacer = QSpacerItem(20,40,QSizePolicy.Minimum,QSizePolicy.Expanding)
 
         vbox = QVBoxLayout()
@@ -94,6 +99,7 @@ class MainWindow(QMainWindow):
         vbox.addWidget(button_analyze_and_rule_apply)
         vbox.addWidget(button_xi_square)
         vbox.addWidget(button_annotation)
+        vbox.addWidget(button_w2v)
         vbox.addItem(spacer)
 
         widget = QWidget();
@@ -175,8 +181,14 @@ class MainWindow(QMainWindow):
             dialogAnnotationMaker.destroyed.connect(self.show)
             dialogAnnotationMaker.exec_()
 
-
-
+    def makeWord2Vec(self):
+        print("Word2Vec")
+        filename = getFilenameFromUserSelection("Text file (*.txt);;Model file (*.model)", input_dir)
+        if (filename != None):
+            dialogWord2VecMaker = DialogWord2VecMaker(input_dir, filename, morph, configurations, self)
+            self.hide()
+            dialogWord2VecMaker.destroyed.connect(self.show)
+            dialogWord2VecMaker.exec_()
 
 
 if __name__ == '__main__':
