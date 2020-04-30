@@ -199,7 +199,7 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.createLogTextEdit.append("Файл со словарем для текста сохранен по адресу output/Word2Vec")
         log_data('index2word', list(
             enumerate(self.calculator.model.wv.index2word)))
-        self.createLogTextEdit.append("Параметр index2word сохранен по адресу output/Word2Vec")
+        self.createLogTextEdit.append("Список индексов index2word сохранен по адресу output/Word2Vec")
         self.calculator.model.save(root_path + '_output.model')
         self.createLogTextEdit.append("Модель данных сохранена по адресу output/Word2Vec")
         self.calculator.model.wv.save_word2vec_format(
