@@ -50,10 +50,10 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.retrainModelBtn.clicked.connect(self.retrain_model)
         self.retrainModelBtn.setVisible(False) # Скрыть кнопку повторной тренировки модели
 
-        # Вкладка визуализация модели
-        self.visualizeBtn.setEnabled(False) # Блокируем элементы до выбора модели
+        # Вкладка визуализация модели        
         self.searchQueryGBox.setEnabled(False) # Блокируем элементы до выбора модели
         self.plotVLayout.setEnabled(False) # Блокируем элементы до выбора модели
+        self.visualizeBtn.setEnabled(False) # Блокируем элементы до выбора модели
 
         self.selectModelBtn.clicked.connect(self.select_model_file)
         self.searchQueryBtn.clicked.connect(self.search_word)       
