@@ -30,6 +30,7 @@ from sources.TextClastering import *
 from sources.TextLSA import *
 from sources.TextDecomposeAndRuleApply import *
 from sources.AnnotationMaker import *
+from sources.FastText.DialogFastTextMaker import *
 
 
 if not os.path.exists(input_dir):
@@ -88,6 +89,10 @@ class MainWindow(QMainWindow):
         button_w2v.setMinimumHeight(32)
         button_w2v.clicked.connect(self.makeWord2Vec)
 
+        button_fastText = QPushButton("FastText")
+        button_fastText.setMinimumHeight(32)
+        button_fastText.clicked.connect(self.makeFastText)
+
         spacer = QSpacerItem(20,40,QSizePolicy.Minimum,QSizePolicy.Expanding)
 
         vbox = QVBoxLayout()
@@ -100,6 +105,7 @@ class MainWindow(QMainWindow):
         vbox.addWidget(button_xi_square)
         vbox.addWidget(button_annotation)
         vbox.addWidget(button_w2v)
+        vbox.addWidget(button_fastText)
         vbox.addItem(spacer)
 
         widget = QWidget();
@@ -189,6 +195,15 @@ class MainWindow(QMainWindow):
             self.hide()
             dialogWord2VecMaker.destroyed.connect(self.show)
             dialogWord2VecMaker.exec_()
+
+    def makeFastText(self):
+        print("FastText")
+        filename = getFilenameFromUserSelection("Text file (*.txt);;Model file (*.model)", input_dir)
+        if (filename != None):
+            dialogFastTextMaker = DialogFastTextMaker(input_dir, filename, morph, configurations, self)
+            self.hide()
+            dialogFastTextMaker.destroyed.connect(self.show)
+            dialogFastTextMaker.exec_()
 
 
 if __name__ == '__main__':

@@ -5,8 +5,8 @@ from PyQt5.QtWidgets import QApplication, QMessageBox, QDialog
 from sources.TextPreprocessing import writeStringToFile
 from sources.utils import Profiler, getFilenameFromUserSelection
 
-from sources.Word2VecNew.Word2VecCalculator import *
-from sources.Word2VecNew.DialogWord2Vec import Ui_Word2VecDialog as DialogWord2Vec # Импорт UI конвертированного в .py
+from sources.FastText.FastTextCalculator import *
+from sources.FastText.ui.DialogFastText import Ui_FastTextDialog as DialogFastText # Импорт UI конвертированного в .py
 from sources.common.plot.TsneMplForWidget import TsneMplForWidget
 from sources.common.plot.PlotMaker import PlotMaker
 
@@ -15,19 +15,19 @@ import matplotlib
 from matplotlib.backends.backend_qt5agg import (NavigationToolbar2QT as NavigationToolbar)
 matplotlib.use('Qt5Agg')
 
-# Импортируем файл, работающий с алгоритмом word2vec
-# Импортируем файл, работающий с моделью word2vec (создание, загрузка, препроцессинг)
+# Импортируем файл, работающий с алгоритмом fastText
+# Импортируем файл, работающий с моделью fastText (создание, загрузка, препроцессинг)
 # Импортируем файл, работающий с визуализацией с помощью t-SNE
 
 '''
-Основной класс алгоритма word2vec
+Основной класс алгоритма fastText
 Загрузка интерфейса
 Перенаправление методов по созданию и работе с моделью
 '''
-class DialogWord2VecMaker(QDialog, DialogWord2Vec):
+class DialogFastTextMaker(QDialog, DialogFastText):
     def __init__(self, input_dir, filename: str, morph, configurations, parent):
         QDialog.__init__(self)
-        DialogWord2Vec.__init__(self)
+        DialogFastText.__init__(self)
         self.setupUi(self)
 
         self.filename = filename
@@ -63,13 +63,13 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
             self.set_enable_visualisation(filename)
 
     def set_calc_and_signals(self):
-        self.calculator = Word2VecCalculator(self.filename, self.morph,self.configurations)
+        self.calculator = FastTextCalculator(self.filename, self.morph,self.configurations)
         self.calculator.signals.Finished.connect(self.on_calculation_finish)
         self.calculator.signals.PrintInfo.connect(self.on_text_log_add)
         self.calculator.signals.Progress.connect(self.on_model_epoch_end)
         self.calculator.signals.ProgressBar.connect(self.on_progress)
         self.output_dir = self.configurations.get(
-            "output_files_directory", "output_files") + '/Word2Vec/'
+            "output_files_directory", "output_files") + '/FastText/'
         os.makedirs(os.path.dirname(self.output_dir), exist_ok=True)
         print("Настройки калькулятора и сигналов заданы")
 
@@ -85,7 +85,7 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         root_path = '{0}{1}'.format(self.output_dir, os.path.basename(os.path.splitext(self.filename)[0]))
         model.wv.save_word2vec_format(
             root_path + 'weight_matrix_epoch' + str(epoch) + '.txt')
-        self.createLogTextEdit.append("Данные за эпоху " + str(epoch) + " сохранены по адресу output/Word2Vec")
+        self.createLogTextEdit.append("Данные за эпоху " + str(epoch) + " сохранены по адресу output/FastText")
         
     def visualise_model(self):
         self.selectModelBtn.setEnabled(False)
@@ -119,7 +119,6 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
             'Выполнено за ' + self.profiler.stop() + ' с.')
         
         QApplication.restoreOverrideCursor()
-        # self.createModelBtn.setEnabled(True)
         self.retrainModelBtn.setVisible(True) # TODO: Показать кнопку повтора расчетов
 
         self._log_output_data()
@@ -136,9 +135,6 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.calculator.size = self.vectorSizeField.value()
         self.calculator.learn_rate = self.trainingSpeedField.value()
         self.calculator.window = self.windowField.value()
-        self.calculator.negative = self.negativeSamplingField.value()
-        self.calculator.ns_exponent = self.negativeSamplingExpField.value()
-        self.calculator.sg = 0 if self.CBOWRadio.isChecked() else 1
         self.calculator.iter = self.epochNumberField.value()
         self.calculator.only_nouns = self.nounOnlyCheck.isChecked()
         self.setEnabled(False)
@@ -157,7 +153,7 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
 
     def select_model_file(self):
         print("Выбрать существующую модель из файла")
-        modelFile = getFilenameFromUserSelection("MODEL Files (*.model)", self.input_dir + 'Word2Vec')
+        modelFile = getFilenameFromUserSelection("MODEL Files (*.model)", self.input_dir + 'FastText')
         if modelFile != None and len(modelFile.split('/')) > 0:
             self.visualizeLogTextEdit.clear()
             self.set_enable_visualisation(modelFile)
@@ -196,22 +192,22 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         
         log_data('vocab', '\n'.join(
             yield_vocab(self.calculator.model.wv.vocab)))
-        self.createLogTextEdit.append("Файл со словарем для текста сохранен по адресу output/Word2Vec")
+        self.createLogTextEdit.append("Файл со словарем для текста сохранен по адресу output/FastText")
         log_data('index2word', list(
             enumerate(self.calculator.model.wv.index2word)))
-        self.createLogTextEdit.append("Параметр index2word сохранен по адресу output/Word2Vec")
+        self.createLogTextEdit.append("Параметр index2word сохранен по адресу output/FastText")
         self.calculator.model.save(root_path + '_output.model')
-        self.createLogTextEdit.append("Модель данных сохранена по адресу output/Word2Vec")
+        self.createLogTextEdit.append("Модель данных сохранена по адресу output/FastText")
         self.calculator.model.wv.save_word2vec_format(
             root_path + 'weight_matrix.txt')
-        self.createLogTextEdit.append("Матрица весов weight_matrix сохранена по адресу output/Word2Vec \n\n")
+        self.createLogTextEdit.append("Матрица весов weight_matrix сохранена по адресу output/FastText \n\n")
         self.modelFile = root_path + '_output.model'
     
     def set_enable_visualisation(self, modelFile):
         nameStrArray = modelFile.split('/')
         self.selectModelField.setText(nameStrArray[-3] + '/' + nameStrArray[-2] + '/' + nameStrArray[-1])
         self.visualizeLogTextEdit.append('Модель выбрана')
-        self.calculator = Word2VecCalculator(modelFile, self.morph, self.configurations)
+        self.calculator = FastTextCalculator(modelFile, self.morph, self.configurations)
         self.visualizeBtn.setEnabled(True) # Делаем доступными элементы после выбора модели
         self.searchQueryGBox.setEnabled(True) # Делаем доступными элементы после выбора модели
         self.plotVLayout.setEnabled(True) # Делаем доступными элементы после выбора модели
