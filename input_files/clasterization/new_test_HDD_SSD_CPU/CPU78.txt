@@ -1,0 +1,909 @@
+﻿Лучшие игры 2018 года: тесты двенадцати игровых компьютеров 
+Вступление
+
+В данном материале мы изучим производительность двенадцати лучших игровых компьютеров, протестированных за последние месяцы в рамках цикла обзоров "Игровой компьютер: выбор лучших связок видеокарт и процессоров". Да, получившиеся конфигурации не идеальные. Однако и направление материалов, посвященных игровым ПК, носит пилотный характер. Со временем будут подобраны более оптимальные системы.
+
+В обзоре присутствуют сводные диаграммы производительности игровых ПК и среднегеометрические результаты систем в восьми играх.
+
+Данное направление статей носит справочный характер, комментарии отсутствуют, поскольку каждый читатель сможет самостоятельно почерпнуть нужную ему информацию.
+
+Результаты тестов: сравнение производительности
+
+Режимы работы игровых компьютеров:
+
+Номинал:
+
+    Core i5-8600 (3100) + GeForce GTX 1060 6GB (1708/8008);
+    Core i5-8400 (2800) + GeForce GTX 1060 6GB (1708/8008);
+    Core i3-8350K (4000) + GeForce GTX 1060 6GB (1708/8008);
+    Core i3-8350K (4000) + GeForce GTX 1060 3GB (1708/8008);
+    Core i3-8100 (3600) + GeForce GTX 1060 6GB (1708/8008);
+    Core i3-8100 (3600) + GeForce GTX 1050 2GB (1455/7012);
+    Pentium G5400 (3700) + GeForce GTX 1050 Ti 4GB (1390/7012);
+
+    Ryzen 5 1600X (3600) + GeForce GTX 1060 6GB (1708/8008);
+    Ryzen 5 1600 (3200) + GeForce GTX 1060 3GB (1708/8008);
+    Ryzen 5 1400 (3200) + GeForce GTX 1060 6GB (1708/8008);
+    Ryzen 3 1300X (3500) + GeForce GTX 1050 2GB (1455/7012);
+    Ryzen 3 1200 (3100) + GeForce GTX 1050 Ti 4GB (1390/7012).
+
+Разгон:
+
+    Core i5-8600 (4100) + GeForce GTX 1060 6GB (1940/9400);
+    Core i5-8400 (3800) + GeForce GTX 1060 6GB (1940/9400);
+    Core i3-8350K (4600) + GeForce GTX 1060 6GB (1940/9400);
+    Core i3-8350K (4600) + GeForce GTX 1060 3GB (1920/9300);
+    Core i3-8100 (3600) + GeForce GTX 1060 6GB (1940/9400);
+    Core i3-8100 (3600) + GeForce GTX 1050 2GB (1770/8000);
+    Pentium G5400 (3700) + Radeon RX 580 4GB (1750/8000);
+
+    Ryzen 5 1600X (4000) + GeForce GTX 1060 6GB (1940/9400);
+    Ryzen 5 1600 (4000) + GeForce GTX 1060 3GB (1920/9300);
+    Ryzen 5 1400 (4000) + GeForce GTX 1060 6GB (1940/9400);
+    Ryzen 3 1300X (4000) + GeForce GTX 1050 2GB (1770/8000);
+    Ryzen 3 1200 (4000) + GeForce GTX 1050 Ti 4GB (1750/8000).
+
+Civilization VI: Rise & Fall
+
+
+
+    Версия 1.0.0.257.
+    DirectX 11.
+        Полноэкранное сглаживание (MSAA) - 4X.
+        Текстуры высокого разрешения - включены.
+        Качество визуальных эффектов - высокое.
+        Размытие - включено.
+        Динамическое освещение - включено.
+        Тени - включены.
+        Разрешение теней - 8192х8192.
+        Разрешение наложения - 4096х4096.
+        Полноэкранное наложение - включено.
+        Качество ландшафта - высокое.
+        Геометрия ландшафта высокого разрешения - включена.
+        Текстуры ландшафта высокого разрешения - включены.
+        Шейдеры ландшафта высокого качества - включены.
+        Объемное освещение - включено.
+        Разрешение рендера объемного освещения - 2048х2048.
+        Высокая детализация помех - включена.
+        Вода в высоком разрешении - включена.
+        Шейдеры воды высокого качества - включены.
+        Отражения воды - 4 шага.
+        Анимация лидеров - высокая.
+
+
+1920х1080
+
+Номинал
+Core i5-8600 + GeForce GTX 1060 6GB	
+57	 	63
+Core i5-8400 + GeForce GTX 1060 6GB	
+54	 	60
+Core i3-8350K + GeForce GTX 1060 6GB	
+50	 	55
+Core i3-8350K + GeForce GTX 1060 3GB	
+47	 	52
+Core i3-8100 + GeForce GTX 1060 6GB	
+45	 	50
+Core i3-8100 + GeForce GTX 1050 2GB	
+32	 	36
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+34	 	38
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+56	 	62
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+50	 	55
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+50	 	56
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+33	 	37
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+34	 	38
+
+Разгон
+Core i5-8600 + GeForce GTX 1060 6GB	
+68	 	76
+Core i5-8400 + GeForce GTX 1060 6GB	
+65	 	72
+Core i3-8350K + GeForce GTX 1060 6GB	
+60	 	67
+Core i3-8350K + GeForce GTX 1060 3GB	
+58	 	64
+Core i3-8100 + GeForce GTX 1060 6GB	
+52	 	58
+Core i3-8100 + GeForce GTX 1050 2GB	
+39	 	43
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+41	 	45
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+67	 	74
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+64	 	71
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+62	 	69
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+41	 	45
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+41	 	45
+ 	
+ 	 	 	 	 
+ 	
+0	 	20	 	40	 	60	 	80	 
+Минимальный и средний FPS
+
+Conan Exiles
+
+
+
+    Версия 104617.
+    DirectX 11.
+        Угол обзора - 90.
+        Сглаживание - х4.
+        Дальность обзора - максимальная.
+        Пост-обработка - максимальная.
+        Качество теней - максимальное.
+        Качество эффектов - максимальное.
+        Качество текстур - максимальное.
+        Качество листвы - максимальное.
+
+
+1920х1080
+
+Номинал
+Core i5-8600 + GeForce GTX 1060 6GB	
+38	49	 
+Core i5-8400 + GeForce GTX 1060 6GB	
+37	47	 
+Core i3-8350K + GeForce GTX 1060 6GB	
+38	49	 
+Core i3-8350K + GeForce GTX 1060 3GB	
+36	46	 
+Core i3-8100 + GeForce GTX 1060 6GB	
+36	46	 
+Core i3-8100 + GeForce GTX 1050 2GB	
+22	 	28
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+23	 	29
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+37	47	 
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+34	43	 
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+36	46	 
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+21	 	27
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+23	30	 
+
+Разгон
+Core i5-8600 + GeForce GTX 1060 6GB	
+45	58	 
+Core i5-8400 + GeForce GTX 1060 6GB	
+44	56	 
+Core i3-8350K + GeForce GTX 1060 6GB	
+46	59
+Core i3-8350K + GeForce GTX 1060 3GB	
+43	55	 
+Core i3-8100 + GeForce GTX 1060 6GB	
+41	53	 
+Core i3-8100 + GeForce GTX 1050 2GB	
+27	34	 
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+27	34	 
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+45	58	 
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+42	54	 
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+42	54	 
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+26	33	 
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+28	36	 
+ 	
+ 	 	 	 	 	 
+ 	
+0	 	10	 	20	 	30	 	40	 	50	 
+Минимальный и средний FPS
+
+Far Cry 5
+
+
+
+    Версия 1.4.0.
+    DirectX 11.
+        Качество фильтрации текстур - максимальное.
+        Качество теней - максимальное.
+        Качество геометрии мира и растительности - максимальное.
+        Качество окружения - максимальное.
+        Качество воды - высокое.
+        Качество ландшафта - высокое.
+        Качество объемного тумана - высокое.
+        Сглаживание - SMAA.
+        Размытие в движении - включено.
+        Масштаб поля зрения - 90.
+        Масштаб разрешения - 1.0.
+
+
+1920х1080
+
+Номинал
+Core i5-8600 + GeForce GTX 1060 6GB	
+61	71	 
+Core i5-8400 + GeForce GTX 1060 6GB	
+58	68	 
+Core i3-8350K + GeForce GTX 1060 6GB	
+61	71	 
+Core i3-8350K + GeForce GTX 1060 3GB	
+56	 	65
+Core i3-8100 + GeForce GTX 1060 6GB	
+58	 	67
+Core i3-8100 + GeForce GTX 1050 2GB	
+34	 	39
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+35	 	41
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+55	 	64
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+50	 	58
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+50	 	58
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+32	 	37
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+36	 	42
+
+Разгон
+Core i5-8600 + GeForce GTX 1060 6GB	
+74	86
+Core i5-8400 + GeForce GTX 1060 6GB	
+72	84	 
+Core i3-8350K + GeForce GTX 1060 6GB	
+74	86
+Core i3-8350K + GeForce GTX 1060 3GB	
+69	80	 
+Core i3-8100 + GeForce GTX 1060 6GB	
+68	79	 
+Core i3-8100 + GeForce GTX 1050 2GB	
+39	 	45
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+40	 	47
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+66	77	 
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+62	72	 
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+63	73	 
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+38	 	44
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+41	 	48
+ 	
+ 	 	 	 	 
+ 	
+0	 	20	 	40	 	60	 	80	 
+Минимальный и средний FPS
+
+Final Fantasy XV
+
+
+    Версия 1138403.
+    DirectX 11.
+        Разрешение - 100%.
+        Детализация моделей - высокая.
+        Память под текстуры - максимальная.
+        Анизотропная фильтрация - высокая.
+        Тесселяция - включена.
+        Качество освещения - максимальное.
+        Качество теней - максимальное.
+        Качество рассеянного затенения - высокое.
+        Сглаживание - FXAA.
+        Размытие в движении - включено.
+        Качество фильтрации - максимальное.
+        Nvidia HairWorks - выключена.
+        Nvidia VXAO - выключена.
+        Nvidia TurfEffects - выключена.
+        Nvidia ShadowLids - выключена.
+
+
+1920х1080
+
+Номинал
+Core i5-8600 + GeForce GTX 1060 6GB	
+41	 	45
+Core i5-8400 + GeForce GTX 1060 6GB	
+41	 	45
+Core i3-8350K + GeForce GTX 1060 6GB	
+40	 	44
+Core i3-8350K + GeForce GTX 1060 3GB	
+37	 	41
+Core i3-8100 + GeForce GTX 1060 6GB	
+38	 	42
+Core i3-8100 + GeForce GTX 1050 2GB	
+21	 	23
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+23	 	25
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+40	 	44
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+37	 	41
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+38	 	42
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+21	 	23
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+24	 	27
+
+Разгон
+Core i5-8600 + GeForce GTX 1060 6GB	
+48	 	53
+Core i5-8400 + GeForce GTX 1060 6GB	
+48	 	53
+Core i3-8350K + GeForce GTX 1060 6GB	
+48	 	53
+Core i3-8350K + GeForce GTX 1060 3GB	
+45	 	50
+Core i3-8100 + GeForce GTX 1060 6GB	
+44	 	49
+Core i3-8100 + GeForce GTX 1050 2GB	
+23	 	26
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+25	 	28
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+47	 	52
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+44	 	49
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+45	 	50
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+28	 	31
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+32	 	35
+ 	
+ 	 	 	 	 	 
+ 	
+0	 	10	 	20	 	30	 	40	 	50	 
+Минимальный и средний FPS
+
+Kingdom Come: Deliverance
+
+
+    Версия 1.6.2.
+    DirectX 11.
+        Поле зрения - 75.
+        Качество объектов - ультра высокое.
+        Качество эффектов - ультра высокое.
+        Качество освещения - ультра высокое.
+        Качество частиц - ультра высокое.
+        Качество физики - ультра высокое.
+        Качество пост-обработки - ультра высокое.
+        Качество шейдеров - ультра высокое.
+        Качество теней - ультра высокое.
+        Качество текстур - ультра высокое.
+        Качество воды - ультра высокое.
+        Детализация объемных эффектов - ультра высокая.
+        Детализация растений - ультра высокая.
+        Дальность видимости объектов - ультра высокая.
+        Дальность отрисовки деталей окружения - высокая.
+        Дальность отрисовки растений - средняя.
+        Размытие в движении - объекты.
+
+Subnautica
+
+
+
+    Версия 1.0 (сборка 60304).
+    DirectX 11.
+        Угол обзора - 90.
+        Качество детализации - высокое.
+        Качество воды - высокое.
+        Сглаживание - FXAA.
+        Качество сглаживания - высокое.
+        Свечение - включено.
+        Блики - включены.
+        Глубина резкости - включена.
+        Размытие в движении - высокое.
+        Глобальное затенение - высокое.
+        Качество отражений - высокое.
+        Передача полутонов - включена.
+
+
+1920х1080
+
+Номинал
+Core i5-8600 + GeForce GTX 1060 6GB	
+65	77	 
+Core i5-8400 + GeForce GTX 1060 6GB	
+64	75	 
+Core i3-8350K + GeForce GTX 1060 6GB	
+67	79	 
+Core i3-8350K + GeForce GTX 1060 3GB	
+63	74	 
+Core i3-8100 + GeForce GTX 1060 6GB	
+65	77	 
+Core i3-8100 + GeForce GTX 1050 2GB	
+37	 	43
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+42	 	49
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+57	 	67
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+52	 	61
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+54	 	63
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+34	 	40
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+38	 	45
+
+Разгон
+Core i5-8600 + GeForce GTX 1060 6GB	
+78	92	 
+Core i5-8400 + GeForce GTX 1060 6GB	
+77	91	 
+Core i3-8350K + GeForce GTX 1060 6GB	
+80	94
+Core i3-8350K + GeForce GTX 1060 3GB	
+76	89	 
+Core i3-8100 + GeForce GTX 1060 6GB	
+76	89	 
+Core i3-8100 + GeForce GTX 1050 2GB	
+42	 	49
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+47	 	55
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+71	83	 
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+67	79	 
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+67	79	 
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+39	 	46
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+43	 	50
+ 	
+ 	 	 	 	 
+ 	
+0	 	20	 	40	 	60	 	80	 
+Минимальный и средний FPS
+
+Total War Saga: Thrones of Britannia
+
+
+
+    Версия 1.0.11578.
+    DirectX 11.
+        Масштаб интерфейса - 100%.
+        Сглаживание - MLAA.
+        Качество текстур - ультра высокое.
+        Фильтрация текстур - анизотропная х16.
+        Качество теней - очень высокое.
+        Качество воды - очень высокое.
+        Качество неба - очень высокое.
+        Глубина резкости - включена.
+        Эффекты частиц - очень высокие.
+        Отражения в экранном пространстве - очень высокие.
+        Качество травы - очень высокое.
+        Качество деревьев - очень высокое.
+        Качество местности - очень высокое.
+        Качество войск - очень высокое.
+        Качество построек - очень высокое.
+        Размер отрядов - ультра высокий.
+        Неограниченная видео память - включена.
+        Сложное затенение SSAO - включено.
+        Искажение - включено.
+        Виньетирование - включено.
+        Зона резкости - включена.
+
+
+1920х1080
+
+Номинал
+Core i5-8600 + GeForce GTX 1060 6GB	
+38	54	 
+Core i5-8400 + GeForce GTX 1060 6GB	
+36	52	 
+Core i3-8350K + GeForce GTX 1060 6GB	
+38	54	 
+Core i3-8350K + GeForce GTX 1060 3GB	
+36	51	 
+Core i3-8100 + GeForce GTX 1060 6GB	
+36	51	 
+Core i3-8100 + GeForce GTX 1050 2GB	
+20	28	 
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+20	29	 
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+31	44	 
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+27	39	 
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+27	39	 
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+18	 	25
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+20	28	 
+
+Разгон
+Core i5-8600 + GeForce GTX 1060 6GB	
+46	66
+Core i5-8400 + GeForce GTX 1060 6GB	
+45	64	 
+Core i3-8350K + GeForce GTX 1060 6GB	
+46	65	 
+Core i3-8350K + GeForce GTX 1060 3GB	
+43	62	 
+Core i3-8100 + GeForce GTX 1060 6GB	
+42	60	 
+Core i3-8100 + GeForce GTX 1050 2GB	
+23	33	 
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+23	33	 
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+37	53	 
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+36	51	 
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+36	51	 
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+21	30	 
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+22	32	 
+ 	
+ 	 	 	 
+ 	
+0	 	20	 	40	 	60	 
+Минимальный и средний FPS
+
+Warhammer: Vermintide 2
+
+
+    Версия 1.0.4.
+    DirectX 11.
+        Качество текстур персонажей - высокое.
+        Качество текстур окружения - высокое.
+        Качество частиц - экстремальное.
+        Разрешение прозрачности - высокое.
+        Рассеивание частиц - 100%.
+        Качество теней на клиентской стороне - экстремальное.
+        Качество теней от солнца - экстремальное.
+        Максимальное количество источников света - 6.
+        Качество объемного тумана - экстремальное.
+        Качество рассеянного света - высокое.
+        Высокое качество меха - включено.
+        Сглаживание - FXAA.
+        Фильтр резкости - включен.
+        Качество сложного затенения (SSAO) - экстремальное.
+        Свечение - включено.
+        Тени на коже - включены.
+        Глубина резкости - включена.
+        SSR - включена.
+        Видимые лучи - включены.
+        Фильтр "блик" - включен.
+        Искажения цвета и линз - включены.
+        Размытие в движении - включено.
+        Количество объектов - включено.
+        Уровень детализации анимации, дистанция - 1.
+
+
+1920х1080
+
+Номинал
+Core i5-8600 + GeForce GTX 1060 6GB	
+55	64	 
+Core i5-8400 + GeForce GTX 1060 6GB	
+53	62	 
+Core i3-8350K + GeForce GTX 1060 6GB	
+56	 	65
+Core i3-8350K + GeForce GTX 1060 3GB	
+52	 	61
+Core i3-8100 + GeForce GTX 1060 6GB	
+53	62	 
+Core i3-8100 + GeForce GTX 1050 2GB	
+29	 	34
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+31	 	36
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+52	 	60
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+50	 	58
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+47	 	55
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+28	 	32
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+31	 	36
+
+Разгон
+Core i5-8600 + GeForce GTX 1060 6GB	
+66	77
+Core i5-8400 + GeForce GTX 1060 6GB	
+65	75	 
+Core i3-8350K + GeForce GTX 1060 6GB	
+66	77
+Core i3-8350K + GeForce GTX 1060 3GB	
+62	72	 
+Core i3-8100 + GeForce GTX 1060 6GB	
+61	71	 
+Core i3-8100 + GeForce GTX 1050 2GB	
+34	 	39
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+34	 	40
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+60	70	 
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+57	66	 
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+54	63	 
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+32	 	37
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+35	 	41
+ 	
+ 	 	 	 
+ 	
+0	 	20	 	40	 	60	 
+Минимальный и средний FPS
+
+Среднегеометрические результаты систем в восьми играх
+
+
+1920х1080
+
+Номинал
+Core i5-8600 + GeForce GTX 1060 6GB	
+46	56	 
+Core i5-8400 + GeForce GTX 1060 6GB	
+44	54	 
+Core i3-8350K + GeForce GTX 1060 6GB	
+44	54	 
+Core i3-8350K + GeForce GTX 1060 3GB	
+42	51	 
+Core i3-8100 + GeForce GTX 1060 6GB	
+42	52	 
+Core i3-8100 + GeForce GTX 1050 2GB	
+25	 	30
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+26	 	32
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+42	52	 
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+39	47	 
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+38	47	 
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+24	 	29
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+26	 	32
+
+Разгон
+Core i5-8600 + GeForce GTX 1060 6GB	
+55	67
+Core i5-8400 + GeForce GTX 1060 6GB	
+54	66	 
+Core i3-8350K + GeForce GTX 1060 6GB	
+54	66	 
+Core i3-8350K + GeForce GTX 1060 3GB	
+51	62	 
+Core i3-8100 + GeForce GTX 1060 6GB	
+49	60	 
+Core i3-8100 + GeForce GTX 1050 2GB	
+29	 	35
+Pentium G5400 + GeForce GTX 1050 Ti 4GB	
+30	 	37
+Ryzen 5 1600X + GeForce GTX 1060 6GB	
+51	62	 
+Ryzen 5 1600 + GeForce GTX 1060 3GB	
+48	59	 
+Ryzen 5 1400 + GeForce GTX 1060 6GB	
+47	57	 
+Ryzen 3 1300X + GeForce GTX 1050 2GB	
+29	 	35
+Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB	
+31	 	38
+ 	
+ 	 	 	 
+ 	
+0	 	20	 	40	 	60	 
+Минимальный и средний FPS
+
+Ждем ваших комментариев в специально созданной ветке конференции.
+
+
+Приложения
+
+
+
+Тестовая конфигурация
+
+Тесты проводились на следующем стенде:
+
+    Материнская плата №1: ASRock Fatal1ty Z370 Gaming K6, LGA 1151v2;
+    Материнская плата №2: Gigabyte GA-AX370-Gaming 5, Socket АМ4;
+    Система охлаждения CPU: Corsair Hydro Series H105 (~1300 об/мин);
+    Оперативная память: 2 x 8 Гбайт DDR4 Kingston HyperX Savage (Spec: 2666 - 3200 МГц / 16-17-17-35-1t / 1.35 В), X.M.P. - выкл./вкл.;
+    Дисковая подсистема №1: 64 Гбайт, SSD ADATA SX900 (ОС);
+    Дисковая подсистема №2: 1 Тбайт, HDD Western Digital Caviar Green (WD10EZRX);
+    Блок питания: Corsair HX850 850 Ватт (штатный вентилятор: 140-мм на вдув);
+    Корпус: открытый тестовый стенд;
+    Монитор: 27" ASUS PB278Q BK (Wide LCD, 2560x1440 / 60 Гц).
+
+Процессоры
+
+    Core i5-8600 - 3100 @ 4100 МГц;
+    Core i5-8400 - 2800 @ 3800 МГц;
+    Core i3-8350K - 4000 @ 4600 МГц;
+    Core i3-8100 - 3600 МГц;
+    Pentium G5400 - 3700 МГц;
+
+    Ryzen 5 1600X - 3600 @ 4000 МГц;
+    Ryzen 5 1600 - 3200 @ 4000 МГц;
+    Ryzen 5 1400 - 3200 @ 4000 МГц;
+    Ryzen 3 1300Х - 3500 @ 4000 МГц;
+    Ryzen 3 1200 - 3100 @ 4000 МГц.
+
+Видеокарты:
+
+    GeForce GTX 1060 6144 Mбайт - 1708/8008 @ 1940/9400 МГц (ASUS);
+    GeForce GTX 1060 3072 Mбайт - 1708/8008 @ 1920/9300 МГц (MSI);
+
+    GeForce GTX 1050 Ti 4096 Mбайт - 1390/7012 @ 1750/8000 МГц (Palit);
+    GeForce GTX 1050 2048 Mбайт - 1455/7012 @ 1770/8000 МГц (Palit).
+
+Программное обеспечение:
+
+    Операционная система: Windows 10 x64;
+    Драйверы видеокарты: Nvidia GeForce 399.24 WHQL и AMD Radeon Adrenalin Edition 18.9.1.
+    Утилиты: Fraps 3.5.9 Build 15586, AutoHotkey v1.0.48.05, MSI Afterburner 4.5.0.
+
+Конфигурации системных блоков:
+
+
+Вариант №1 (Core i5-8600 + GeForce GTX 1060 6GB).
+
+    Процессор: Core i5-8600;
+    Материнская плата: Gigabyte Z370P D3;
+    Система охлаждения CPU: Thermalright TRUE Spirit 90M Rev.A;
+    Видеокарта: GeForce GTX 1060 6144 Мбайт;
+    Оперативная память: 16Gb DDR4 3000MHz Corsair Vengeance LPX;
+    Дисковая подсистема: 1Tb SATA-III Western Digital Caviar Blue;
+    Корпус: Cooler Master N300 Black;
+    Блок питания: 650W Thermaltake LitePower.
+
+
+Вариант №2 (Core i5-8400 + GeForce GTX 1060 6GB).
+
+    Процессор: Core i5-8400;
+    Материнская плата: Gigabyte Z370 HD3;
+    Система охлаждения CPU: Thermalright Macho 90;
+    Видеокарта: GeForce GTX 1060 6144 Мбайт;
+    Оперативная память: 8Gb DDR4 3000MHz Corsair Vengeance LPX;
+    Дисковая подсистема: 1Tb SATA-III Western Digital Caviar Blue;
+    Корпус: Cooler Master N300 Black;
+    Блок питания: 650W Thermaltake LitePower.
+
+Вариант №3 (Core i3-8350K + GeForce GTX 1060 6GB).
+
+    Процессор: Core i3-8350K;
+    Материнская плата: Gigabyte Z370 HD3;
+    Система охлаждения CPU: Thermalright Macho 90;
+    Видеокарта: GeForce GTX 1060 6144 Мбайт;
+    Оперативная память: 8Gb DDR4 3000MHz Corsair Vengeance LPX;
+    Дисковая подсистема: 1Tb SATA-III Western Digital Caviar Blue;
+    Корпус: Cooler Master N300 Black;
+    Блок питания: 650W Thermaltake LitePower.
+
+
+Вариант №4 (Core i3-8350K + GeForce GTX 1060 3GB).
+
+    Процессор: Core i3-8350K;
+    Материнская плата: Gigabyte Z370P D3;
+    Система охлаждения CPU: Thermalright TRUE Spirit 90M Rev.A;
+    Видеокарта: GeForce GTX 1060 3072 Мбайт;
+    Оперативная память: 8Gb DDR4 2400 @ 3000 MHz Samsung;
+    Дисковая подсистема: 1Tb SATA-III Western Digital Caviar Blue;
+    Корпус и блок питания: AeroCool V3X Advance 600W Black.
+
+
+Вариант №5 (Core i3-8100 + GeForce GTX 1060 6GB).
+
+    Процессор: Core i3-8100;
+    Материнская плата: Gigabyte B360 HD3;
+    Система охлаждения CPU: Cooler Master DP6-9GDSC-0L-GP (Intel);
+    Видеокарта: GeForce GTX 1060 6144 Мбайт;
+    Оперативная память: 8Gb DDR4 2400MHz Corsair Vengeance LPX;
+    Дисковая подсистема: 1Tb SATA-III Western Digital Caviar Blue;
+    Корпус и блок питания: InWin BW135U3 600W Black.
+
+
+Вариант №6 (Core i3-8100 + GeForce GTX 1050 2GB).
+
+    Процессор: Core i3-8100;
+    Материнская плата: ASUS PRIME H370-A;
+    Система охлаждения CPU: Cooler Master DP6-9GDSC-0L-GP (Intel);
+    Видеокарта: GeForce GTX 1050 2048 Mбайт;
+    Оперативная память: 8Gb DDR4 2400MHz Corsair Vengeance LPX;
+    Дисковая подсистема: 1Tb SATA-III Western Digital Caviar Blue;
+    Корпус и блок питания: InWin BW135U3 600W Black.
+
+
+Вариант №7 (Pentium G5400 + GeForce GTX 1050 Ti 4GB).
+
+    Процессор: Pentium G5400;
+    Материнская плата: Gigabyte B360 HD3;
+    Система охлаждения CPU: Cooler Master DP6-9GDSC-0L-GP (Intel);
+    Видеокарта: GeForce GTX 1050 Ti 4096 Mбайт;
+    Оперативная память: 8Gb DDR4 2400 MHz Samsung;
+    Дисковая подсистема: 1Tb SATA-III Western Digital Caviar Blue;
+    Корпус и блок питания: INWIN EC022 450W Black.
+
+Вариант №8 (Ryzen 5 1600X + GeForce GTX 1060 6GB).
+
+    Процессор: Ryzen 5 1600X;
+    Материнская плата: Gigabyte GA-AX370-Gaming 3;
+    Система охлаждения CPU: Thermalright TRUE Spirit 90M Rev.A;
+    Видеокарта: GeForce GTX 1060 6144 Мбайт;
+    Оперативная память: 16Gb DDR4 3000MHz Corsair Vengeance LPX;
+    Дисковая подсистема: 1Tb SATA-III Western Digital Caviar Blue;
+    Корпус: Cooler Master N300 Black;
+    Блок питания: 650W Thermaltake LitePower.
+
+
+Вариант №9 (Ryzen 5 1600 + GeForce GTX 1060 3GB).
+
+    Процессор: Ryzen 5 1600;
+    Материнская плата: Gigabyte GA-AX370-Gaming 3;
+    Система охлаждения CPU: Thermalright TRUE Spirit 90M Rev.A;
+    Видеокарта: GeForce GTX 1060 3072 Мбайт;
+    Оперативная память: 8Gb DDR4 2400MHz Corsair Vengeance LPX;
+    Дисковая подсистема: 1Tb SATA-III Western Digital Caviar Blue;
+    Корпус и блок питания: InWin BW135U3 600W Black.
+
+
+Вариант №10 (Ryzen 5 1400 + GeForce GTX 1060 6GB).
+
+    Процессор: Ryzen 5 1400;
+    Материнская плата: ASRock X370 Pro4;
+    Система охлаждения CPU: Thermalright TRUE Spirit 90M Rev.A;
+    Видеокарта: GeForce GTX 1060 6144 Мбайт;
+    Оперативная память: 8Gb DDR4 2400 @ 3200 MHz Samsung - $87;
+    Дисковая подсистема: 1Tb SATA-III Western Digital Caviar Blue;
+    Корпус и блок питания: AeroCool V3X Advance 600W Black.
+
+
+Вариант №11 (Ryzen 3 1300X + GeForce GTX 1050 2GB).
+
+    Процессор: Ryzen 3 1300X;
+    Материнская плата: Gigabyte GA-AX370-Gaming 3;
+    Система охлаждения CPU: Thermalright TRUE Spirit 90M Rev.A;
+    Видеокарта: GeForce GTX 1050 2048 Mбайт;
+    Оперативная память: 8Gb DDR4 2400MHz Corsair Vengeance LPX;
+    Дисковая подсистема: 1Tb SATA-III Western Digital Caviar Blue;
+    Корпус и блок питания: InWin BW135U3 500W Black.
+
+
+Вариант №12 (Ryzen 3 1200 + GeForce GTX 1050 Ti 4GB).
+
+    Процессор: Ryzen 3 1200;
+    Материнская плата: ASRock AB350 Pro4;
+    Система охлаждения CPU: Cooler Master DK9-9ID2A-PL-GP 9 (AMD);
+    Видеокарта: GeForce GTX 1050 Ti 4096 Mбайт;
+    Оперативная память: 8Gb DDR4 2400 @ 3200 MHz Samsung;
+    Дисковая подсистема: 1Tb SATA-III Western Digital Caviar Blue;
+    Корпус и блок питания: INWIN EC022 450W Black.
+
+Инструментарий и методика тестирования
+
+Для более наглядного сравнения систем все игры, используемые в качестве тестовых приложений, запускались в разрешениях 1920х1080.
+
+В качестве средств измерения быстродействия применялись встроенные бенчмарки, утилиты Fraps 3.5.9 Build 15586 и AutoHotkey v1.0.48.05. Список игровых приложений:
+
+    Civilization VI: Rise & Fall.
+    Conan Exiles.
+    Far Cry 5.
+    Final Fantasy XV.
+    Kingdom Come: Deliverance.
+    Subnautica.
+    Total War Saga: Thrones of Britannia.
+    Warhammer: Vermintide 2.
+
+Во всех играх замерялись минимальные и средние значения FPS. В тестах, в которых отсутствовала возможность замера минимального FPS, это значение измерялось утилитой Fraps. VSync при проведении тестов был отключен. 

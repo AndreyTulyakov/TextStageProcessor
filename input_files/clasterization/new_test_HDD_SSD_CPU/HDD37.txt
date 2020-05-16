@@ -1,0 +1,806 @@
+﻿Ретроклокинг: разгоняем HDD 
+Вступление
+
+Лаборатория продолжает цикл материалов о ретроклокинге. В данной статье мы будем разгонять HDD! Но если вы подумали, что речь пойдет об увеличении количества оборотов шпинделя накопителя, вращающего магнитные пластины диска, либо о погружении устройства в жидкий азот, то вы ошиблись. Мы займемся поиском самого оптимального и скоростного решения для ретро-ПК. Как известно, жесткий диск – единственный компонент системы, который в своем развитии прибавлял совсем немного, переходя от поколения к поколению.
+
+Сейчас в эпоху SSD многие даже и не помнят, как «шуршал», «жужжал» и возможно «кряхтел» какой-нибудь HDD на 4 Гбайт и как долго шла загрузка очень большой по объему игры. Взглянув на это безобразие с высоты прошедших десятилетий, я решил, что дисковую подсистему надо ускорить. Тем более ретроклокинг это тот же оверклокинг и количество очков в PCMark 2004 сильно зависит от используемого типа источника носителя информации, да и SuperPi любит скоростные решения. Поэтому было решено провести сравнение различных типов носителей информации.
+
+В качестве тестового стенда мы возьмем старый добрый Socket 7 на базе материнской платы из прошлого обзора AZZA (PT-5IT Socket 7, чипсет «Intel 430TX») и процессора Intel Pentium 233 МГц. В число прочих участников вошли старые HDD объемом от 0.5 Гбайт c интерфейсом IDE, диски на десятки гигабайт с интерфейсом SATA, а также пара SCSI-дисков, пара твердотельных накопителей, пара адаптеров интерфейсов, Compact Flash card и три RAID-контроллера.
+
+Полный набор тестируемого «железа» выглядит так:
+
+450x563 53 KB. Big one: 1100x1376 330 KB
+
+Перед началом тестирования нужно сделать одно важное замечание. Прошивка BIOS материнской платы была пропатчена BIOS patcher для обеспечения совместимости с носителями большого объема.
+
+Если кто-то впервые собирает ретро-компьютер и планирует использовать современный жесткий диск большого объема, он может столкнуться с проблемой отказа установки Windows из-за неправильного определения геометрии жесткого диска BIOS системной платы. В различное время существовало несколько ограничительных барьеров размеров HDD: 528 Мбайт, 2.11 Гбайт, 3.26 Гбайт, 4.22 Гбайт, 8.46 Гбайт, 32 Гбайт, 137 Гбайт и несколько других. Поэтому стоит заранее позаботиться о совместимости HDD с конкретной моделью материнской платы.
+
+Тестовый стенд
+
+Для начала представим восемь классических жестких дисков, принявших участие в тестировании. Начнем от меньшего к большему по их объему:
+
+450x302 49 KB. Big one: 1400x939 284 KB
+
+    WD Caviar 2540 (WDAC2540-00F) 540.8 Мбайт, IDE;
+    Seagate Medalist 3210 (ST33210A) 3.2 Гбайт, IDE;
+    Seagate UX (ST320014A) 20 Гбайт, UDMA100, IDE;
+    Seagate Barracuda ATA IV (ST340016A) 40 Гбайт, UDMA100, IDE;
+    Western Digital Caviar SE (WD800JD) 80 Гбайт, SATA 1.5Gbps;
+    IBM UltraStar 9ES (DDRS-34560) 4.5 Гбайт, Ultra2 Wide SCSI;
+    Seagate Barracuda 18XL (ST318436LW) 18 Гбайт, LVD U160 SCSI.
+
+Модель Seagate UX (ST320014A) представлена двумя экземплярами, поэтому суммарно дисков восемь.
+
+Остальные участники тестирования выглядят так:
+
+450x379 49 KB. Big one: 1400x1157 383 KB
+
+    SSD Kingston SSDNow V300 (SV300S37A/60G) 60 Гбайт, SATA 6 Гбит/с;
+    SSD Crucial M4 (CT128M4SSD2) 128 Гбайт, SATA 6 Гбит/с;
+    CompactFlash Transcend Ultra 133x (TS2GCF133) 2 Гбайт, UDMA4, CF Type I;
+    RAID-контроллер Promise FastTRAK100 TX2, 2х IDE IDMA100, PCI;
+    RAID-контроллер Adaptec AAR-1210SA, 2x SATA150, PCI;
+    RAID-контроллер Tekram DC-395UW, Ultra Wide SCSI, PCI;
+    Espada, двунаправленный IDE-SATA adapter;
+    Noname IDE- CompactFlash адаптер.
+
+Стенд собран, процессор работает в своем штатном режиме (FSB 66 МГц х 3.5 = 233 МГц). За отображение отвечает PCI-версия видеокарты GeForce 2 MX400 64 Мбайт.
+
+Дополнительно в PCI шину установлен USB-PCI-контроллер, к которому подключается мышь с USB-интерфейсом и флэшка для снятия конечных результатов, так как на материнской плате единственный внешний разъем это DIN для клавиатуры, подключаемой через адаптер DIN/PS2.
+
+Теоретическая пропускная способность шины PCI равна 133 Мбайт/с, посмотрим, сколько в действительности останется на дисковую подсистему, подключенную к PCI-RAID-контроллеру. Ведь у нас к этой шине подключено несколько устройств, которые несколько ограничивают оставшуюся пропускную способность данного интерфейса.
+
+Снимок тестового стенда
+
+450x320 44 KB. Big one: 1400x996 313 KB
+
+Необходимо отметить, что старые материнские платы обеспечивают очень низкую пропускную способность IDE-контроллера. Так, тестируемая AZZA PT-5IT на базе чипсета на Intel 430TX поддерживает только режим Ultra DMA2, что на практике означает максимальную скорость передачи данных 33 Мбайт/с. По современным меркам это не много, но это далеко не самый худший вариант.
+
+Например, у меня есть двухпроцессорная материнская плата Socket 7, так она и вовсе поддерживает стандарт Multi-word DMA Mode 2, а это еще ниже – всего 16 Мбайт/с. Но ее спасает встроенный SCSI-контроллер и RAID port, чего не скажешь об обычной десктопной модели Socket 7.
+
+Свойства встроенного IDE-контроллера на AZZA PT-5IT выглядят следующим образом:
+
+403x642 48 KB
+
+В процессе тестирования операционная система устанавливалась на вторичный канал IDE на HDD Seagate Barracuda ATA IV (ST340016A) UDMA100, 40 Гбайт. Тестируемые носители подключались отдельно к первичному каналу IDE. На каждом канале всегда находилось по одному устройству. Raid-контроллеры устанавливались по очереди, перед установкой драйверы предыдущего устройства удалялись.
+
+Тестирование проводилось в Windows XP SP3 с помощью следующего ПО:
+
+    CrystalDiskMark 5.2.0;
+    AIDA64 v.5.00.3333 (Disk Benchmark);
+    HD Tach v.3.0.1.0;
+    PCMark 2004;
+    Super Pi mod. 1.5XS (задача 1M).
+
+На первый взгляд все готово, а так оно и было, тесты были проведены, введение написано, но спустя неделю ко мне попал RAID-контроллер Supermicro модель SAT2-MV8 на базе Marvell 88SX6081.
+
+Данный контроллер намного серьезнее всех выше перечисленных. Это восьмиканальный контроллер стандарта SATA II, который поддерживает 64-х битную 133 МГц шину PCI-X. Естественно, я не мог не испытать его в деле, тем более он прекрасно работает с обычной 33 МГц шиной PCI. Ниже представлены его фотографии.
+
+450x569 50 KB. Big one: 1300x1644 398 KB
+Результаты тестов
+
+CrystalDiskMark 5.2.0
+
+    Seq Q32T1 – тест последовательного чтения/записи с глубиной очереди 32 в 1 поток;
+    4K Q32T1 – тест случайного чтения/записи блоков размером 4K с глубиной очереди 32 в 1 поток;
+    Seq – тест последовательного чтения/записи с глубиной очереди 1 в 1 поток;
+    4K – тест случайного чтения/записи блоков размером 4K с глубиной очереди 1 в 1 поток.
+
+CrystalDiskMark 5.2.0
+
+Последовательное чтение с глубиной очереди 32 в 1 поток, Мбайт/с
+Больше – лучше
+Adaptec 1210SA + SSD Kingston SSDNow V300, 60 Гб	
+80.23
+Adaptec 1210SA + SSD Crucial M4, 128 Гб	
+80.15
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+70.5	 
+Promise FastTRAK100 TX2 + 2х RAID0 Seagate UX, 20 Гб	
+55.91	 
+SSD Crucial M4, 128 Гб 	
+31.5	 
+SSD Kingston SSDNow V300, 60 Гб	
+31.4	 
+SATA Western Digital Caviar SE, 80 Гб	
+30.17	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+27.08	 
+CompactFlash Transcend Ultra 133x 	
+25.08	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+20.81	 
+IDE Seagate UX, 20 Гб	
+19.3	 
+IDE Seagate Medalist 3210, 3.2 Гб	
+13.97	 
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+12.82	 
+IDE WD Caviar 2540, 540 Мб	
+ 	3.485
+ 	
+ 	 	 	 
+ 	
+0	 	20	 	40	 	60	 	80
+
+CrystalDiskMark 5.2.0
+
+Случайное чтение блоков размером 4K с глубиной очереди 32 в 1 поток, Мбайт/с
+Больше – лучше
+SSD Crucial M4, 128 Гб 	
+12.43
+Adaptec 1210SA + SSD Kingston SSDNow V300, 60 Гб	
+12.23	 
+SSD Kingston SSDNow V300, 60 Гб	
+11.68	 
+Adaptec 1210SA + SSD Crucial M4, 128 Гб	
+10.92	 
+CompactFlash Transcend Ultra 133x 	
+10.47	 
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+10.07	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+ 	1.413
+Promise FastTRAK100 TX2 + 2х RAID0 Seagate UX, 20 Гб	
+ 	1.004
+SATA Western Digital Caviar SE, 80 Гб	
+ 	0.696
+IDE Seagate Barracuda ATA IV, 40 Гб	
+ 	0.647
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+ 	0.56
+IDE Seagate UX, 20 Гб	
+ 	0.528
+IDE Seagate Medalist 3210, 3.2 Гб	
+ 	0.383
+IDE WD Caviar 2540, 540 Мб	
+ 	0.301
+ 	
+ 	 	 	 	 	 	 
+ 	
+0	 	2	 	4	 	6	 	8	 	10	 	12
+
+CrystalDiskMark 5.2.0
+
+Последовательное чтения с глубиной очереди 1 в 1 поток, Мбайт/с
+Больше – лучше
+Adaptec 1210SA + SSD Crucial M4, 128 Гб	
+92.22
+Adaptec 1210SA + SSD Kingston SSDNow V300, 60 Гб	
+87.86	 
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+79.03	 
+Promise FastTRAK100 TX2 + 2х RAID0 Seagate UX, 20 Гб	
+49.07	 
+SSD Kingston SSDNow V300, 60 Гб	
+31.04	 
+SSD Crucial M4, 128 Гб 	
+31.04	 
+SATA Western Digital Caviar SE, 80 Гб	
+29.57	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+27.05	 
+CompactFlash Transcend Ultra 133x 	
+24.74	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+20.13	 
+IDE Seagate UX, 20 Гб	
+19.29	 
+IDE Seagate Medalist 3210, 3.2 Гб	
+13.84	 
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+12.58	 
+IDE WD Caviar 2540, 540 Мб	
+ 	3.355
+ 	
+ 	 	 	 	 
+ 	
+0	 	20	 	40	 	60	 	80	 
+
+CrystalDiskMark 5.2.0
+
+Случайное чтение блоков размером 4K с глубиной очереди 1 в 1 поток, Мбайт/с
+Больше – лучше
+Adaptec 1210SA + SSD Crucial M4, 128 Гб	
+9.691
+Adaptec 1210SA + SSD Kingston SSDNow V300, 60 Гб	
+9.082	 
+SSD Crucial M4, 128 Гб 	
+8.795	 
+SSD Kingston SSDNow V300, 60 Гб	
+8.209	 
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+8.153	 
+CompactFlash Transcend Ultra 133x 	
+7.256	 
+SATA Western Digital Caviar SE, 80 Гб	
+ 	0.547
+SCSI Seagate Barracuda 18XL, 18 Гб	
+ 	0.541
+IDE Seagate Barracuda ATA IV, 40 Гб	
+ 	0.461
+Promise FastTRAK100 TX2 + 2х RAID0 Seagate UX, 20 Гб	
+ 	0.439
+IDE Seagate UX, 20 Гб	
+ 	0.367
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+ 	0.353
+IDE Seagate Medalist 3210, 3.2 Гб	
+ 	0.289
+IDE WD Caviar 2540, 540 Мб	
+ 	0.224
+ 	
+ 	 	 	 	 
+ 	
+0	 	2	 	4	 	6	 	8	 
+
+CrystalDiskMark 5.2.0
+
+Последовательная запись с глубиной очереди 32 в 1 поток, Мбайт/с
+Больше – лучше
+Adaptec 1210SA + SSD Crucial M4, 128 Гб	
+70.35
+Adaptec 1210SA + SSD Kingston SSDNow V300, 60 Гб	
+68.78	 
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+62.33	 
+Promise FastTRAK100 TX2 + 2х RAID0 Seagate UX, 20 Гб	
+51.29	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+24.03	 
+SSD Kingston SSDNow V300, 60 Гб	
+23.3	 
+SATA Western Digital Caviar SE, 80 Гб	
+22.91	 
+SSD Crucial M4, 128 Гб 	
+22.91	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+20.83	 
+IDE Seagate UX, 20 Гб	
+20.47	 
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+11.76	 
+IDE Seagate Medalist 3210, 3.2 Гб	
+ 	8.073
+CompactFlash Transcend Ultra 133x 	
+ 	6.395
+IDE WD Caviar 2540, 540 Мб	
+ 	3.329
+ 	
+ 	 	 	 
+ 	
+0	 	20	 	40	 	60	 
+
+CrystalDiskMark 5.2.0
+
+Случайная запись блоков размером 4K с глубиной очереди 32 в 1 поток, Мбайт/с
+Больше – лучше
+SSD Kingston SSDNow V300, 60 Гб	
+12.64
+Adaptec 1210SA + SSD Kingston SSDNow V300, 60 Гб	
+12.27	 
+SSD Crucial M4, 128 Гб 	
+12.06	 
+Adaptec 1210SA + SSD Crucial M4, 128 Гб	
+11.81	 
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+10.05	 
+Promise FastTRAK100 TX2 + 2х RAID0 Seagate UX, 20 Гб	
+1.91	 
+SATA Western Digital Caviar SE, 80 Гб	
+ 	1.213
+SCSI Seagate Barracuda 18XL, 18 Гб	
+ 	1.147
+IDE Seagate UX, 20 Гб	
+ 	0.739
+IDE Seagate Barracuda ATA IV, 40 Гб	
+ 	0.697
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+ 	0.56
+IDE Seagate Medalist 3210, 3.2 Гб	
+ 	0.344
+IDE WD Caviar 2540, 540 Мб	
+ 	0.257
+CompactFlash Transcend Ultra 133x 	
+ 
+ 	
+ 	 	 	 	 	 	 
+ 	
+0	 	2	 	4	 	6	 	8	 	10	 	12	 
+
+CrystalDiskMark 5.2.0
+
+Последовательная запись с глубиной очереди 1 в 1 поток, Мбайт/с
+Больше – лучше
+Adaptec 1210SA + SSD Crucial M4, 128 Гб	
+79.44
+Adaptec 1210SA + SSD Kingston SSDNow V300, 60 Гб	
+78.1	 
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+74.64	 
+Promise FastTRAK100 TX2 + 2х RAID0 Seagate UX, 20 Гб	
+48.41	 
+SSD Kingston SSDNow V300, 60 Гб	
+23.7	 
+SSD Crucial M4, 128 Гб 	
+23.48	 
+SATA Western Digital Caviar SE, 80 Гб	
+23.28	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+20.97	 
+IDE Seagate UX, 20 Гб	
+20.76	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+18.87	 
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+11.32	 
+IDE Seagate Medalist 3210, 3.2 Гб	
+ 	8.387
+CompactFlash Transcend Ultra 133x 	
+ 	6.081
+IDE WD Caviar 2540, 540 Мб	
+ 	3.355
+ 	
+ 	 	 	 
+ 	
+0	 	20	 	40	 	60	 
+
+CrystalDiskMark 5.2.0
+
+Случайная запись блоков размером 4K с глубиной очереди 1 в 1 поток, Мбайт/с
+Больше – лучше
+Adaptec 1210SA + SSD Kingston SSDNow V300, 60 Гб	
+13.24
+Adaptec 1210SA + SSD Crucial M4, 128 Гб	
+12.78	 
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+11.17	 
+SSD Kingston SSDNow V300, 60 Гб	
+10.17	 
+SSD Crucial M4, 128 Гб 	
+9.704	 
+SATA Western Digital Caviar SE, 80 Гб	
+ 	1.222
+Promise FastTRAK100 TX2 + 2х RAID0 Seagate UX, 20 Гб	
+ 	0.972
+IDE Seagate UX, 20 Гб	
+ 	0.712
+IDE Seagate Barracuda ATA IV, 40 Гб	
+ 	0.685
+SCSI Seagate Barracuda 18XL, 18 Гб	
+ 	0.503
+IDE Seagate Medalist 3210, 3.2 Гб	
+ 	0.307
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+ 	0.302
+IDE WD Caviar 2540, 540 Мб	
+ 	0.234
+CompactFlash Transcend Ultra 133x 	
+ 
+ 	
+ 	 	 	 	 	 	 
+ 	
+0	 	2	 	4	 	6	 	8	 	10	 	12	 
+
+В тестах, где скоростные характеристики выходили за пределы пропускной способности чипсетного IDE-контроллера, в лидерах оказался RAID-контроллер Adaptec AAR-1210SA в паре с SSD Crucial M4 128 Гбайт и Kingston SSDNow V300 60 Гбайт. Crucial M4 чаще был быстрее, однако разница между ними невелика. Самая большая разница у двух твердотельных накопителей наблюдалась в операциях последовательного чтения и записи.
+
+На фоне всех старичков с магнитными пластинами хорошо смотрится SCSI-диск Seagate Barracuda 18XL 18 Гбайт. Самой слабой стороной CompactFalsh оказалась случайная запись блоками размером 4 Кбайт, а вот по чтению аналогичных блоков CompactFalsh проигрывает только лишь SSD.
+
+В тесте последовательной записи абсолютный рекорд составил 92.22 Мбайт/с. То есть при теоретической пропускной способности шины PCI на все оставшиеся устройства ей осталось чуть более 40 Мбайт/с. Мне пока интересно, почему SSD на RAID-контроллерах показали низкие результаты в случайной записи и чтении блоками размером 4 Кбайт, ведь они способны на более, сказывается низкая производительность CPU, неспособного раскрыть весь потенциал SSD. 
+AIDA64 v.5.00.3333 Disk Benchmark
+
+AIDA64 v.5.00.3333 Disk Benchmark
+
+Последовательное чтение, Мбайт/с
+Больше – лучше
+Adaptec 1210SA + SSD Kingston SSDNow V300, 60 Гб	
+86.3
+Adaptec 1210SA + SSD Crucial M4, 128 Гб	
+85.6	 
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+79.5	 
+SSD Kingston SSDNow V300, 60 Гб	
+29.4	 
+SATA Western Digital Caviar SE, 80 Гб	
+29.3	 
+SSD Crucial M4, 128 Гб 	
+29.2	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+23.2	 
+IDE Seagate UX, 20 Гб	
+22.6	 
+CompactFlash Transcend Ultra 133x 	
+21.6	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+20.1	 
+IDE Seagate Medalist 3210, 3.2 Гб	
+11.2	 
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+10.1	 
+IDE WD Caviar 2540, 540 Мб	
+ 	3.26
+ 	
+ 	 	 	 	 
+ 	
+0	 	20	 	40	 	60	 	80	 
+
+AIDA64 v.5.00.3333 Disk Benchmark
+
+Случайное чтение, Мбайт/с
+Больше – лучше
+Adaptec 1210SA + SSD Kingston SSDNow V300, 60 Гб	
+88.8
+Adaptec 1210SA + SSD Crucial M4, 128 Гб	
+87	 
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+79.9	 
+SSD Kingston SSDNow V300, 60 Гб	
+29.8	 
+SSD Crucial M4, 128 Гб 	
+29.7	 
+CompactFlash Transcend Ultra 133x 	
+27.4	 
+SATA Western Digital Caviar SE, 80 Гб	
+25.5	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+22.9	 
+IDE Seagate UX, 20 Гб	
+20.1	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+19.6	 
+IDE Seagate Medalist 3210, 3.2 Гб	
+ 	9.78
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+ 	9.7
+IDE WD Caviar 2540, 540 Мб	
+ 	2.86
+ 	
+ 	 	 	 	 
+ 	
+0	 	20	 	40	 	60	 	80	 
+
+AIDA64 v.5.00.3333 Disk Benchmark
+
+Буферизированное чтение, Мбайт/с
+Больше – лучше
+Adaptec 1210SA + SSD Crucial M4, 128 Гб	
+86.8
+Adaptec 1210SA + SSD Kingston SSDNow V300, 60 Гб	
+85.7	 
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+79.5	 
+SSD Kingston SSDNow V300, 60 Гб	
+29.3	 
+SSD Crucial M4, 128 Гб 	
+29.3	 
+SATA Western Digital Caviar SE, 80 Гб	
+29.2	 
+IDE Seagate UX, 20 Гб	
+26.3	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+25.5	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+25.1	 
+CompactFlash Transcend Ultra 133x 	
+22	 
+IDE Seagate Medalist 3210, 3.2 Гб	
+21.8	 
+IDE WD Caviar 2540, 540 Мб	
+ 	9.13
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+ 	7.13
+ 	
+ 	 	 	 	 
+ 	
+0	 	20	 	40	 	60	 	80	 
+
+AIDA64 v.5.00.3333 Disk Benchmark
+
+Средняя скорость доступа к данным, миллисекунды
+Меньше – лучше
+IDE Seagate UX, 20 Гб	
+22.12
+SATA Western Digital Caviar SE, 80 Гб	
+18.72	 
+IDE WD Caviar 2540, 540 Мб	
+16.15	 
+IDE Seagate Medalist 3210, 3.2 Гб	
+15.41	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+14.11	 
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+13.26	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+10.38	 
+CompactFlash Transcend Ultra 133x 	
+ 	0.42
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+ 	0.4
+Adaptec 1210SA + SSD Kingston SSDNow V300, 60 Гб	
+ 	0.35
+SSD Kingston SSDNow V300, 60 Гб	
+ 	0.34
+Adaptec 1210SA + SSD Crucial M4, 128 Гб	
+ 	0.32
+SSD Crucial M4, 128 Гб 	
+ 	0.31
+ 	
+ 	 	 	 	 
+ 	
+0	 	5	 	10	 	15	 	20	 
+
+AIDA64 v.5.00.3333 Disk Benchmark
+
+Загрузка CPU, %
+Больше – лучше
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+100
+Adaptec 1210SA + SSD Crucial M4, 128 Гб	
+88	 
+Adaptec 1210SA + SSD Kingston SSDNow V300, 60 Гб	
+86	 
+CompactFlash Transcend Ultra 133x 	
+43	 
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+34	 
+SSD Crucial M4, 128 Гб 	
+31	 
+SSD Kingston SSDNow V300, 60 Гб	
+30	 
+IDE Seagate Medalist 3210, 3.2 Гб	
+28	 
+IDE Seagate UX, 20 Гб	
+28	 
+SATA Western Digital Caviar SE, 80 Гб	
+28	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+27	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+27	 
+IDE WD Caviar 2540, 540 Мб	
+18	 
+ 	
+ 	 	 	 	 
+ 	
+0	 	20	 	40	 	60	 	80	 	100
+
+Самым интересным тестом оказался тест «Загрузки CPU». RAID-контроллер Supermicro «SAT2-MV8» демонстрирует фантастическую загрузку центрального процессора – 100%! Понятное дело, что на такие системы RAID-контроллер и не был рассчитан, но радует сам факт, что инженеры Supermicro сделали очень качественный продукт (об этом еще немного ниже), который способен работать в таких вот неприхотливых условиях.
+
+На графиках отсутствует результат RAID-контроллера Promise FastTRAK100 TX2 с 2х HDD RAID0 Seagate UX. Тест просто намертво зависал через несколько секунд после начала тестирования. Думаю, вина лежит на качестве драйвера для данного контроллера.
+
+Пара SSD здесь идет практически вровень, и такого разрыва, как в тесте CrystalDiskMark 5.2.0, уже не наблюдается. Расстановка сил приблизительно соответствует предыдущим показателям, сделанным в CrystalDiskMark 5.2.0.
+
+HD Tach v.3.0.1.0
+
+Данный тест был взят для наглядности и в качестве альтернативы современным тестам производительности накопителей. HD Tach был популярен в 2004 году, посмотрим, сможет ли тест адекватно оценить всех участников нынешнего тестирования, ведь на момент выпуска он и не подозревал о таких монстрах, как SSD.
+
+Еще одной положительной чертой теста можно считать функцию сохранения и наглядного сравнения двух результатов, чем я и воспользовался на практике.
+
+Два SSD, подключенных к одному и тому же RAID-контроллеру
+
+450x328 44 KB. Big one: 798x581 170 KB
+
+SSD Kingston SSDNow V300, подключенный к чипсетному IDE-контроллеру и через Adaptec 1210SA
+
+450x327 42 KB. Big one: 798x580 183 KB
+IDE HDD Seagate Barracuda ATA IV 40 Гбайт против SSD Kingston SSDNow V300 60 Гбайт
+
+450x328 67 KB. Big one: 798x581 178 KB
+
+SCSI против IDE (SCSI Seagate Barracuda 18XL 18 Гбайт Vs IDE Seagate UX 20 Гбайт)
+
+450x328 44 KB. Big one: 798x581 205 KB
+
+CompactFlash card и IDE Seagate Medalist 3210 3.2 Гбайт
+
+450x328 38 KB. Big one: 798x581 156 KB
+
+IDE Seagate UX 20 Гбайт в RAID0 и отдельно
+
+450x328 45 KB. Big one: 798x581 205 KB
+
+SCSI IBM UltraStar 9ES 4.5 Гбайт против IDE Seagate Medalist 3210 3.2 Гбайт
+
+450x328 40 KB. Big one: 798x581 153 KB
+
+Два RAID-контроллера против одного SSD (Adaptec 1210SA синий - Supermicro SAT2-MV8 красный)
+
+450x328 46 KB. Big one: 798x581 164 KB
+
+NVMe SSD Samsung 950 Pro 256 Гбайт
+
+450x330 47 KB. Big one: 798x585 166 KB
+
+Да, вы не ошиблись, это график чтения NVMe SSD накопителя Samsung 950 Pro 256 Гбайт, сделанный по моей просьбе главным специалистом лаборатории по современным накопителям I.N..
+
+Как можно видеть, программа HD Tach показывает адекватный результат, хотя и не позволяет сохранить его под Windows 10, но главное, что она работает правильно спустя двенадцать лет. С обзором твердотельного накопителя Samsung 950 Pro вы можете ознакомиться по этой ссылке. 
+PCMark 2004
+
+Думаю, все в курсе существования данного тестового пакета. В моем случае будут использоваться тесты раздела HDD Test Suite.
+
+При помощи данных подтестов снимаются показатели работы носителей информации в четырех режимах: «Windows XP Startup» эмулирует обращение к накопителю во время загрузки операционной системы, «Application Loading» – тестирует дисковую активность при последовательном открытии и закрытии шести популярных приложений, «File Copying» – тестирует работу жесткого диска при копировании специального набора тестовых файлов, «General Usage HDD» – оценивает дисковую активность при работе набора часто встречающихся приложений.
+
+В конце тестирования на основании полученных результатов подсчитывается итоговый индекс производительности носителя информации, и чем он больше, тем быстрее ваша дисковая или твердотельная система хранения информации.
+
+PCMark 2004
+
+Windows XP Startup, Мбайт/с
+Больше – лучше
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+33.495
+SSD Crucial M4, 128 Гб 	
+18.164	 
+SSD Kingston SSDNow V300, 60 Гб	
+16.986	 
+SATA Western Digital Caviar SE, 80 Гб	
+6.265	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+5.429	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+4.68	 
+IDE Seagate UX, 20 Гб	
+4.19	 
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+ 	2.874
+IDE Seagate Medalist 3210, 3.2 Гб	
+ 	2.59
+CompactFlash Transcend Ultra 133x 	
+ 	1.724
+IDE WD Caviar 2540, 540 Мб	
+ 	1.371
+ 	
+ 	 	 	 
+ 	
+0	 	10	 	20	 	30	 
+
+PCMark 2004
+
+Application Loading, Мбайт/с
+Больше – лучше
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+33.845
+SSD Crucial M4, 128 Гб 	
+20.622	 
+SSD Kingston SSDNow V300, 60 Гб	
+19.689	 
+SATA Western Digital Caviar SE, 80 Гб	
+5.222	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+4.077	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+ 	3.387
+IDE Seagate UX, 20 Гб	
+ 	2.946
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+ 	2.196
+IDE Seagate Medalist 3210, 3.2 Гб	
+ 	1.903
+CompactFlash Transcend Ultra 133x 	
+ 	1.258
+IDE WD Caviar 2540, 540 Мб	
+ 	1.084
+ 	
+ 	 	 	 
+ 	
+0	 	10	 	20	 	30	 
+
+PCMark 2004
+
+File Copying, Мбайт/с
+Больше – лучше
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+53.746
+SSD Crucial M4, 128 Гб 	
+24.636	 
+SSD Kingston SSDNow V300, 60 Гб	
+22.866	 
+SATA Western Digital Caviar SE, 80 Гб	
+19.277	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+12.088	 
+IDE Seagate UX, 20 Гб	
+8.225	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+7.472	 
+CompactFlash Transcend Ultra 133x 	
+ 	5.597
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+ 	3.765
+IDE Seagate Medalist 3210, 3.2 Гб	
+ 	3.095
+IDE WD Caviar 2540, 540 Мб	
+ 	1.786
+ 	
+ 	 	 	 	 	 
+ 	
+0	 	10	 	20	 	30	 	40	 	50	 
+
+PCMark 2004
+
+General Usage HDD, Мбайт/с
+Больше – лучше
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+28.726
+SSD Crucial M4, 128 Гб 	
+18.564	 
+SSD Kingston SSDNow V300, 60 Гб	
+17.437	 
+SATA Western Digital Caviar SE, 80 Гб	
+4.414	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+ 	3.226
+SCSI Seagate Barracuda 18XL, 18 Гб	
+ 	2.645
+IDE Seagate UX, 20 Гб	
+ 	2.235
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+ 	1.691
+IDE Seagate Medalist 3210, 3.2 Гб	
+ 	1.45
+CompactFlash Transcend Ultra 133x 	
+ 	0.998
+IDE WD Caviar 2540, 540 Мб	
+ 	0.905
+ 	
+ 	 	 	 	 	 
+ 	
+0	 	5	 	10	 	15	 	20	 	25	 
+
+PCMark 2004
+
+Итоговый результат, очки
+Больше – лучше
+Supermicro SAT2-MV8 + SSD Kingston SSDNow V300, 60 Гб	
+19229
+SSD Crucial M4, 128 Гб 	
+11501	 
+SSD Kingston SSDNow V300, 60 Гб	
+10843	 
+SATA Western Digital Caviar SE, 80 Гб	
+3401	 
+IDE Seagate Barracuda ATA IV, 40 Гб	
+2579	 
+SCSI Seagate Barracuda 18XL, 18 Гб	
+ 	2081
+IDE Seagate UX, 20 Гб	
+ 	1856
+SCSI IBM UltraStar 9ES, 4.5 Гб	
+ 	1294
+IDE Seagate Medalist 3210, 3.2 Гб	
+ 	1124
+CompactFlash Transcend Ultra 133x 	
+ 	855
+IDE WD Caviar 2540, 540 Мб	
+ 	650
+ 	
+ 	 	 	 
+ 	
+0	 	5000	 	10000	 	15000	 
+
+А где же результаты Adaptec 1210SA и Promise FastTRAK100 TX2? Тест PCMark на середине каждого подтеста безуспешно рапортовал о невозможности его завершения. Судя по всему, наблюдались проблемы с кэшированием данных на накопитель. Мои попытки разрешить данную проблему не привели к положительному результату. А вот у контроллера Supermicro SAT2-MV8 никаких проблем ни в одном из тестов не наблюдалось, это, к слову, о качестве написания драйверов. И в итоге он оказался лидером.
+
+CompactFalsh, можно сказать, провалила данный тест, а SSD, подключенный к контроллеру материнской платы, как минимум в три раза быстрее любого HDD.
+
+Super Pi mod. 1.5XS (задача 1M)
+
+Я не буду приводить здесь результаты всех участников тестирования, отмечу лишь общие тенденции. Процессор Pentium MMX на частоте 233 МГц на данной конфигурации в среднем рассчитывает число Pi с одним миллионом знаков после запятой за 10 с половиной минут. Напомню – чем меньше время подсчета, тем лучше результат.
+
+Хуже всех справился самый старший участник, и он же самый медленный – HDD WD Caviar 2540 (WDAC2540-00F) с объемом 540.8 Мбайт. Его результат перевалил за 11 минут 12 секунд. Чуть лучше получилось у связки Supermicro SAT2-MV8 и SSD Kingston SSDNow V300 60 Гбайт, что, мягко говоря, настораживает. Возможно, дело в том, что данный контроллер очень сильно нагружает расчетами CPU, отсюда и такой низкий итоговый результат, так как процессорное время тратилось на обработку запросов контроллера. Все жесткие диски разместились приблизительно в диапазоне 10 минут 30-50 секунд.
+
+Хорошие результаты получились у SSD, подключенных к RAID-контроллеру Adaptec 1210SA, но еще лучше результат у связки чипсетного контроллера и SSD, итоговое время 10 минут 22 секунды. Лучший результат обеспечила, как ни странно, CF карта Transcend Ultra 133x – 10 минут 16 секунд. В ее пользу, возможно, сыграл тот факт, что она в отличие от всех носителей информации была отформатирована в FAT16, а, как известно, даже FAT32 быстрее в таких задачах, чем NTFS.
+
+Заключение
+
+Остается лишь сказать, что все точки над «i» еще не расставлены. Для всестороннего изучения данного вопроса мне необходим полностью аппаратный RAID-контроллер, CPU которого брал бы всю нагрузку на себя, разгрузив тем самым центральный процессор. Так, лучший по характеристикам контроллер Supermicro SAT2-MV8 загружает в тестах Intel Pentium 233 МГц на все 100%.
+
+Подводя итог по жестким дискам, можно сказать одно – чем моложе накопитель, тем он быстрее, ведь технологии не стоят на месте. SCSI-диски тоже хороши, даже где-то лучше обыкновенных HDD, но они меньше распространены и к ним необходим SCSI-контроллер. Плюс не стоит забывать, что шумовые характеристики зачастую не в пользу SCSI, шум от которых намного выше обычного HDD. Но этот минус может быть зачастую и плюсом, поскольку есть любители «послушать» работу таких дисков, благо звучат они по-особому.
+
+Твердотельные накопители давно и прочно вошли в реальную жизнь. Они быстры, бесшумны и хорошо подойдут в качестве постоянного носителя информации в ретро-ПК. А вот использовать их с RAID-контроллером или без, тут уже нужно смотреть на задачи, которые ставятся пользователем. Для бенчмаркинга в тестовом пакете PCMark RAID-контроллер просто необходим, так как пропускной способности штатного IDE-контроллера маловато, а вот для других целей, где основная нагрузка ложится на CPU, такой контроллер, наоборот, может помешать.
+
+Работа не самой скоростной CF карты меня в очередной раз приятно удивила. Если взять карту побыстрее, то результат только улучшится. В прошлом году я на платформе Socket 3 вместе с CPU Intel Pentium Overdrive 83@100 МГц занимался расчетом числа Пи c 32 миллионами знаков после запятой в рамках проходившего тогда турнира HWBOT Old School. Для прохождения данного теста требовалось около двух с половиной дней непрерывных подсчетов, и обыкновенный жесткий диск просто вырубало на вторые сутки, а CompactFlash без особых проблем справилась с задачей.
+
+Думаю, мы еще вернемся к данной теме, надо же как-то I.N. помогать развивать тему накопителей . Сильные и слабые стороны, как выяснилось, есть у каждого носителя информации, но что выбрать и для каких целей решать уже вам.
+
+450x352 45 KB. Big one: 1400x1096 445 KB
+
+И в завершение – одно ретро-фото на память. Серверная материнская плата Dual-Socket 7, о которой упоминалось в начале статьи. Надеюсь, она себя еще покажет в будущих обзорах. 

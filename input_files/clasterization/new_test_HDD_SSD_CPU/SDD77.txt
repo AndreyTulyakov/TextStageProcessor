@@ -1,0 +1,1400 @@
+﻿Обзор и тестирование SSD-накопителя PCIe NVMe Plextor M9PGN Plus (PX-1TM9PGN+) объемом 1 Тбайт 
+Вступление
+
+Сегодня у нас в гостях SSD бренда Plextor. Это старый и очень известный бренд, специализирующийся на производстве накопителей. Бренд принадлежит не менее старой и известной компании Lite-On.
+
+Начинали свою деятельность они с оптических приводов (я их помню по прайс-листам компьютерных магазинов еще в 90-е годы); но сейчас идя в ногу со временем компания перешла на производство SSD-накопителей.
+
+Мы изучим твердотельный накопитель Plextor 1TM9PGN Plus емкостью 1 ТБ. Это большая емкость; и с учетом взаимосвязи емкости и производительности SSD мы вправе ожидать от него высоких показателей.
+
+450x153 29 KB. Big one: 594x202 46 KB
+
+В серию накопителей Plextor M9PGN Plus входят три накопителя с емкостью от 256 ГБ до 1 ТБ. Производитель позиционирует эту серию накопителей как геймерские. Да и заявленные характеристики не оставляют в этом сомнений. Официальная страница накопителей SSD серии Plextor M9PGN Plus – здесь.
+
+Технические характеристики и технологические особенности
+
+Модель	PX-256M9PGN +	PX-512M9PGN +	PX-1TM9PGN +
+Форм-фактор	M.2 2280	M.2 2280	M.2 2280
+Интерфейс	NVMe PCIe Gen 3 x4	NVMe PCIe Gen 3 x4	NVMe PCIe Gen 3 x4
+Емкость	256 ГБ	512 ГБ	1 ТБ
+Контроллер	Marvell 88SS1092	Marvell 88SS1092	Marvell 88SS1092
+NAND	KIOXIA BiCS4 3D TLC	KIOXIA BiCS4 3D TLC	KIOXIA BiCS4 3D TLC
+ОЗУ	512 МБ	512 МБ	1 ГБ
+Макс. скорость чтения	3400 MБ/с	3400 MБ/с	3400 MБ/с
+Макс. скорость записи	1700 MБ/с	2200 MБ/с	2200 MБ/с
+Ресурс по записи	160 TБ	320 TБ	640 TБ
+Масса	10 г	10 г	10 г
+Гарантия	5 лет	5 лет	5 лет
+
+Возможно, читателей заинтересует вопрос, что это за бренд флеш-памяти KIOXIA и откуда он взялся? KIOXIA – это на самом деле добрая старая Toshiba Memory, которая провела ребрендинг и теперь предстает миру под таким именем (подробности). Кстати, в накопителе применена память, изготовленная по новейшей технологии компании Toshiba: 96-слойная BiCS4 3D TLC. Это также вселяет надежду на высокие скоростные показатели.
+
+Надо заметить, что производитель четко прописал в параметрах тип примененного контроллера и тип примененной флеш-памяти. Тем самым он гарантирует покупателю, что он приобретет накопитель именно с такой конфигурацией, и никакой другой. Помнится, некоторое время тому назад производители SSD баловались тем, что под одним и тем же наименованием накопителя могли продавать совершенно разную «начинку». Сейчас это негативное явление, к счастью, почти искоренено.
+
+Что касается цены, то, какой она окончательно установится в России на тестируемый накопитель емкостью 1 ТБ, сказать трудно в связи с сильными колебаниями валютных курсов; а в Европе он стоит около 185 евро.
+
+Упаковка, комплектация и дизайн SSD-накопителя
+
+Накопитель пришел к нам в упаковке, содержащей как темные, так и яркие элементы (что вполне соответствует «геймерскому» стилю):
+
+450x278 58 KB. Big one: 1350x833 256 KB
+
+На обратной стороне упаковки указаны основные технические параметры этой серии накопителей:
+
+450x251 55 KB. Big one: 1350x754 249 KB
+
+Стенки упаковки – не слишком толстые, а основную защиту накопителя от неблагоприятных воздействий в пути обеспечивает прочная пластиковая коробочка:
+
+450x283 42 KB. Big one: 1350x848 175 KB
+
+Слева от накопителя в упаковке лежит винтик для крепления на материнку (виден в виде небольшого серого пятна). Но обычно в комплектах материнок уже имеется винт для плат стандарта М.2.
+
+И вот, наконец, перед нами герой обзора, как он есть:
+
+450x205 44 KB. Big one: 1350x616 220 KB
+
+Все чипы расположены на одной стороне платы; и прямо на них наклеена этикетка с реквизитами изделия.
+
+Несмотря на строжайшее предупреждение на этикетке, что гарантия теряется при ее отрыве; естественно, этикетка была снята (благо делается это очень легко и без повреждений самой этикетки или накопителя):
+
+450x165 36 KB. Big one: 1350x495 188 KB
+
+Чтобы разобраться с электроникой накопителя, посмотрим отдельно на его правую и левую части. Начнем с правой части:
+
+450x236 58 KB. Big one: 1350x709 343 KB
+
+Здесь расположен контроллер 88SS1092 производства Marvell, оперативная память NT6CL256M32AM-H01 производства Nanya и необходимая обвязка.
+
+Контроллер Marvell 88SS1092 – современная высокопроизводительная модель, поддерживающая 8 каналов флеш-памяти TLC по технормам 15/16 нм. Чип оперативной памяти Nanya NT6CL256M32AM-H01 – это обычная память DDR3 на 1 ГБ с организацией 256M на 32 бита, поскольку контроллер поддерживает 32-битную шину.
+
+Теперь посмотрим на другую половину накопителя:
+
+450x258 50 KB. Big one: 1350x774 309 KB
+
+Здесь расположена флеш-память накопителя в виде двух микросхем TH58LJT2T24BAEF производства KIOXIA (бывшая Toshiba Memory), изготовленные по технологии 96-слойной BiCS4 3D TLC.
+
+Микросхемы крупные; и, скорее всего, каждая из них содержит несколько чипов памяти, но точную архитектуру выяснить не удалось.
+
+На обратной стороне платы накопителя – только дорожки металлизации, покрытые для защиты зеленым лаком:
+
+450x207 38 KB. Big one: 1350x622 139 KB
+
+Тестовый стенд и дополнительное программное обеспечение
+
+Используемый тестовый стенд основан на следующих комплектующих:
+
+    Процессор AMD Ryzen 9 3900X, 3.8 ГГц;
+    Материнская плата: ASUS ROG Crosshair VIII Hero (Wi-Fi);
+    Оперативная память: 2 х 8 Гбайт DDR4 Patriot Viper Steel PE000599-PVS416G440C9K;
+    Видеокарта: Gigabyte GeForce GT1030 GV-N1030D5-2GL;
+    Блок питания: Cooler Master MasterWatt Lite 500 MPX-5001-ACABW-ES (500 Вт);
+    Корпус: открытый стенд (для исключения влияния качества корпуса на результаты термоизмерений);
+    Операционная система: Windows 10 x64 со всеми текущими обновлениями с Windows Update.
+
+Перед проведением тестов производилась перезагрузка системы и выполнялась команда Trim для тестируемого SSD (об исключениях будет упомянуто в тексте). Кроме того, физически отключался интернет.
+
+Если коротко охарактеризовать тестовый стенд, то его производительность достаточна, чтобы не стать «узким горлом» и, по возможности, не влиять на результаты замеров производительности SSD.
+
+При тестировании SSD на систему было установлено дополнительное программное обеспечение: утилита «Plextool NVMe edition», скачанная с сайта производителя.
+
+Данная утилита обладает не слишком широким функционалом, весь он представлен на этом скриншоте:
+
+450x258 28 KB. Big one: 766x440 54 KB
+
+Для тестирования производительности накопителя использовались «старые» версии тестовых утилит с целью обеспечения сравнимости с данными предыдущих тестов SSD.
+
+Для проверки копирования и обработки реальных файлов использовались следующие операции:
+
+    Копирование папки с фотографиями в формате jpeg, размер 1.52 Гбайт (1 634 471 499 байт), 410 файлов;
+    Копирование папки с HD-видео (AVC), размер папки 10.4 Гбайт (11 147 297 564 байт), 7 файлов;
+    Копирование папки с музыкальными аудиозаписями в формате mp3, размер папки 1.52 Гбайт (1 634 133 002 байт), 481 файл;
+    Копирование папки с документами в формате doc, размер папки 1.50 Гбайт (1 612 546 048 байт), 566 файлов;
+    Обработка контейнера mkv при помощи программы MKVToolnix 18.0.0 с удалением всех звуковых дорожек и субтитров (в качестве образца использовался короткометражный анимационный фильм Sintel в виде файла размером 5.11 Гбайт);
+    Архивация вышеуказанных папок с фотографиями и с документами в один архив (архиватор 7Zip версии 19.00 x64, тип архива – 7z, без сжатия).
+
+Для проверки копирования больших объемов данных использовались папки с фильмами (так как они представляют собой плохо сжимаемые данные, что позволит уменьшить влияние алгоритмов сжатия данных).
+
+Тестирование температурных режимов и стабильности
+
+Утилита Crystal Disk Info (8.4.0) показывает, что, в установившемся режиме без проведения каких-либо операций, температура SSD составляет 45 градусов:
+
+450x413 65 KB. Big one: 674x619 149 KB
+
+Теперь сделаем пару элементарных тестов, которые значительно «проливают свет» на свойства накопителя. Эти тесты – на линейное чтение и линейную запись.
+
+Для линейного чтения на накопитель предварительно был записан массив плохо сжимаемой информации (примерно на 10% объема). Это необходимо было для определения реакции системы на чтение памяти с данными и без данных (ячейки в этом случае в SSD помечаются как «пустые»).
+
+Вот что получилось в тесте линейного чтения:
+
+450x306 42 KB. Big one: 808x550 113 KB
+
+Здесь видно, что на той области, где содержались реальные данные, скорость чтения колебалась около 1700 МБ/с; а на «пустом» участке повысилась до 1960 МБ/с.
+
+Такое возможно только в одном случае: если контроллер видит, что чтение осуществляется из «пустых» ячеек, то собственно чтения он не осуществляет, а посылает в систему непрерывный поток нулевых данных. Это – не есть плохо, поскольку является одним из алгоритмов ускорения работы SSD; но говорит о том, что поведение SSD может быть весьма разнообразным в зависимости от вида данных и их наличия как такового.
+
+И, конечно, надо помнить о том, что производители в технических данных указывают максимальное значение из всех возможных.
+
+Нагрев в ходе теста на линейное чтение был небольшим, температура повысилась только до 54 градусов.
+
+Теперь переходим к тесту на линейную запись:
+
+450x306 44 KB. Big one: 808x550 123 KB
+
+Картинка с линейной записью оказалась типичной для современных SSD-накопителей, использующих для своей работы так называемый SLC-кэш.
+
+SLC-кэш представляет собой часть флеш-памяти, временно переведенную из TLC в «быстрый» режим SLC. Пока он не закончится, запись идет быстро; а когда закончится, то идет на уровне «обычной» скорости флеш-памяти (которая не столь велика).
+
+В данном случае SLC-кэша хватило примерно на 6% записи от всего объема накопителя; Много это или мало? В гигабайтах это будет примерно 60 ГБ. Такого объема хватит на установку многих современных 3D-игр. Скорость записи составила около 1900 МБ/с.
+
+Для тех игр, которым не хватит 60 Гб, превышение этого объема будет записываться со скоростью около 540 МБ/с, что тоже немало! Таким образом, в реальных условиях пользователь вряд ли когда-то заметит замедление записи из-за нехватки SLC-кэша.
+
+Также на графике линейной записи заметен кратковременный провал скорости до 135 МБ/с в конце цикла (явление оказалось устойчивым). Вероятно, это падение связано с необходимостью обслуживания КЭШа (информацию из него надо перебрасывать в основную память, сам КЭШ из SLC преобразовывать обратно в TLC и т.п.).
+
+В ходе теста на линейную запись был выполнен и тест для проверки наличия или отсутствия троттлинга. На середине теста на несколько минут был включен вентилятор, направленный на накопитель для его охлаждения.
+
+При этом ход графика не изменился, т.е. причиной падения производительности были естественные процессы в накопителе, а не троттлинг.
+
+Температура накопителя к концу теста линейной записи повысилась намного больше, чем в тесте на чтение, и достигла 70 градусов:
+
+450x413 55 KB. Big one: 674x619 150 KB
+
+При этом следует помнить, что тест проводился в «идеальном корпусе», т.е. вовсе без корпуса. Ситуация в реальном корпусе может быть хуже из-за близости источников тепла в закрытом пространстве (будет зависеть от вентиляции).
+
+Соответственно, вопрос о необходимости установки радиатора на накопитель надо решать, исходя из условий конкретного применения. В большинстве случаев он не потребуется.
+
+Применение в тестируемом SSD наиболее современных энергоэкономных комплектующих позволило значительно снизить остроту проблемы перегрева.
+
+Теперь – проверим стабильность скоростных характеристик накопителей в различных ситуациях его использования. Тестирование проводилось утилитой CrystalDiskMark 3.0.3 для четырех вариантов: «спокойное» состояние (диск записан на 20%); состояние сразу после записи (копирования) высокого объема данных 51450909004 байт (47.9 ГБ записи без команды Trim), через час после записи высокого объема данных (снова без принудительной подачи команды Trim), и, наконец, после подачи команды Trim.
+
+Эти тесты позволяют определить, насколько внутренние процессы после записи данных «мешают» работе с новыми данными; происходит ли автоматическая «расчистка» накопителя и насколько успешно она работает.
+
+150x137 16 KB. Big one: 402x367 66 KB 150x137 16 KB. Big one: 402x367 66 KB 150x137 15 KB. Big one: 402x367 67 KB 150x137 16 KB. Big one: 402x367 67 KB
+
+Тесты показали хорошую стабильность работы. Быстродействие колебалось лишь в пределах естественных случайных отклонений от измерения к измерению.
+
+Это, конечно, не значит, что копирование большого объема файлов никак не «напрягло» накопитель. Это только означает, что восстановление скоростных характеристик накопитель произвел быстро и незаметно для пользователя.
+
+Более серьезные ситуации, например, удаление файлов во время чтения или копирования, будет рассмотрены далее. Там это уже не пройдет незамеченным.
+
+Тестирование производительности
+
+Итак, как мы видели в предыдущей главе, тестируемый накопитель в режиме записи имеет два режима работы: «быстрый» (без переполнения КЭШа) и «медленный» - когда кэш переполняется.
+
+Сразу скажу, что тестирование производительности полностью проводилось в «быстром» режиме. Будем считать, что потребитель в курсе особенностей накопителей и не будет их «насиловать», доводя до переполнения КЭШа. Да и довольно трудно будет в естественных условиях создать для тестируемого SSD такую ситуацию. :)
+
+Для имитации работы в условиях, «максимально приближенных к боевым», накопитель тестировался заполненным на 20-40% плохо сжимаемыми данными. А для гарантированного обеспечения «быстрого» режима перед каждым тестом производилась перезагрузка, подача команды оптимизации, после чего – еще несколько минут «покоя».
+
+Anvil's Storage Utilities 1.1.0
+
+Для «разминки» - результаты теста в Anvil's Storage Utilities 1.1.0.
+
+450x303 56 KB. Big one: 850x573 157 KB
+
+Еще один популярный тест - Atto:
+
+376x450 64 KB. Big one: 530x634 105 KB
+
+Futuremark PCMark 7
+
+Данный тест проводит имитацию действий пользователя при работе за компьютером, т.е. без «гонки на скорость».
+
+Первый результат – общий итог в баллах; остальные, кроме первого – в мегабайтах в секунду.
+
+Score
+
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+6136
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+5383	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+5831	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+5963	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+5512	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+5964	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+6135
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+6069	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+5851	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+5985	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+6079	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+6040	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+4304	 
+ 	
+ 	 	 	 
+ 	
+0	 	2000	 	4000	 	6000
+
+Windows Defender
+
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+5.91
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+5.74	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+5.7	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+5.88	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+5.82	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+5.81	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+5.89
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+5.81	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+5.77	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+5.8	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+5.83	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+5.83	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+5.76	 
+ 	
+ 	 	 	 	 	 
+ 	
+0	 	1	 	2	 	3	 	4	 	5	 
+
+Importing pictures
+
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+35.66	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+33.63	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+32.52	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+34.73	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+26.93	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+33.88	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+35.92
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+35.69	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+34.61	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+34.46	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+35.94
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+34.6	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+17.36	 
+ 	
+ 	 	 	 
+ 	
+0	 	10	 	20	 	30	 
+
+Video editing
+
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+24.64
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+24.19	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+23.77	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+24.29	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+23.98	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+24.49	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+24.68
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+24.5	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+23.72	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+24.45	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+24.53	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+24.56
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+23.99	 
+ 	
+ 	 	 	 	 
+ 	
+0	 	5	 	10	 	15	 	20	 
+
+Windows Media Center
+
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+8.39
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+8.29	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+8.37
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+8.38
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+8.07	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+8.4
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+8.4
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+8.39
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+8.4
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+8.38
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+8.41
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+8.41
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+8.37
+ 	
+ 	 	 	 	 
+ 	
+0	 	2	 	4	 	6	 	8	 
+
+Adding Music
+
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+1.42
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+1.39	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+1.42
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+1.42
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+1.35	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+1.42
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+1.42
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+1.42
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+1.42
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+1.42
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+1.42
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+1.42
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+1.42
+ 	
+ 	 	 
+ 	
+0	 	0.5	 	1	 
+
+Starting applications
+
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+94.11
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+79.94	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+80.85	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+81.47	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+69.31	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+84.35	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+93.08	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+90.34	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+76.33	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+85.8	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+89.8	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+89.06	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+17.7	 
+ 	
+ 	 	 	 	 
+ 	
+0	 	20	 	40	 	60	 	80	 
+
+Gaming
+
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+18.54
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+17.68	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+17.86	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+18.33	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+17.95	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+18.26	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+18.57
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+18.28	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+17.92	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+18.18	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+18.35	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+18.32	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+17.9	 
+ 	
+ 	 	 	 
+ 	
+0	 	5	 	10	 	15	 
+
+CrystalDiskMark (64bit) 3.0.3
+
+Этот тест делает проверку скорости записи/чтения в нескольких режимах с потоком случайных плохосжимаемых данных. Это позволяет уменьшить влияние на результат внутренних алгоритмов сжатия в накопителях; но надо иметь в виду, что «ускоряющие» алгоритмы в современных накопителях настолько хитры и изворотливы, что полностью исключить их влияние вряд ли получится.
+
+Последовательное чтение
+
+Мбайт/с
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+2855
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+1572	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+1153	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+1600	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+1605	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+2464	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+2302	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+2147	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+2337	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+1277	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+2173	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+1842	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+1759	 
+ 	
+ 	 	 	 	 	 
+ 	
+0	 	500	 	1000	 	1500	 	2000	 	2500	 
+
+Чтение блоками по 512 Кбайт
+
+Мбайт/с
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+1535	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+1056	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+863.5	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+1105	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+923.3	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+1743	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+1892
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+1668	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+1275	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+1153	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+1681	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+1664	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+1097	 
+ 	
+ 	 	 	 
+ 	
+0	 	500	 	1000	 	1500	 
+
+Чтение блоками по 4 Кбайт
+
+Мбайт/с
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+69
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+34.81	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+37.93	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+59.28	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+58.45	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+55.18	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+59.2	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+34.18	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+57.49	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+34.73	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+53.24	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+53.43	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+36.34	 
+ 	
+ 	 	 	 
+ 	
+0	 	20	 	40	 	60	 
+
+Чтение блоками по 4 Кбайт, глубина очереди запросов – 32
+
+Мбайт/с
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+454	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+417.2	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+554.7	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+406.8	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+340.4	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+423.6	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+402.5	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+318.6	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+433.5	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+430.3	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+643.2
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+571.4	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+240.5	 
+ 	
+ 	 	 	 
+ 	
+0	 	200	 	400	 	600	 
+
+Последовательная запись
+
+Мбайт/с
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+1724	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+1300	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+557.8	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+1665	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+982.9	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+1088	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+1488	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+2087	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+1869	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+1048	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+2102
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+1043	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+1255	 
+ 	
+ 	 	 	 	 
+ 	
+0	 	500	 	1000	 	1500	 	2000	 
+
+Запись блоками по 512 Кбайт
+
+Мбайт/с
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+1701	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+770.5	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+560.1	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+1619	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+951.8	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+640.5	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+2111
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+1838	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+1532	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+1049	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+2106
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+1045	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+1168	 
+ 	
+ 	 	 	 	 
+ 	
+0	 	500	 	1000	 	1500	 	2000	 
+
+Запись блоками по 4 Кбайт
+
+Мбайт/с
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+172.3	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+117.4	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+174.1	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+155.2	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+153	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+153.5	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+151.6	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+107.9	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+184.6	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+97.32	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+195.3	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+222.6
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+131.9	 
+ 	
+ 	 	 	 	 
+ 	
+0	 	50	 	100	 	150	 	200	 
+
+Запись блоками по 4 Кбайт, глубина очереди запросов – 32
+
+Мбайт/с
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+306.5	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+343.5	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+527.5	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+359.7	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+363.7	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+288.3	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+332.5	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+257.2	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+388.2	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+358.3	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+609.1
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+600.9	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+214	 
+ 	
+ 	 	 	 
+ 	
+0	 	200	 	400	 	600
+
+Операции с различными типами файлов внутри накопителей
+
+В данном подразделе, кроме собственно копирования типовых наборов файлов, будут проверены операции редактирования видеофайла и архивирования двух папок с разнотипным содержимым (в одной – аудиофайлы, в другой – документы doc).
+
+Копирование фотографий, с
+
+Меньше – лучше
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+3	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+3	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+4
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+3	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+3	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+3	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+3	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+2	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+3	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+3	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+2	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+3	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+2	 
+ 	
+ 	 	 	 
+ 	
+0	 	1	 	2	 	3	 	4
+
+Копирование HD-видео, с
+
+Меньше – лучше
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+12	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+22	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+26	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+17	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+22	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+43
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+15	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+11	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+12	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+22	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+11	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+16	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+16	 
+ 	
+ 	 	 	 	 
+ 	
+0	 	10	 	20	 	30	 	40	 
+
+Копирование аудиозаписей, с
+
+Меньше – лучше
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+3	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+3	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+4
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+3	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+3	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+4
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+3	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+2	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+4
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+3	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+2	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+3	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+2	 
+ 	
+ 	 	 	 
+ 	
+0	 	1	 	2	 	3	 	4
+
+Копирование документов в формате Word 97-2003, с
+
+Меньше – лучше
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+11
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+9	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+8	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+3	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+3	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+7	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+7	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+2	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+6	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+3	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+2	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+3	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+2	 
+ 	
+ 	 	 	 	 	 
+ 	
+0	 	2	 	4	 	6	 	8	 	10	 
+
+Микширование mkv, с
+
+Меньше – лучше
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+8	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+13	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+17	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+11	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+14	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+22
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+9	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+11	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+8	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+13	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+10	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+13	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+11	 
+ 	
+ 	 	 	 	 
+ 	
+0	 	5	 	10	 	15	 	20	 
+
+Архивация, с
+
+Меньше – лучше
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+11	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+11	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+11	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+7	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+8	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+12
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+9	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+10	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+9	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+12
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+10	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+9	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+11	 
+ 	
+ 	 	 	 	 	 
+ 	
+0	 	2	 	4	 	6	 	8	 	10	 	12
+
+Время доступа при операциях случайного чтения и записи
+
+Время доступа накопителей SSD настолько короче по сравнению с «традиционными» HDD, что им, как правило, можно пренебречь. Но раз такой параметр существует, то он будет проверен.
+
+Среднее время доступа при операциях чтения и записи было получено в результате тестирования AS SSD Benchmark версии 1.7.4739.38088.
+
+Случайное чтение, мс
+
+Меньше – лучше
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+0.023	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+0.033	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+0.043	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+0.118	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+0.152
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+0.023	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+0.025	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+0.053	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+0.025	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+0.098	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+0.06	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+0.037	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+0.075	 
+ 	
+ 	 	 	 
+ 	
+0	 	0.05	 	0.1	 	0.15000000000000002
+
+Случайная запись, мс
+
+Меньше – лучше
+ADATA Gammix S11 480 Гбайт 
+  (SM2262G, TLC 3D 64L 256 Gbit ADATA/Micron, SVN139B, 07.2018) 	
+0.026	 
+GoodRAM IRIDM Ultimate 240 Гбайт 
+  (PS5007-11, MLC 2D 15 nm 128 Gbit Toggle SanDisk, E7FM04.5) 	
+0.039	 
+Intel 600p 1 Тбайт 
+  (SM2260G, TLC 3D 32L 384 Gbit Intel, PSF109C) 	
+0.023	 
+Intel 660p 1 Тбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+0.042	 
+Intel 660p 512 Гбайт 
+  (SM2263, QLC 3D 64L Intel, 002C) 	
+0.044	 
+Plextor M9PeG 256 Гбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+0.031	 
+Plextor M9PeGN 1 Тбайт 
+  (88SS1093, TLC 3D 64L 256 Gbit Toshiba, 1.05, 08.2018) 	
+0.033	 
+Plextor M9PGN Plus 1 Тбайт 
+  (88SS1092, TLC 3D 96L KIOXIA (Toshiba), 1.01) 	
+0.038	 
+Samsung 960 EVO 500 Гбайт 
+  (Polaris, TLC 3D 48L 256 Gbit Samsung, 3B7QCXE7, Samsung NVMe Driver, 02.2018) 	
+0.025	 
+Viper VPN100 256 Гбайт 
+  (Phison PS5012-E12DC, TLC 3D Micron/Toshiba, ECFM12.1) 	
+0.027	 
+T-Force Cardea II 512 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.2) 	
+0.023	 
+Viper VPR100 RGB 256 Гбайт 
+  (Phison PS5012-E12-27, TLC 3D 64L Toshiba, ECFM12.3) 	
+0.018	 
+Patriot P300 256 Гбайт 
+  (SM2263XT, TLC 3D 64L Intel, S0614B0G) 	
+0.079
+ 	
+ 	 	 	 
+ 	
+0	 	0.02	 	0.04	 	0.06	 
+
+Копирование файлов большого объема
+
+В предыдущих тестах мы проверяли работу накопителя в «быстром» режиме (когда объема КЭШа хватает для выполнения тестовых операций). И, как уже говорилось, в большинстве случаев именно такой и будет работа SSD.
+
+Но случаи бывают разные, поэтому проверим работу SSD при выходе за пределы этого режима, для чего будем использовать копирование файлов в большом объеме.
+
+Под «большим объемом» копируемых файлов в данном случае понимаем такой объем, который гарантированно «забьет» кэш накопителя. И, соответственно, в данном случае интересно будет понаблюдать за поведением накопителя в этом процессе.
+
+Для этого проведем копирование 100 ГБ плохо сжимаемых файлов (фильмов) в пределах накопителя.
+
+436x278 40 KB. Big one: 444x278 40 KB
+
+На графике заметен «двухступенчатый» участок быстрого копирования в начале графика, когда работает КЭШ разных уровней – как собственный КЭШ накопителя, так и внешний.
+
+Затем скорость снижается и колеблется с пилообразными подъемами и провалами.
+
+Продолжительность копирования составила 2 мин. 48 с; средняя скорость копирования составила почти точно 600 МБ/с. Очень неплохой результат, учитывая, что накопитель был преднамеренно поставлен в тяжелые условия.
+
+Чтение/копирование файлов с одновременным удалением
+
+Такая нагрузка (чтение и/или запись одной информации с одновременным удалением другой) – характерна для серверных применений, когда разные процессы (или разные пользователи) могут одновременно выполнять операции записи, чтения и удаления.
+
+Причем операция удаления для накопителей SSD, в отличие от традиционных HDD, очень непроста.
+
+В добрых старых HDD саму информацию удалять не надо – достаточно пометить, что она удалена. А магнитный слой потом, при поступлении новой информации, можно перезаписать как угодно: вместо нулей записать единицы, или наоборот.
+
+В SSD так сделать нельзя, там запись «однонаправленная». Перед записью новой информации ячейки надо обязательно очистить от старой. А это – дополнительная нагрузка на накопитель.
+
+Для проверки поведения накопителя было осуществлено удаление большого объема данных (100 ГБ) во время прохождения теста линейного чтения накопителя. Перед этим диск был заполнен данными общим объемом 200 ГБ, т.е. после удаления должно остаться еще 100 ГБ данных.
+
+Удаление делаем «по-честному», а не перемещением файлов в «Корзину» (что удалением в физическом смысле не является). Затем делаем скриншот графика чтения, вот он:
+
+450x306 36 KB. Big one: 808x550 116 KB
+
+Удаление было произведено, когда было прочитано 5% диска. В результате удаления файлов с некоторой задержкой возник острый пик, направленный вниз. Это задержанная реакция накопителя на удаление, связанная с проведением большого объема «внутренних работ» после удаления (очистка и т.п.).
+
+Провал в скорости чтения оказался хотя и не катастрофическим (в нижней точке скорость чтения все равно составляла около 340 МБ/с), но весьма ощутимым. Явление устойчиво, повтор эксперимента показал тот же самый результат.
+
+Факт глубокого (хотя и короткого по времени) провала скорости чтения после удаления файлов говорит о том, что для нагрузок серверного типа накопитель применять не рекомендуется.
+
+Еще один дополнительный эксперимент на эту же тему – с удалением файлов во время выполнения операции копирования. Было задано копирование файлов объемом 200 ГБ; удаление (100 ГБ) было произведено, когда скопировано было 6% от объема.
+
+Вот что получилось:
+
+436x278 36 KB. Big one: 444x278 39 KB
+
+Здесь бросается в глаза участок с низкой скоростью копирования, расположенный между участками с высокой скоростью.
+
+Падение скорости было спровоцировано с некоторой задержкой удалением файлов в большом объеме. После того, как накопитель отработал удаление, скорость вернулась на высокий уровень, и продолжалась в таком темпе довольно длительное время.
+
+По всей видимости, после отработки удаления файлов, накопитель часть освободившегося по этой причине объема преобразовал в SLC-кэш, что и позволило продолжить копирование с высокой скоростью в течение относительно длительного времени.
+
+Повторы теста показали, что длина участка с низкой скоростью копирования может меняться, но полностью он не исчезает.
+
+В целом в данных тестах с длительными и притом разнотипными операциями накопитель показал себя с положительной стороны в том смысле, что своевременно отрабатывает «помеху» в виде удаления большого объема файлов, а затем восстанавливает свою скорость непосредственно по ходу выполнения операций.
+
+Заключение
+
+Протестированный накопитель Plextor показал высокую, хотя и не рекордную по нынешним временам производительность. Помимо нее, к плюсам надо отнести хорошую работу в сложных условиях: копирование большого файлового объема, чтение и копирование с одновременным удалением файлов.
+
+Также к достоинствам отнесем умеренный нагрев накопителя и его конструкцию с односторонним расположением элементов, что позволит использовать его в ноутбуках, где буквально каждый миллиметр важен.
+
+Что касается недостатков, стоит упомянуть, что результат в тестах оказался немного ниже заявленных характеристик. Возможно, в дальнейшем производитель доработает прошивку, и результаты тестов совпадут с заявленными значениями. На момент тестирования свежих прошивок для этого SSD на сайте производителя еще не было.
+
+В целом же, несмотря на замечания, протестированный SSD заслуживает высокой оценки как накопитель геймерского уровня. 
