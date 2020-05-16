@@ -7,7 +7,7 @@ from matplotlib.backends.backend_qt5agg import (
 matplotlib.use('Qt5Agg')
 from matplotlib.figure import Figure
 
-from sources.Word2VecNew.plot.TsneMplForWidget import TsneMplForWidget
+from sources.common.plot.TsneMplForWidget import TsneMplForWidget
 
 class PlotMaker(FigureCanvas):
     def __init__(self, plotVLayout, parent=None):
