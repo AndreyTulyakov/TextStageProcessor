@@ -31,8 +31,8 @@ def getFilenameFromUserSelection(file_types="Any Files (*.*)", path = ''):
     else:
         return None
 
-def getFilenamesFromUserSelection(path = ''):
-    filenames, _ = QFileDialog.getOpenFileNames(None, "Выбрать файлы", path, "Text Files (*.txt)", None)
+def getFilenamesFromUserSelection(path = '', extensions: str = None):
+    filenames, _ = QFileDialog.getOpenFileNames(None, "Выбрать файлы", path, "Text Files (*.txt);;{0}".format(extensions if not extensions == None else ''), None)
     if (len(filenames) > 0):
         return filenames
     else:
