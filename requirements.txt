@@ -1,0 +1,12 @@
+scipy>=1.1.0
+matplotlib>=3.0.3
+gensim>=3.7.3
+numpy>=1.16.0
+pandas>=0.24.2
+pymorphy2>=0.8
+PyQt5>=5.12.2
+pyqt5-tools>=5.11.3.1.4
+scikit_learn>=0.21.2
+pymorphy2-dicts-ru>=2.4
+pymorphy2-dicts>=2.4
+sklearn>=0.0
