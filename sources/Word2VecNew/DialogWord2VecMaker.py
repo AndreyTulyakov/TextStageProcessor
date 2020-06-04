@@ -26,9 +26,11 @@ matplotlib.use('Qt5Agg')
 '''
 class DialogWord2VecMaker(QDialog, DialogWord2Vec):
     def __init__(self, input_dir, filename: str, morph, configurations, parent):
-        QDialog.__init__(self)
+        super().__init__()
         DialogWord2Vec.__init__(self)
         self.setupUi(self)
+        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint
+        self.setWindowFlags(flags)
 
         self.filename = filename
         self.morph = morph
@@ -36,8 +38,7 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.parent = parent
         self.input_dir = input_dir
 
-        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint
-        self.setWindowFlags(flags)
+        
 
         self.all_idf_word_keys = []
         self.texts = []
