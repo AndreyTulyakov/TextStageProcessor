@@ -12,7 +12,6 @@ from sources.common.plot.PlotMaker import PlotMaker
 
 from sklearn.manifold import TSNE
 import matplotlib
-from matplotlib.backends.backend_qt5agg import (NavigationToolbar2QT as NavigationToolbar)
 matplotlib.use('Qt5Agg')
 
 # # We import seaborn to make nice plots.
@@ -99,14 +98,13 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
 
         X = self.calculator.model.wv[self.calculator.model.wv.vocab]
         RS = 2500 # Random state
-        tsne = TSNE(n_components=3, perplexity = 40, random_state=RS)
+        tsne = TSNE(n_components=2, perplexity = 40, random_state=RS)
         result = tsne.fit_transform(X)
         
         makePlot = PlotMaker(self.plotVLayout, self)
 
         # Создаем toolbar TODO: перенести в PlotMaker
-        self.toolbar = NavigationToolbar(makePlot.canvas, self, coordinates=True)
-        self.plotVLayout.addWidget(self.toolbar)
+        makePlot.add_toolbar(self)
 
         ax = makePlot.ax
 
@@ -114,7 +112,8 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         # palette = np.array(sns.color_palette("hls", 10))
 
         # We create a scatter plot.
-        ax.scatter(result[:, 0], result[:, 1], result[:, 2])
+        ax.scatter(result[:, 0], result[:, 1])
+        ax.grid(True)
         ax.plot()
         words = list(self.calculator.model.wv.vocab)
         for i, word in enumerate(words):
@@ -123,6 +122,7 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.searchQueryGBox.setVisible(True)
         self.selectModelBtn.setEnabled(True)
         self.visualizeBtn.setEnabled(True)
+        self.visualizeLogTextEdit.append('График отображен')
 
     def on_calculation_finish(self):
         self.setEnabled(True)
