@@ -23,13 +23,20 @@ class PlotMaker(FigureCanvas):
     def visualizeData(self, fig):
         self.geomForMpl = self.plotVLayout
         self.canvas = TsneMplForWidget(self.fig)
+        self.checkWidget(self.geomForMpl)
         self.geomForMpl.addWidget(self.canvas)
 
         # self.toolbar = NavigationToolbar(self.canvas, self, coordinates=True)
         # self.geomForMpl.addWidget(self.toolbar)
+    
+    def add_toolbar(self, parent):
+        self.toolbar = NavigationToolbar(self.canvas, parent, coordinates=True)
+        self.plotVLayout.addWidget(self.toolbar)
 
-    def removePlot(self):
-        self.mplvl.removeWidget(self.canvas)
-        self.canvas.close()
-        self.mplvl.removeWidget(self.toolbar)
-        self.toolbar.close()
+    def checkWidget(self, plotVLayout):
+        lcount = plotVLayout.count()
+        if(lcount > 1):
+            for i in reversed(range(1, lcount)):
+                plotVLayout.itemAt(i).widget().deleteLater()
+            # plotVLayout.removeItem(plotVLayout.itemAt(1))
+
