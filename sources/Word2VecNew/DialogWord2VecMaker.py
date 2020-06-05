@@ -56,10 +56,10 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.retrainModelBtn.clicked.connect(self.retrain_model)
         self.retrainModelBtn.setVisible(False) # Скрыть кнопку повторной тренировки модели
 
-        # Вкладка визуализация модели
-        self.visualizeBtn.setEnabled(False) # Блокируем элементы до выбора модели
+        # Вкладка визуализация модели        
         self.searchQueryGBox.setEnabled(False) # Блокируем элементы до выбора модели
         self.plotVLayout.setEnabled(False) # Блокируем элементы до выбора модели
+        self.visualizeBtn.setEnabled(False) # Блокируем элементы до выбора модели
 
         self.selectModelBtn.clicked.connect(self.select_model_file)
         self.searchQueryBtn.clicked.connect(self.search_word)       
@@ -211,7 +211,7 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.createLogTextEdit.append("Файл со словарем для текста сохранен по адресу output/Word2Vec")
         log_data('index2word', list(
             enumerate(self.calculator.model.wv.index2word)))
-        self.createLogTextEdit.append("Параметр index2word сохранен по адресу output/Word2Vec")
+        self.createLogTextEdit.append("Список индексов index2word сохранен по адресу output/Word2Vec")
         self.calculator.model.save(root_path + '_output.model')
         self.createLogTextEdit.append("Модель данных сохранена по адресу output/Word2Vec")
         self.calculator.model.wv.save_word2vec_format(
