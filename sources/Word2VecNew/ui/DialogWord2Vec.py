@@ -15,7 +15,7 @@ class Ui_Word2VecDialog(object):
         Word2VecDialog.setObjectName("Word2VecDialog")
         Word2VecDialog.setWindowModality(QtCore.Qt.NonModal)
         Word2VecDialog.setEnabled(True)
-        Word2VecDialog.resize(986, 580)
+        Word2VecDialog.resize(1042, 580)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
