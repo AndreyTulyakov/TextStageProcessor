@@ -15,6 +15,13 @@ import matplotlib
 from matplotlib.backends.backend_qt5agg import (NavigationToolbar2QT as NavigationToolbar)
 matplotlib.use('Qt5Agg')
 
+# # We import seaborn to make nice plots.
+# import seaborn as sns
+# sns.set_style('darkgrid')
+# sns.set_palette('muted')
+# sns.set_context("notebook", font_scale=1.5,
+# rc={"lines.linewidth": 2.5})
+
 # Импортируем файл, работающий с алгоритмом word2vec
 # Импортируем файл, работающий с моделью word2vec (создание, загрузка, препроцессинг)
 # Импортируем файл, работающий с визуализацией с помощью t-SNE
@@ -36,9 +43,7 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.morph = morph
         self.configurations = configurations
         self.parent = parent
-        self.input_dir = input_dir
-
-        
+        self.input_dir = input_dir       
 
         self.all_idf_word_keys = []
         self.texts = []
@@ -93,7 +98,8 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.visualizeBtn.setEnabled(False)
 
         X = self.calculator.model.wv[self.calculator.model.wv.vocab]
-        tsne = TSNE(n_components=2)
+        RS = 2500 # Random state
+        tsne = TSNE(n_components=3, perplexity = 40, random_state=RS)
         result = tsne.fit_transform(X)
         
         makePlot = PlotMaker(self.plotVLayout, self)
@@ -103,7 +109,12 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.plotVLayout.addWidget(self.toolbar)
 
         ax = makePlot.ax
-        ax.scatter(result[:, 0], result[:, 1])
+
+        # # We choose a color palette with seaborn.
+        # palette = np.array(sns.color_palette("hls", 10))
+
+        # We create a scatter plot.
+        ax.scatter(result[:, 0], result[:, 1], result[:, 2])
         ax.plot()
         words = list(self.calculator.model.wv.vocab)
         for i, word in enumerate(words):
