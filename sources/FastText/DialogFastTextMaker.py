@@ -36,7 +36,7 @@ class DialogFastTextMaker(QDialog, DialogFastText):
         self.parent = parent
         self.input_dir = input_dir
 
-        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint
+        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint
         self.setWindowFlags(flags)
 
         self.all_idf_word_keys = []
