@@ -48,7 +48,8 @@ class FastTextCalculator(QThread):
         self.fasttext_model = None
         self.output_dir = self.configurations.get(
             "output_files_directory", "output_files") + '/FastText/'
-        self.set_train_file()
+        if not use_gensim:
+            self.set_train_file()
 
     # Основной метод класса, создание (или тренировка) модели.
     def run(self):
@@ -57,7 +58,7 @@ class FastTextCalculator(QThread):
             print('Модель создана (Gensim).')
         else:
             self.create_model()
-            print('Тренировка модели завершена.')
+            print('Модель создана.')
         self.signals.PrintInfo.emit('\n****************\nРассчеты закончены!')
         self.signals.Finished.emit()
         self.signals.ProgressBar.emit(100)
@@ -79,7 +80,6 @@ class FastTextCalculator(QThread):
                         minCount=self.min_count, epoch=self.iter, ws=self.window)
 
     def set_train_file(self):
-        train_file_name = FAST_TEXT_FILENAME_PREFIX
         train_text = []
         train_dir = os.path.dirname(self.filename)
 
@@ -89,7 +89,7 @@ class FastTextCalculator(QThread):
                 stop_words=self.stopwords,
                 only_nouns=self.only_nouns
             )
-        self.train_filename = '{0}/{1}'.format(train_dir, '{0}_train.txt'.format(get_filename_from_path(train_dir)))
+        self.train_filename = '{0}/{1}'.format(train_dir, '{0}_cleared.txt'.format(get_filename_from_path(self.filename).split('.')[0]))
         train_file = open(self.train_filename, 'w', encoding='utf-8')
 
         for line in processed_lines:

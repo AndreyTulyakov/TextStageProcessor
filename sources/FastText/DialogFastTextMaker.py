@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
-from PyQt5.QtWidgets import QApplication, QMessageBox, QDialog
+from PyQt5.QtWidgets import QApplication, QDialog, QLayout, QMessageBox
 
 from sources.TextPreprocessing import writeStringToFile
 from sources.utils import Profiler, getDirFromUserSelection, getFilenameFromUserSelection, getFilenamesFromUserSelection
@@ -50,13 +50,14 @@ class DialogFastTextMaker(QDialog, DialogFastText):
         self.plot = None
         self.visualized_gensim_model = None
         self.visualized_model = None
+        self.visualized_model_filename = None
 
         self.output_dir = self.configurations.get(
             "output_files_directory", "output_files") + '/FastText/'
         self.classification_output_dir = self.configurations.get(
             "output_files_directory", "output_files") + '/FastText/classification/'
 
-        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint
+        flags = Qt.Window | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint | Qt.WindowMaximizeButtonHint
         self.setWindowFlags(flags)
 
         self.profiler = Profiler()
@@ -86,6 +87,8 @@ class DialogFastTextMaker(QDialog, DialogFastText):
         # Блокируем элементы до тренировки модели
         self.selectClassifierFilesLbl.setToolTip(classifierTrainLabelMessage)
         self.selectClassifierFilesLbl.setToolTipDuration(20000)
+        self.selectClassifierTrainFilesBtn.setToolTip(classifierTrainLabelMessage)
+        self.selectAnotherPathBtn.setToolTipDuration(20000)
         self.trainClissifierBtn.setEnabled(False)
         self.classifyButton.setEnabled(False)
         self.phraseClassificationField.setEnabled(False)
@@ -157,7 +160,7 @@ class DialogFastTextMaker(QDialog, DialogFastText):
         self.createLogTextEdit.append(
             'Выполнено за ' + self.profiler.stop() + ' с.')
         QApplication.restoreOverrideCursor()
-        self.retrainModelBtn.setVisible(True) # TODO: Показать кнопку повтора расчетов
+        # self.retrainModelBtn.setVisible(True) # TODO: Показать кнопку повтора расчетов
         self._log_output_data()
 
     # Обработчик завершения классификации.
@@ -183,20 +186,21 @@ class DialogFastTextMaker(QDialog, DialogFastText):
     # Создание модели.
     def create_model(self):
         self.createModelBtn.setEnabled(False)
+        self.setEnabled(False)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
         self.set_calc_and_signals()
         self.createLogTextEdit.append("Исходный файл {0}".format(self.filename))
-        QApplication.setOverrideCursor(Qt.WaitCursor)
         self.calculator.min_count = self.wordFrequencyField.value()
         self.calculator.size = self.vectorSizeField.value()
         self.calculator.learn_rate = self.trainingSpeedField.value()
         self.calculator.window = self.windowField.value()
         self.calculator.iter = self.epochNumberField.value()
-        self.setEnabled(False)
+        
         self.profiler.start()
         self.calculator.start()
 
     def clear_plots_layout(self):
-        print('TODO')
+        self.plot.removePlot()
 
     # Визуализация модели.
     def visualise_model(self):
@@ -211,26 +215,32 @@ class DialogFastTextMaker(QDialog, DialogFastText):
             X = self.visualized_gensim_model.wv[self.visualized_gensim_model.wv.vocab]
             words = list(self.visualized_gensim_model.wv.vocab)
         if not self.visualized_model == None:
-            X = []
-            output_matrix_np_array = self.visualized_model.get_output_matrix()
-            for item in output_matrix_np_array:
-                X.append(item.tolist())
-            words = self.visualized_model.get_words()
+            try:
+                X = []
+                output_matrix_np_array = self.visualized_model.get_output_matrix()
+                for item in output_matrix_np_array:
+                    X.append(item.tolist())
+                words = self.visualized_model.get_words()
+            except:
+                error = 'Для визуализации необходима модель supervised или созданная с помощью gensim'
+                print(error)
+                self.visualizeLogTextEdit.append('{0}\n'.format(error))
 
         tsne = TSNE(n_components=2)
         result = tsne.fit_transform(X)
 
-        self.plot = PlotMaker(self.plotVLayout, self)
-
-        # Создаем toolbar TODO: перенести в PlotMaker
-        self.toolbar = NavigationToolbar(self.plot.canvas, self, coordinates=True)
-        self.plotVLayout.addWidget(self.toolbar)
+        self.plot = PlotMaker(self.plotVLayout, parent=self, title=get_filename_from_path(self.visualized_model_filename))
+        self.plot.add_toolbar(self)
 
         ax = self.plot.ax
         ax.scatter(result[:, 0], result[:, 1])
         ax.plot()
-        for i, word in enumerate(words):
-            ax.annotate(word, xy=(result[i, 0], result[i, 1]))
+
+        try:
+            for i, word in enumerate(words):
+                ax.annotate(word, xy=(result[i, 0], result[i, 1]))
+        except Exception as e:
+            print(e)
 
         self.searchQueryGBox.setVisible(True)
         self.selectModelBtn.setEnabled(True)
@@ -306,18 +316,20 @@ class DialogFastTextMaker(QDialog, DialogFastText):
 
     # Выбор существующей модели.
     def select_model_file(self):
-        modelFile = getFilenameFromUserSelection("MODEL Files (*.model)", self.output_dir + 'FastText')
-        if modelFile != None and len(modelFile.split('/')) > 0:
+        self.visualized_model_filename = getFilenameFromUserSelection("MODEL Files (*.model)", self.output_dir + 'FastText')
+        if self.visualized_model_filename != None and len(self.visualized_model_filename.split('/')) > 0:
+            self.visualized_gensim_model = None
+            self.visualized_model = None
             try:
-                self.visualized_model = fasttext.load_model(modelFile)
+                self.visualized_model = fasttext.load_model(self.visualized_model_filename)
             except:
                 self.visualized_model = None
             try:
-                self.visualized_gensim_model = FastText.load(modelFile)
+                self.visualized_gensim_model = FastText.load(self.visualized_model_filename)
             except:
                 self.visualized_gensim_model = None
             self.visualizeLogTextEdit.clear()
-            self.set_enable_visualisation(modelFile)
+            self.set_enable_visualisation(self.visualized_model_filename)
 
     # Выбор файла для классификации.
     # Снятие блокировки с кнопки классификации.

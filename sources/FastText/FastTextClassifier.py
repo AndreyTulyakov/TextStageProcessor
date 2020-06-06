@@ -106,10 +106,10 @@ class FastTextClassifier(QThread):
                     train_text.append('__label__{0} {1}'.format(get_filename_from_path(file).split('.')[0], line))
             else:
                 self.train_filename = file
-                self.model_filename = 'output_{0}.model'.format(get_filename_from_path(file).split('.')[0])
+                self.model_filename = 'SUPERVISED_{0}.model'.format(get_filename_from_path(file).split('.')[0])
                 break
         if self.train_filename == None:
-            self.model_filename = 'output_{0}.model'.format(train_file_name)
+            self.model_filename = 'SUPERVISED_{0}.model'.format(train_file_name)
             self.train_filename = '{0}/{1}_{2}.txt'.format(train_dir, FAST_TEXT_TRAIN_FILENAME_PREFIX, train_file_name)
             train_file = open(self.train_filename , 'w', encoding='utf-8')
 
@@ -124,7 +124,9 @@ class FastTextClassifier(QThread):
                 stop_words=self.cachedStopWords,
                 lines=[phrase]
             )
+            print(self.model)
             result = self.model.predict(textLines)
+            print(result)
             self.signals.PrintInfo.emit('\n****************\nКлассификация фразы завершена: {0} (probability: {1})'.format(result[0][0], result[1][0]))
 
 
