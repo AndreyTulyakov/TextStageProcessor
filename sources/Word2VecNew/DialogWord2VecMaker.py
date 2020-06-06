@@ -58,11 +58,11 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         # Вкладка визуализация модели        
         self.searchQueryGBox.setEnabled(False) # Блокируем элементы до выбора модели
         self.plotVLayout.setEnabled(False) # Блокируем элементы до выбора модели
-        self.visualizeBtn.setEnabled(False) # Блокируем элементы до выбора модели
+        self.visualizeGBox.setEnabled(False) # Блокируем элементы до выбора модели
 
         self.selectModelBtn.clicked.connect(self.select_model_file)
         self.searchQueryBtn.clicked.connect(self.search_word)       
-        self.visualizeBtn.clicked.connect(self.visualise_model)
+        self.tsneBtn.clicked.connect(self.visualise_model)
         self.filePathField.setText(self.filename)        
         if filename.endswith('.model'):
             self.set_enable_visualisation(filename)
@@ -94,7 +94,7 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         
     def visualise_model(self):
         self.selectModelBtn.setEnabled(False)
-        self.visualizeBtn.setEnabled(False)
+        self.visualizeGBox.setEnabled(False)
 
         X = self.calculator.model.wv[self.calculator.model.wv.vocab]
         RS = 2500 # Random state
@@ -121,7 +121,7 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         
         self.searchQueryGBox.setVisible(True)
         self.selectModelBtn.setEnabled(True)
-        self.visualizeBtn.setEnabled(True)
+        self.visualizeGBox.setEnabled(True)
         self.visualizeLogTextEdit.append('График отображен')
 
     def on_calculation_finish(self):
@@ -224,6 +224,6 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.selectModelField.setText(nameStrArray[-3] + '/' + nameStrArray[-2] + '/' + nameStrArray[-1])
         self.visualizeLogTextEdit.append('Модель выбрана')
         self.calculator = Word2VecCalculator(modelFile, self.morph, self.configurations)
-        self.visualizeBtn.setEnabled(True) # Делаем доступными элементы после выбора модели
+        self.visualizeGBox.setEnabled(True) # Делаем доступными элементы после выбора модели
         self.searchQueryGBox.setEnabled(True) # Делаем доступными элементы после выбора модели
         self.plotVLayout.setEnabled(True) # Делаем доступными элементы после выбора модели
