@@ -21,8 +21,6 @@ from gensim.models import FastText
 import gensim
 import fasttext
 
-FAST_TEXT_FILENAME_PREFIX = 'trainfile'
-
 class FastTextCalculatorSignals(QObject):
     PrintInfo = pyqtSignal(str)
     Finished = pyqtSignal()
@@ -49,7 +47,7 @@ class FastTextCalculator(QThread):
         self.output_dir = self.configurations.get(
             "output_files_directory", "output_files") + '/FastText/'
         if not use_gensim:
-            self.set_train_file()
+            self.set_input_file()
 
     # Основной метод класса, создание (или тренировка) модели.
     def run(self):
@@ -63,6 +61,7 @@ class FastTextCalculator(QThread):
         self.signals.Finished.emit()
         self.signals.ProgressBar.emit(100)
 
+    # Создание модели fasttext с помощью библиотеки Gensim
     def create_model_gensim(self):
         handler = EpochCallbackHandler(
             self.iter, self.signals.Progress, self.signals.ProgressBar)
@@ -71,15 +70,17 @@ class FastTextCalculator(QThread):
                         min_count=self.min_count, iter=self.iter, window=self.window, callbacks=[handler])
         self.gensim_fasttext_model.callbacks = ()
 
+    # Создание модели fasttext.
     def create_model(self):
         self.signals.PrintInfo.emit('Препроцессинг файлов:')
         self.signals.PrintInfo.emit('Удаление стоп слов...')
         self.signals.PrintInfo.emit('Приведение к нормальной форме...')
-        self.set_train_file()
+        self.set_input_file()
         self.fasttext_model = fasttext.train_unsupervised(input=self.train_filename, dim=self.size, lr=self.learn_rate,
                         minCount=self.min_count, epoch=self.iter, ws=self.window)
 
-    def set_train_file(self):
+    # Установка файла с данными для создания модели.
+    def set_input_file(self):
         train_text = []
         train_dir = os.path.dirname(self.filename)
 

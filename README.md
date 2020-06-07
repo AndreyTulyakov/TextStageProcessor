@@ -29,11 +29,19 @@ Open source project for text mining process exploration.
  - pymorphy2-dicts-ru>=2.4
  - pymorphy2-dicts>=2.4
  - sklearn
+ - fasttext>=0.9.2
 
 Склонировать с этой версии github:  
 git clone https://github.com/ElleyKo/TextStageProcessor
 
 Для установки зависимостей (при наличии Python>=3.7.*) можно набрать команду:  
 pip install -r requirements.txt
+
+При возникновении проблем с установкой пакета fasttext необходимо установить файл .whl командой, директория /wheel:
+pip install fasttext-0.9.2-cp37-cp37m-win_amd64.whl
+Если версия Python не 3.7.X или система не x64 - установить подходящий .whl-файл:
+https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext
+cpXXX - ближайшая версия Python
+win-amdXX - ОС и разрядность системы
 
 [Pip](https://pip.pypa.io/en/stable/installing/)

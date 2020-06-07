@@ -36,7 +36,8 @@ class FastTextClassifierSignals(QObject):
 
 FAST_TEXT_TRAIN_FILENAME_PREFIX = 'trainfile'
 
-# Директория с текстовыми файлами. Название каждого файла (только латиница) должно отражать категорию, к которой относится список текстов, содержащийся в этом файле. Например, файл, содержащий тексты категории "комедия", должен иметь название "comedy.txt"
+# Для треннировки классификатора подаётся список файлов. Название каждого файла (только латиница) должно отражать категорию, к которой относится список текстов, содержащийся в этом файле. Например, файл, содержащий тексты категории "комедия", должен иметь название "comedy.txt"
+# Каждая строка файла содержит категорию (__label__<category>) и следующий за категорией текст.
 # Класс, реализующий классификацию текстового файла при помощи метода predict библиотеки fasttext(PyPI).
 class FastTextClassifier(QThread):
     def __init__(self, morph, only_nouns, configurations, filenames=None, model_file=None):
@@ -61,6 +62,7 @@ class FastTextClassifier(QThread):
             self.signals.PrintInfo.emit('Загружена supervised модель {0}'.format(self.model_filename))
 
     # Основной метод класса.
+    # Тренировка классификатора.
     def run(self):
         if not self.train_files == None:
             self.set_train_file()
@@ -69,6 +71,8 @@ class FastTextClassifier(QThread):
         self.signals.PrintInfo.emit('\n****************\nРассчеты закончены!')
         self.signals.Finished.emit()
 
+    # Классификация строк файла.
+    # Каждая строка файла - отдельный текст для классификации.
     # Получает массив строк нормализованного текста, вызывает метод predict, сохраняет результат в файл.
     def classify(self):
         textLines = get_processed_lines(
@@ -83,11 +87,15 @@ class FastTextClassifier(QThread):
         self.save_result_to_file(result)
         self.signals.ClassificationFinished.emit()
 
+    # Устанавливает рабочую модель для классификации.
     def set_model(self):
         if not self.model_filename == None:
             self.model = fasttext.load_model(self.model_filename)
             self.signals.PrintInfo.emit('Загружена supervised модель {0}'.format(self.model_filename))
 
+    # Создаёт тренировочный файл с помеченными категориями строками.
+    # TODO: Добавить разбиение (80:20) на тренировочный файл и файл для проверки модели - X.valid.
+    # Подобная проверка осуществляется при помощи метода <fasttext_model>.test(valid_file), которая возвращает критерии точности: precision и recall.
     def set_train_file(self):
         train_file_name = ''
         train_text = []
@@ -117,6 +125,7 @@ class FastTextClassifier(QThread):
                 train_file.write(line + '\n')
             train_file.close()
 
+    # Классификация фразы.
     def classify_phrase(self, phrase):
         if not self.model == None:
             textLines = get_processed_lines(

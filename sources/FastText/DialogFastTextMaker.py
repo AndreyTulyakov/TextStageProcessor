@@ -137,11 +137,12 @@ class DialogFastTextMaker(QDialog, DialogFastText):
         self.createModelBar.setValue(value)
         self.repaint()
 
-    # Вывод текста в информационное поле на форме.
+    # Вывод текста в информационное поле раздела создания моделей.
     def on_text_log_add(self, QString):
         self.createLogTextEdit.append(QString + '\n')
         self.repaint()
 
+    # Вывод текста в информационное поле раздела классификациию
     def on_classification_text_log_add(self, QString):
         self.classificationLogTextEdit.append(QString + '\n')
         self.repaint()
@@ -163,7 +164,7 @@ class DialogFastTextMaker(QDialog, DialogFastText):
         # self.retrainModelBtn.setVisible(True) # TODO: Показать кнопку повтора расчетов
         self._log_output_data()
 
-    # Обработчик завершения классификации.
+    # Обработчик завершения тренировки классификатора.
     def on_classifier_train_finish(self):
         self.setEnabled(True)
         self.trainClissifierBtn.setEnabled(True)
@@ -175,13 +176,14 @@ class DialogFastTextMaker(QDialog, DialogFastText):
         self.classificationLogTextEdit.append('Обученая модель сохранена по адресу: {0}'.format(model_file))
         self.set_enable_classification()
 
+    # Обработчик завершения классификации.
     def on_classification_finish(self):
         self.setEnabled(True)
         QApplication.restoreOverrideCursor()
         self.classificationLogTextEdit.append('Затраченное время: {0}c.'.format(self.profiler.stop()))
         self.classificationLogTextEdit.append('Результаты сохранены по адресу: {0}{1}'.format(self.output_dir, self.classifier.classification_result_filename))
 
-    # Инициализация и настройка FastTextCalculator.
+    # Инициализация и настройка FastTextCalculator для создания моделей.
     # Настройка сигналов.
     # Создание модели.
     def create_model(self):
@@ -199,9 +201,6 @@ class DialogFastTextMaker(QDialog, DialogFastText):
         self.profiler.start()
         self.calculator.start()
 
-    def clear_plots_layout(self):
-        self.plot.removePlot()
-
     # Визуализация модели.
     def visualise_model(self):
         self.selectModelBtn.setEnabled(False)
@@ -214,6 +213,7 @@ class DialogFastTextMaker(QDialog, DialogFastText):
         if not self.visualized_gensim_model == None:
             X = self.visualized_gensim_model.wv[self.visualized_gensim_model.wv.vocab]
             words = list(self.visualized_gensim_model.wv.vocab)
+
         if not self.visualized_model == None:
             try:
                 X = []
@@ -228,14 +228,11 @@ class DialogFastTextMaker(QDialog, DialogFastText):
 
         tsne = TSNE(n_components=2)
         result = tsne.fit_transform(X)
-
         self.plot = PlotMaker(self.plotVLayout, parent=self, title=get_filename_from_path(self.visualized_model_filename))
         self.plot.add_toolbar(self)
-
         ax = self.plot.ax
         ax.scatter(result[:, 0], result[:, 1])
         ax.plot()
-
         try:
             for i, word in enumerate(words):
                 ax.annotate(word, xy=(result[i, 0], result[i, 1]))
@@ -247,6 +244,7 @@ class DialogFastTextMaker(QDialog, DialogFastText):
         self.visualizeBtn.setEnabled(True)
         self.clearPlotWidgetBtn.setEnabled(True)
 
+    # Тренировка классификатора.
     def train_classifier(self):
         self.trainClissifierBtn.setEnabled(False)
         self.classificationLogTextEdit.append("Исходные файлы:\n{0}".format('\n'.join(self.train_files)))
@@ -308,6 +306,8 @@ class DialogFastTextMaker(QDialog, DialogFastText):
                     self.trainClissifierBtn.setEnabled(True)
             self.set_enable_classification()
 
+    # Возвращает файл .model, если такой был выбран.
+    # Иначе - False
     def get_model_selected(self, files: list):
         for file in files:
             if get_filename_from_path(file).split('.')[1] == 'model':
@@ -358,6 +358,10 @@ class DialogFastTextMaker(QDialog, DialogFastText):
             error_text = 'Слово {0} не содержится в словаре'.format(word)
             self.visualizeLogTextEdit.append(error_text)
 
+    # Очистка области визуализации.
+    def clear_plots_layout(self):
+        self.plot.removePlot()
+
     # Отображения результатов поиска слова-синонима.
     def _display_search_results(self, word, results):
         self.visualizeLogTextEdit.append("Слово {0} употребляется со следующими словами:".format(word))
@@ -405,6 +409,7 @@ class DialogFastTextMaker(QDialog, DialogFastText):
         self.searchQueryGBox.setEnabled(True) # Делаем доступными элементы после выбора модели
         self.plotVLayout.setEnabled(True) # Делаем доступными элементы после выбора модели
 
+    # Снятие блокировки с элементов интерфейса для классификации.
     def set_enable_classification(self):
         if not self.classifierModel == None and not self.classifyFilename == None:
             self.classifyButton.setEnabled(True)
@@ -412,6 +417,7 @@ class DialogFastTextMaker(QDialog, DialogFastText):
             self.phraseClassificationBtn.setEnabled(True)
             self.phraseClassificationField.setEnabled(True)
 
+    # Блокирует элементы интерфейса для классификации.
     def set_disable_classification(self):
         self.classifyButton.setEnabled(False)
         self.phraseClassificationBtn.setEnabled(False)
