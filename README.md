@@ -25,14 +25,14 @@ Open source project for text mining process exploration.
 
 - Установить на python внутри Anaconda3 через pip библиотеку fasttext
 
-pip install fasttext
+  pip install fasttext
 
-При возникновении проблем с установкой пакета fasttext необходимо установить файл .whl командой, директория /wheel:
-pip install fasttext-0.9.2-cp37-cp37m-win_amd64.whl
-Если версия Python не 3.7.X или система не x64 - установить подходящий .whl-файл:
-https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext
-cpXXX - ближайшая версия Python
-win-amdXX - ОС и разрядность системы
+  При возникновении проблем с установкой пакета fasttext необходимо установить файл .whl командой, директория /wheel:  
+  pip install fasttext-0.9.2-cp37-cp37m-win_amd64.whl  
+  Если версия Python не 3.7.X или система не x64 - установить подходящий .whl-файл:  
+  https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext  
+  cpXXX - ближайшая версия Python  
+  win-amdXX - ОС и разрядность системы  
 
 2. В случае использования чистого языка Python 3 необходимо установить библиотеки (точное их перечисление есть в файле requirements.txt):
  - scipy
@@ -51,12 +51,12 @@ win-amdXX - ОС и разрядность системы
  - nltk<=3.5
  - stopwords<=0.1.3
 
-При возникновении проблем с установкой пакета fasttext необходимо установить файл .whl командой, директория /wheel:
-pip install fasttext-0.9.2-cp37-cp37m-win_amd64.whl
-Если версия Python не 3.7.X или система не x64 - установить подходящий .whl-файл:
-https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext
-cpXXX - ближайшая версия Python
-win-amdXX - ОС и разрядность системы
+При возникновении проблем с установкой пакета fasttext необходимо установить файл .whl командой, директория /wheel:  
+pip install fasttext-0.9.2-cp37-cp37m-win_amd64.whl  
+Если версия Python не 3.7.X или система не x64 - установить подходящий .whl-файл:  
+https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext  
+cpXXX - ближайшая версия Python  
+win-amdXX - ОС и разрядность системы  
 
 Для установки зависимостей (при наличии Python>=3.7.*) можно набрать команду:  
 pip install -r requirements.txt
