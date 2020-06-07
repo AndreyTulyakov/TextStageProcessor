@@ -43,6 +43,9 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.configurations = configurations
         self.parent = parent
         self.input_dir = input_dir       
+        self.output_dir = self.configurations.get(
+            "output_files_directory", "output_files") + '/Word2Vec/'    
+        os.makedirs(os.path.dirname(self.output_dir), exist_ok=True)  
 
         self.all_idf_word_keys = []
         self.texts = []
@@ -58,11 +61,14 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         # Вкладка визуализация модели        
         self.searchQueryGBox.setEnabled(False) # Блокируем элементы до выбора модели
         self.plotVLayout.setEnabled(False) # Блокируем элементы до выбора модели
-        self.visualizeGBox.setEnabled(False) # Блокируем элементы до выбора модели
+        self.visualizeBtn.setEnabled(False) # Блокируем элементы до выбора модели
+        self.clearBtn.setEnabled(False) # Блокируем элементы до выбора модели
+        self.visualizeGBox.setHidden(True) # Скрыть box с новыми кнопками
 
         self.selectModelBtn.clicked.connect(self.select_model_file)
         self.searchQueryBtn.clicked.connect(self.search_word)       
-        self.tsneBtn.clicked.connect(self.visualise_model)
+        self.visualizeBtn.clicked.connect(self.visualise_model)
+        self.clearBtn.clicked.connect(self.clear_plots_layout)
         self.filePathField.setText(self.filename)        
         if filename.endswith('.model'):
             self.set_enable_visualisation(filename)
@@ -73,9 +79,9 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.calculator.signals.PrintInfo.connect(self.on_text_log_add)
         self.calculator.signals.Progress.connect(self.on_model_epoch_end)
         self.calculator.signals.ProgressBar.connect(self.on_progress)
-        self.output_dir = self.configurations.get(
-            "output_files_directory", "output_files") + '/Word2Vec/'
-        os.makedirs(os.path.dirname(self.output_dir), exist_ok=True)
+        # self.output_dir = self.configurations.get(
+        #     "output_files_directory", "output_files") + '/Word2Vec/'
+        
         print("Настройки калькулятора и сигналов заданы")
 
     def on_progress(self, value):
@@ -93,20 +99,20 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.createLogTextEdit.append("Данные за эпоху " + str(epoch) + " сохранены по адресу output/Word2Vec")
         
     def visualise_model(self):
+        # self.visualizeLogTextEdit.append('Алгоритм построения графика запущен. Ждите...')
         self.selectModelBtn.setEnabled(False)
-        self.visualizeGBox.setEnabled(False)
-
+        self.visualizeBtn.setEnabled(False)        
         X = self.calculator.model.wv[self.calculator.model.wv.vocab]
         RS = 2500 # Random state
         tsne = TSNE(n_components=2, perplexity = 40, random_state=RS)
         result = tsne.fit_transform(X)
         
-        makePlot = PlotMaker(self.plotVLayout, self)
+        self.makePlot = PlotMaker(self.plotVLayout, self)
 
-        # Создаем toolbar TODO: перенести в PlotMaker
-        makePlot.add_toolbar(self)
+        # Создаем toolbar (перенесено в PlotMaker)
+        self.makePlot.add_toolbar(self)
 
-        ax = makePlot.ax
+        ax = self.makePlot.ax
 
         # # We choose a color palette with seaborn.
         # palette = np.array(sns.color_palette("hls", 10))
@@ -118,11 +124,16 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         words = list(self.calculator.model.wv.vocab)
         for i, word in enumerate(words):
             ax.annotate(word, xy=(result[i, 0], result[i, 1]))
-        
+                
         self.searchQueryGBox.setVisible(True)
         self.selectModelBtn.setEnabled(True)
-        self.visualizeGBox.setEnabled(True)
+        self.visualizeBtn.setEnabled(True)
+        self.clearBtn.setEnabled(True)
         self.visualizeLogTextEdit.append('График отображен')
+
+    # Очистка области визуализации.
+    def clear_plots_layout(self):
+        self.makePlot.removePlot()
 
     def on_calculation_finish(self):
         self.setEnabled(True)
@@ -169,7 +180,7 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
 
     def select_model_file(self):
         print("Выбрать существующую модель из файла")
-        modelFile = getFilenameFromUserSelection("MODEL Files (*.model)", self.input_dir + 'Word2Vec')
+        modelFile = getFilenameFromUserSelection("MODEL Files (*.model)", self.output_dir + 'Word2Vec')
         if modelFile != None and len(modelFile.split('/')) > 0:
             self.visualizeLogTextEdit.clear()
             self.set_enable_visualisation(modelFile)
@@ -224,6 +235,6 @@ class DialogWord2VecMaker(QDialog, DialogWord2Vec):
         self.selectModelField.setText(nameStrArray[-3] + '/' + nameStrArray[-2] + '/' + nameStrArray[-1])
         self.visualizeLogTextEdit.append('Модель выбрана')
         self.calculator = Word2VecCalculator(modelFile, self.morph, self.configurations)
-        self.visualizeGBox.setEnabled(True) # Делаем доступными элементы после выбора модели
+        self.visualizeBtn.setEnabled(True) # Делаем доступными элементы после выбора модели
         self.searchQueryGBox.setEnabled(True) # Делаем доступными элементы после выбора модели
         self.plotVLayout.setEnabled(True) # Делаем доступными элементы после выбора модели
