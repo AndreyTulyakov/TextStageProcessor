@@ -382,7 +382,8 @@ class DialogFastTextMaker(QDialog, DialogFastText):
                 # Генератор внутри цикла.Код вызывается и не хранит значения в памяти
                 yield '{0} -> count: {1}, index: {2}, sample_int: {3}'.format(key, w.count, w.index, w.sample_int)
         if self.gensimCheckbox.isChecked():
-            model_file = root_path + '_gensim_output.model'
+            model_filename = 'GENSIM_{0}_output.model'.format(get_filename_from_path(root_path))
+            model_file = '{0}/{1}'.format(os.path.dirname(root_path), model_filename)
             log_data('vocab', '\n'.join(
                 yield_vocab(self.calculator.gensim_fasttext_model.wv.vocab)))
             self.createLogTextEdit.append("Файл со словарем для текста сохранен по адресу output/FastText")
@@ -395,7 +396,8 @@ class DialogFastTextMaker(QDialog, DialogFastText):
                 root_path + 'weight_matrix.txt')
             self.createLogTextEdit.append("Матрица весов weight_matrix сохранена по адресу output/FastText \n\n")
         else:
-            model_file = root_path + '_output.model'
+            model_filename = 'UNSUPERVISED_{0}_output.model'.format(get_filename_from_path(root_path))
+            model_file = '{0}/{1}'.format(os.path.dirname(root_path), model_filename)
             self.calculator.fasttext_model.save_model(model_file)
             self.createLogTextEdit.append("Модель сохранена по адресу {0}".format(model_file))
 
@@ -414,6 +416,7 @@ class DialogFastTextMaker(QDialog, DialogFastText):
         if not self.classifierModel == None and not self.classifyFilename == None:
             self.classifyButton.setEnabled(True)
         if not self.classifierModel == None:
+            self.classifyButton.setEnabled(True)
             self.phraseClassificationBtn.setEnabled(True)
             self.phraseClassificationField.setEnabled(True)
 

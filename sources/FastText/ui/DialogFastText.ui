@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1119</width>
-    <height>614</height>
+    <height>679</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -517,13 +517,13 @@
                <property name="minimumSize">
                 <size>
                  <width>300</width>
-                 <height>100</height>
+                 <height>130</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
-                 <height>65</height>
+                 <height>130</height>
                 </size>
                </property>
                <property name="title">
@@ -558,7 +558,7 @@
                     <property name="minimumSize">
                      <size>
                       <width>0</width>
-                      <height>0</height>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="maximumSize">
@@ -577,6 +577,12 @@
                   </item>
                   <item>
                    <widget class="QPushButton" name="selectModelBtn">
+                    <property name="minimumSize">
+                     <size>
+                      <width>0</width>
+                      <height>30</height>
+                     </size>
+                    </property>
                     <property name="text">
                      <string>Выбрать модель</string>
                     </property>
@@ -589,7 +595,7 @@
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
-                    <height>20</height>
+                    <height>30</height>
                    </size>
                   </property>
                   <property name="font">
@@ -598,7 +604,8 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>*Для корректной визуализации используются модели supervised или созданные с помощью gensim</string>
+                   <string>*Для корректной визуализации используются модели unsupervised или созданные с помощью gensim.
+Названия файлов предпочтительно на латинице.</string>
                   </property>
                  </widget>
                 </item>
@@ -828,6 +835,25 @@
                  </widget>
                 </item>
                </layout>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_7">
+                <property name="font">
+                 <font>
+                  <pointsize>7</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>*В кач-ве файлов для тренировки должны использоваться модель или список файлов, где название каждого файла (только латиница) должно отражать категорию, к которой относится список текстов, содержащийся в этом файле. Например, файл, содержащий тексты категории &quot;комедия&quot;, должен иметь название &quot;comedy.txt&quot;.
+Также может использоваться подготовленный файл (название - на латинице), где каждая строка файла содержит категорию (__label__&lt;category&gt;) и следующий за категорией текст (пример файла: /train/trainfile__action_adventure_comedies.txt).</string>
+                </property>
+                <property name="textFormat">
+                 <enum>Qt::AutoText</enum>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
               </item>
               <item>
                <widget class="QPushButton" name="trainClissifierBtn">
