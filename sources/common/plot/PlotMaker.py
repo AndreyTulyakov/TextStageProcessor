@@ -26,7 +26,7 @@ class PlotMaker(FigureCanvas):
     def visualizeData(self, fig):
         self.geomForMpl = self.plotVLayout
         self.canvas = TsneMplForWidget(self.fig)
-        self.checkWidget(self.geomForMpl)
+        # self.checkWidget(self.geomForMpl) 
         self.geomForMpl.addWidget(self.canvas)
 
         # self.toolbar = NavigationToolbar(self.canvas, self, coordinates=True)
@@ -36,6 +36,7 @@ class PlotMaker(FigureCanvas):
         self.toolbar = NavigationToolbar(self.canvas, parent, coordinates=True)
         self.plotVLayout.addWidget(self.toolbar)
 
+    # Попытка очистки графика одновременно с рисованием
     def checkWidget(self, plotVLayout):
         lcount = plotVLayout.count()
         if(lcount > 1):
