@@ -10,9 +10,12 @@ from matplotlib.figure import Figure
 from sources.common.plot.TsneMplForWidget import TsneMplForWidget
 
 class PlotMaker(FigureCanvas):
-    def __init__(self, plotVLayout, parent=None):
+    def __init__(self, plotVLayout, parent=None, title: str=None):
+        self.toolbar = None
         self.fig = Figure() # подаем на вход рисунок
+        matplotlib.pyplot.close(self.fig)
         self.ax = self.fig.add_subplot(111)
+        self.ax.set_title(title)
         self.plotVLayout = plotVLayout # подаем на вход слой элементов виджета
         self.visualizeData(self.fig)
 
@@ -40,3 +43,8 @@ class PlotMaker(FigureCanvas):
                 plotVLayout.itemAt(i).widget().deleteLater()
             # plotVLayout.removeItem(plotVLayout.itemAt(1))
 
+    def removePlot(self):
+        self.geomForMpl.removeWidget(self.canvas)
+        self.canvas.close()
+        self.geomForMpl.removeWidget(self.toolbar)
+        self.toolbar.close()

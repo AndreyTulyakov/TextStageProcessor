@@ -10,3 +10,4 @@ scikit_learn>=0.21.2
 pymorphy2-dicts-ru>=2.4
 pymorphy2-dicts>=2.4
 sklearn>=0.0
+fasttext>=0.9.2
